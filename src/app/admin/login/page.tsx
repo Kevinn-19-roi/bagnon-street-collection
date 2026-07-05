@@ -1,3 +1,4 @@
+export const dynamic = 'force-dynamic'
 import { loginAdmin } from '@/lib/actions/auth'
 import Image from 'next/image'
 

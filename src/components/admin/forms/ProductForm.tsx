@@ -1,0 +1,258 @@
+'use client'
+import { useState } from 'react'
+import { Category, Collection, Product } from '@/types/database'
+import { generateSlug, generateSKU } from '@/lib/helpers/slugify'
+import Button from '@/components/admin/ui/Button'
+
+interface Props {
+  categories: Category[]
+  collections: Collection[]
+  product?: Partial<Product>
+  onSubmit: (data: FormData) => Promise<void>
+  isEdit?: boolean
+}
+
+export default function ProductForm({ categories, collections, product, onSubmit, isEdit }: Props) {
+  const [name, setName] = useState(product?.name || '')
+  const [slug, setSlug] = useState(product?.slug || '')
+  const [sku, setSku] = useState(product?.sku || '')
+  const [price, setPrice] = useState(product?.price?.toString() || '')
+  const [oldPrice, setOldPrice] = useState(product?.old_price?.toString() || '')
+  const [stock, setStock] = useState(product?.stock?.toString() || '0')
+  const [categoryId, setCategoryId] = useState(product?.category_id || '')
+  const [collectionId, setCollectionId] = useState(product?.collection_id || '')
+  const [description, setDescription] = useState(product?.description || '')
+  const [shortDesc, setShortDesc] = useState(product?.short_description || '')
+  const [material, setMaterial] = useState(product?.material || '')
+  const [care, setCare] = useState(product?.care_instructions || '')
+  const [featured, setFeatured] = useState(product?.featured || false)
+  const [newArrival, setNewArrival] = useState(product?.new_arrival || false)
+  const [onSale, setOnSale] = useState(product?.on_sale || false)
+  const [active, setActive] = useState(product?.active ?? true)
+  const [loading, setLoading] = useState(false)
+  const [imageFiles, setImageFiles] = useState<File[]>([])
+  const [imagePreviews, setImagePreviews] = useState<string[]>([])
+
+  function handleNameChange(val: string) {
+    setName(val)
+    if (!isEdit) {
+      setSlug(generateSlug(val))
+      if (categoryId) {
+        const cat = categories.find(c => c.id === categoryId)
+        setSku(generateSKU(val, cat?.name || 'PRD'))
+      }
+    }
+  }
+
+  function handleImageChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const files = Array.from(e.target.files || [])
+    setImageFiles(files)
+    const previews = files.map(f => URL.createObjectURL(f))
+    setImagePreviews(previews)
+  }
+
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault()
+    setLoading(true)
+    const formData = new FormData(e.currentTarget)
+    formData.set('featured', featured.toString())
+    formData.set('new_arrival', newArrival.toString())
+    formData.set('on_sale', onSale.toString())
+    formData.set('active', active.toString())
+    imageFiles.forEach(f => formData.append('images', f))
+    await onSubmit(formData)
+    setLoading(false)
+  }
+
+  const inputStyle = {
+    width: '100%', background: '#0A0A0C',
+    border: '1px solid rgba(255,255,255,0.1)', borderRadius: 3,
+    padding: '10px 14px', color: '#F2F1ED', fontSize: 13,
+    outline: 'none', fontFamily: 'var(--font-display)',
+  }
+
+  const labelStyle = {
+    display: 'block', fontFamily: 'var(--font-display)', fontSize: 10,
+    fontWeight: 700, letterSpacing: '.15em', textTransform: 'uppercase' as const,
+    color: '#94938E', marginBottom: 6,
+  }
+
+  const groupStyle = { display: 'flex', flexDirection: 'column' as const, gap: 6 }
+
+  const sectionStyle = {
+    background: '#17171B', border: '1px solid rgba(255,255,255,0.07)',
+    borderRadius: 6, padding: 24, marginBottom: 16,
+  }
+
+  const sectionTitle = {
+    fontFamily: 'var(--font-display)', fontSize: 12, fontWeight: 700,
+    letterSpacing: '.1em', textTransform: 'uppercase' as const,
+    color: '#F2F1ED', marginBottom: 20, paddingBottom: 12,
+    borderBottom: '1px solid rgba(255,255,255,0.07)',
+  }
+
+  const checkboxRow = (label: string, checked: boolean, onChange: (v: boolean) => void, description?: string) => (
+    <label style={{ display: 'flex', alignItems: 'flex-start', gap: 10, cursor: 'pointer' }}>
+      <input
+        type="checkbox"
+        checked={checked}
+        onChange={e => onChange(e.target.checked)}
+        style={{ marginTop: 2, accentColor: '#7A1620', width: 14, height: 14 }}
+      />
+      <div>
+        <p style={{ fontFamily: 'var(--font-display)', fontSize: 12, fontWeight: 600, color: '#F2F1ED' }}>{label}</p>
+        {description && <p style={{ fontSize: 11, color: '#4D4D52', marginTop: 2 }}>{description}</p>}
+      </div>
+    </label>
+  )
+
+  return (
+    <form onSubmit={handleSubmit}>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 320px', gap: 16 }}>
+
+        {/* LEFT COLUMN */}
+        <div>
+          {/* Informations générales */}
+          <div style={sectionStyle}>
+            <p style={sectionTitle}>Informations générales</p>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+              <div style={groupStyle}>
+                <label style={labelStyle}>Nom du produit *</label>
+                <input name="name" value={name} onChange={e => handleNameChange(e.target.value)} required style={inputStyle} placeholder="Ex: Hoodie BSC — Kaki" />
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+                <div style={groupStyle}>
+                  <label style={labelStyle}>Slug *</label>
+                  <input name="slug" value={slug} onChange={e => setSlug(e.target.value)} required style={inputStyle} placeholder="hoodie-bsc-kaki" />
+                </div>
+                <div style={groupStyle}>
+                  <label style={labelStyle}>SKU *</label>
+                  <input name="sku" value={sku} onChange={e => setSku(e.target.value)} required style={inputStyle} placeholder="HOO-BSCK-1234" />
+                </div>
+              </div>
+              <div style={groupStyle}>
+                <label style={labelStyle}>Description courte</label>
+                <input name="short_description" value={shortDesc} onChange={e => setShortDesc(e.target.value)} style={inputStyle} placeholder="Résumé en une ligne..." />
+              </div>
+              <div style={groupStyle}>
+                <label style={labelStyle}>Description complète</label>
+                <textarea name="description" value={description} onChange={e => setDescription(e.target.value)} rows={4} style={{ ...inputStyle, resize: 'vertical' }} placeholder="Description détaillée du produit..." />
+              </div>
+            </div>
+          </div>
+
+          {/* Prix & Stock */}
+          <div style={sectionStyle}>
+            <p style={sectionTitle}>Prix & Stock</p>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 12 }}>
+              <div style={groupStyle}>
+                <label style={labelStyle}>Prix (FCFA) *</label>
+                <input name="price" type="number" value={price} onChange={e => setPrice(e.target.value)} required min={0} style={inputStyle} placeholder="9500" />
+              </div>
+              <div style={groupStyle}>
+                <label style={labelStyle}>Ancien prix (FCFA)</label>
+                <input name="old_price" type="number" value={oldPrice} onChange={e => setOldPrice(e.target.value)} min={0} style={inputStyle} placeholder="12000" />
+              </div>
+              <div style={groupStyle}>
+                <label style={labelStyle}>Stock total *</label>
+                <input name="stock" type="number" value={stock} onChange={e => setStock(e.target.value)} required min={0} style={inputStyle} placeholder="50" />
+              </div>
+            </div>
+          </div>
+
+          {/* Détails produit */}
+          <div style={sectionStyle}>
+            <p style={sectionTitle}>Détails du produit</p>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+                <div style={groupStyle}>
+                  <label style={labelStyle}>Matière</label>
+                  <input name="material" value={material} onChange={e => setMaterial(e.target.value)} style={inputStyle} placeholder="Ex: 100% Coton 380g" />
+                </div>
+                <div style={groupStyle}>
+                  <label style={labelStyle}>Poids (kg)</label>
+                  <input name="weight" type="number" step="0.01" style={inputStyle} placeholder="0.5" />
+                </div>
+              </div>
+              <div style={groupStyle}>
+                <label style={labelStyle}>Instructions d'entretien</label>
+                <textarea name="care_instructions" value={care} onChange={e => setCare(e.target.value)} rows={2} style={{ ...inputStyle, resize: 'vertical' }} placeholder="Ex: Lavage à 30°C, ne pas sécher au sèche-linge..." />
+              </div>
+            </div>
+          </div>
+
+          {/* Images */}
+          <div style={sectionStyle}>
+            <p style={sectionTitle}>Images du produit</p>
+            <div>
+              <label style={{ display: 'block', border: '2px dashed rgba(255,255,255,0.1)', borderRadius: 6, padding: '32px', textAlign: 'center', cursor: 'pointer', transition: 'border-color .2s' }}>
+                <input type="file" name="images" accept="image/*" multiple onChange={handleImageChange} style={{ display: 'none' }} />
+                <svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="currentColor" strokeWidth="1.4" style={{ margin: '0 auto 12px', color: '#4D4D52' }}>
+                  <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>
+                </svg>
+                <p style={{ fontFamily: 'var(--font-display)', fontSize: 12, color: '#94938E' }}>
+                  Cliquer pour sélectionner des images
+                </p>
+                <p style={{ fontSize: 11, color: '#4D4D52', marginTop: 4 }}>JPG, PNG, WEBP — Max 5MB par image</p>
+              </label>
+              {imagePreviews.length > 0 && (
+                <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 12 }}>
+                  {imagePreviews.map((src, i) => (
+                    <div key={i} style={{ width: 80, height: 100, position: 'relative', borderRadius: 3, overflow: 'hidden', border: '1px solid rgba(255,255,255,0.1)' }}>
+                      <img src={src} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* RIGHT COLUMN */}
+        <div>
+          {/* Catégorie & Collection */}
+          <div style={sectionStyle}>
+            <p style={sectionTitle}>Organisation</p>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+              <div style={groupStyle}>
+                <label style={labelStyle}>Catégorie *</label>
+                <select name="category_id" value={categoryId} onChange={e => setCategoryId(e.target.value)} required style={{ ...inputStyle, appearance: 'none' }}>
+                  <option value="">Sélectionner...</option>
+                  {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                </select>
+              </div>
+              <div style={groupStyle}>
+                <label style={labelStyle}>Collection</label>
+                <select name="collection_id" value={collectionId} onChange={e => setCollectionId(e.target.value)} style={{ ...inputStyle, appearance: 'none' }}>
+                  <option value="">Aucune</option>
+                  {collections.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                </select>
+              </div>
+            </div>
+          </div>
+
+          {/* Visibilité */}
+          <div style={sectionStyle}>
+            <p style={sectionTitle}>Visibilité</p>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+              {checkboxRow('Actif', active, setActive, 'Visible sur le site')}
+              {checkboxRow('En vedette', featured, setFeatured, 'Affiché sur la homepage')}
+              {checkboxRow('Nouveauté', newArrival, setNewArrival, 'Badge "Nouveau"')}
+              {checkboxRow('En promotion', onSale, setOnSale, 'Badge "Promo"')}
+            </div>
+          </div>
+
+          {/* Submit */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            <Button type="submit" disabled={loading} fullWidth>
+              {loading ? 'Enregistrement...' : isEdit ? 'Mettre à jour' : 'Créer le produit'}
+            </Button>
+            <a href="/admin/produits" style={{ display: 'block', textAlign: 'center', fontFamily: 'var(--font-display)', fontSize: 11, color: '#94938E', padding: '8px', textDecoration: 'none' }}>
+              Annuler
+            </a>
+          </div>
+        </div>
+      </div>
+    </form>
+  )
+}
