@@ -3,7 +3,7 @@
 import { redirect } from 'next/navigation'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
-import { generateSlug } from '@/lib/helpers/slugify'
+import { generateSlug, generateSKU } from '@/lib/helpers/slugify'
 import { revalidatePath } from 'next/cache'
 
 // ─── CREATE PRODUCT ──────────────────────────────────────────
@@ -14,7 +14,8 @@ export async function createProduct(formData: FormData): Promise<void> {
 
   const name = formData.get('name') as string
   const slug = formData.get('slug') as string || generateSlug(name)
-  const sku = formData.get('sku') as string
+  const skuRaw = formData.get('sku') as string
+  const sku = skuRaw?.trim() || generateSKU(name, 'BSC')
   const description = formData.get('description') as string
   const short_description = formData.get('short_description') as string
   const category_id = formData.get('category_id') as string

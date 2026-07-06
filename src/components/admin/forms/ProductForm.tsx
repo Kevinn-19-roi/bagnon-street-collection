@@ -126,8 +126,13 @@ export default function ProductForm({ categories, collections, product, onSubmit
                   <input name="slug" value={slug} onChange={e => setSlug(e.target.value)} required style={inputStyle} placeholder="hoodie-bsc-kaki" />
                 </div>
                 <div style={groupStyle}>
-                  <label style={labelStyle}>SKU *</label>
-                  <input name="sku" value={sku} onChange={e => setSku(e.target.value)} required style={inputStyle} placeholder="HOO-BSCK-1234" />
+                  <label style={labelStyle}>SKU <span style={{color:'#4D4D52',fontWeight:400,textTransform:'none',letterSpacing:0}}>(auto si vide)</span></label>
+                  <div style={{display:'flex',gap:6}}>
+                    <input name="sku" value={sku} onChange={e => setSku(e.target.value)} style={{...inputStyle,flex:1}} placeholder="Généré automatiquement" />
+                    <button type="button" onClick={()=>{const cat=categories.find(c=>c.id===categoryId);setSku(generateSKU(name||'PRD',cat?.name||'PRD'))}} style={{background:'rgba(26,42,108,0.2)',color:'#5C7CFA',border:'1px solid rgba(26,42,108,0.3)',borderRadius:3,padding:'0 12px',fontFamily:'var(--font-display)',fontSize:10,fontWeight:700,cursor:'pointer',whiteSpace:'nowrap'}}>
+                      Générer
+                    </button>
+                  </div>
                 </div>
               </div>
               <div style={groupStyle}>

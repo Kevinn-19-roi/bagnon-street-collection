@@ -1,10 +1,9 @@
-import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import type { Category, Collection } from '@/types/database'
 
 export async function getCategories(): Promise<Category[]> {
-  const supabase = await createClient()
-  const { data } = await supabase
+  const adminClient = createAdminClient()
+  const { data } = await adminClient
     .from('categories')
     .select('*')
     .eq('active', true)
@@ -13,8 +12,8 @@ export async function getCategories(): Promise<Category[]> {
 }
 
 export async function getCollections(): Promise<Collection[]> {
-  const supabase = await createClient()
-  const { data } = await supabase
+  const adminClient = createAdminClient()
+  const { data } = await adminClient
     .from('collections')
     .select('*')
     .eq('active', true)

@@ -69,7 +69,7 @@ function ProductCard({ product }: { product: Product }) {
         <p style={{ fontSize: 11, color: 'var(--text2)', lineHeight: 1.5, marginBottom: 10, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{product.description}</p>
         <div style={{ display: 'flex', alignItems: 'baseline', gap: 6, marginBottom: 10 }}>
           <span style={{ fontFamily: 'var(--font-display)', fontSize: 'clamp(13px,3.5vw,15px)', fontWeight: 700 }}>{product.price.toLocaleString()} F</span>
-          <span style={{ fontSize: 10, color: 'var(--text3)', textDecoration: 'line-through' }}>{product.compareAt.toLocaleString()}</span>
+          {product.compareAt && <span style={{ fontSize: 10, color: 'var(--text3)', textDecoration: 'line-through' }}>{product.compareAt.toLocaleString()}</span>}
         </div>
         <button onClick={handleAdd} style={{ width: '100%', background: added ? 'var(--red)' : 'var(--btn)', color: added ? '#fff' : 'var(--btn-t)', borderRadius: 3, padding: '9px 6px', fontFamily: 'var(--font-display)', fontSize: 11, fontWeight: 700, letterSpacing: '.04em', textTransform: 'uppercase', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5, transition: 'background .2s, color .2s' }}>
           {I.plus} {added ? 'Ajouté !' : 'Ajouter'}
@@ -225,8 +225,8 @@ function Navbar({ onMenuOpen }: { onMenuOpen: () => void }) {
           <span style={{ fontFamily: 'var(--font-display)', fontSize: 'clamp(12px,3vw,15px)', fontWeight: 700, letterSpacing: '.03em', whiteSpace: 'nowrap' }}>Bagnon Street</span>
         </a>
 
-        {/* Search — hidden on mobile */}
-        <div style={{ flex: 1, maxWidth: 460, margin: '0 auto', position: 'relative', display: 'none' }} className="nav-search-desktop">
+        {/* Search bar */}
+        <div style={{ flex: 1, maxWidth: 460, margin: '0 auto', position: 'relative' }}>
           <span style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: 'var(--text3)' }}>{I.search}</span>
           <input type="text" placeholder="Rechercher…" style={{ width: '100%', background: 'var(--search)', border: '1px solid var(--border2)', borderRadius: 3, padding: '10px 42px 10px 36px', fontSize: 13, color: 'var(--text)', outline: 'none', fontFamily: 'var(--font-body)' }} />
           <button style={{ position: 'absolute', right: 4, top: '50%', transform: 'translateY(-50%)', background: 'var(--btn)', color: 'var(--btn-t)', borderRadius: 3, width: 32, height: 32, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{I.arrow}</button>
@@ -249,14 +249,7 @@ function Navbar({ onMenuOpen }: { onMenuOpen: () => void }) {
         </div>
       </div>
 
-      {/* Mobile search bar */}
-      <div style={{ padding: `0 var(--px) 10px`, display: 'block' }}>
-        <div style={{ position: 'relative', maxWidth: 600, margin: '0 auto' }}>
-          <span style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: 'var(--text3)' }}>{I.search}</span>
-          <input type="text" placeholder="Rechercher un produit…" style={{ width: '100%', background: 'var(--search)', border: '1px solid var(--border2)', borderRadius: 3, padding: '9px 40px 9px 36px', fontSize: 13, color: 'var(--text)', outline: 'none', fontFamily: 'var(--font-body)' }} />
-          <button style={{ position: 'absolute', right: 4, top: '50%', transform: 'translateY(-50%)', background: 'var(--btn)', color: 'var(--btn-t)', borderRadius: 3, width: 30, height: 30, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{I.arrow}</button>
-        </div>
-      </div>
+
     </nav>
   )
 }

@@ -28,7 +28,7 @@ export async function getOrders(
   if (error) throw new Error(error.message)
 
   return {
-    data: data as Order[],
+    data: (data as Order[]) || [],
     total: count || 0,
     page,
     per_page,
@@ -79,12 +79,23 @@ export async function updateOrderStatus(
 export async function getDashboardStats() {
   const adminClient = createAdminClient()
 
-  const [orders, revenue, customers, products] = await Promise.all([
-    adminClient.from('orders').select('id', { count: 'exact' }).then(r => r.count || 0),
-    adminClient.from('orders').select('total').eq('payment_status', 'paid').then(r => (r.data || []).reduce((s, o) => s + o.total, 0)),
-    adminClient.from('customers').select('id', { count: 'exact' }).then(r => r.count || 0),
-    adminClient.from('products').select('id', { count: 'exact' }).eq('active', true).then(r => r.count || 0),
-  ])
+  try {
+    const [ordersRes, revenueRes, customersRes, productsRes] = await Promise.all([
+      adminClient.from('orders').select('id', { count: 'exact', head: true }),
+      adminClient.from('orders').select('total').eq('payment_status', 'paid'),
+      adminClient.from('customers').select('id', { count: 'exact', head: true }),
+      adminClient.from('products').select('id', { count: 'exact', head: true }).eq('active', true),
+    ])
 
-  return { total_orders: orders, total_revenue: revenue, total_customers: customers, active_products: products }
+    const revenue = (revenueRes.data || []).reduce((s: number, o: any) => s + (o.total || 0), 0)
+
+    return {
+      total_orders: ordersRes.count || 0,
+      total_revenue: revenue,
+      total_customers: customersRes.count || 0,
+      active_products: productsRes.count || 0,
+    }
+  } catch {
+    return { total_orders: 0, total_revenue: 0, total_customers: 0, active_products: 0 }
+  }
 }
