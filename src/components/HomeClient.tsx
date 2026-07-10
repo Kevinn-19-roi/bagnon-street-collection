@@ -193,7 +193,7 @@ function MobileMenu({ open, onClose }: { open: boolean; onClose: () => void }) {
 }
 
 // ─── NAVBAR ───────────────────────────────────────
-function Navbar({ onMenuOpen }: { onMenuOpen: () => void }) {
+function Navbar({ onMenuOpen, currentUser }: { onMenuOpen: () => void; currentUser?: { id: string; role: string; fullname: string } | null }) {
   const [theme, setTheme] = useState<'dark' | 'light'>('dark')
   const [scrolled, setScrolled] = useState(false)
   const count = useCart(s => s.count)
@@ -260,9 +260,10 @@ interface Props {
   newItems: Product[]
   bestsellers: Product[]
   allProducts: Product[]
+  currentUser?: { id: string; role: string; fullname: string } | null
 }
 
-export default function HomeClient({ featured, newItems, bestsellers, allProducts }: Props) {
+export default function HomeClient({ featured, newItems, bestsellers, allProducts, currentUser }: Props) {
   const [activeCat, setActiveCat] = useState('all')
   const [countdown, setCountdown] = useState('07:23:59')
   const [nlSuccess, setNlSuccess] = useState(false)
@@ -304,7 +305,7 @@ export default function HomeClient({ featured, newItems, bestsellers, allProduct
         Livraison gratuite dès 25 000 FCFA · Côte d&apos;Ivoire
       </div>
 
-      <Navbar onMenuOpen={() => setMenuOpen(true)} />
+      <Navbar onMenuOpen={() => setMenuOpen(true)} currentUser={currentUser} />
       <MobileMenu open={menuOpen} onClose={() => setMenuOpen(false)} />
 
       {/* CATEGORY PILLS */}
