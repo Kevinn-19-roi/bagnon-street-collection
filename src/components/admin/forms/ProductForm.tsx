@@ -108,7 +108,16 @@ export default function ProductForm({ categories, collections, product, onSubmit
 
   return (
     <form onSubmit={handleSubmit}>
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 320px', gap: 16 }}>
+      <style>{`
+        @media(max-width:980px){
+          .product-form-shell,
+          .product-form-grid-2,
+          .product-form-grid-3{grid-template-columns:1fr!important;}
+          .product-sku-row{flex-wrap:wrap!important;}
+          .product-sku-row input{min-width:180px!important;}
+        }
+      `}</style>
+      <div className="product-form-shell" style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) 320px', gap: 16 }}>
 
         {/* LEFT COLUMN */}
         <div>
@@ -120,14 +129,14 @@ export default function ProductForm({ categories, collections, product, onSubmit
                 <label style={labelStyle}>Nom du produit *</label>
                 <input name="name" value={name} onChange={e => handleNameChange(e.target.value)} required style={inputStyle} placeholder="Ex: Hoodie BSC — Kaki" />
               </div>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+              <div className="product-form-grid-2" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
                 <div style={groupStyle}>
                   <label style={labelStyle}>Slug *</label>
                   <input name="slug" value={slug} onChange={e => setSlug(e.target.value)} required style={inputStyle} placeholder="hoodie-bsc-kaki" />
                 </div>
                 <div style={groupStyle}>
                   <label style={labelStyle}>SKU <span style={{color:'#4D4D52',fontWeight:400,textTransform:'none',letterSpacing:0}}>(auto si vide)</span></label>
-                  <div style={{display:'flex',gap:6}}>
+                  <div className="product-sku-row" style={{display:'flex',gap:6}}>
                     <input name="sku" value={sku} onChange={e => setSku(e.target.value)} style={{...inputStyle,flex:1}} placeholder="Généré automatiquement" />
                     <button type="button" onClick={()=>{const cat=categories.find(c=>c.id===categoryId);setSku(generateSKU(name||'PRD',cat?.name||'PRD'))}} style={{background:'rgba(26,42,108,0.2)',color:'#5C7CFA',border:'1px solid rgba(26,42,108,0.3)',borderRadius:3,padding:'0 12px',fontFamily:'var(--font-display)',fontSize:10,fontWeight:700,cursor:'pointer',whiteSpace:'nowrap'}}>
                       Générer
@@ -149,7 +158,7 @@ export default function ProductForm({ categories, collections, product, onSubmit
           {/* Prix & Stock */}
           <div style={sectionStyle}>
             <p style={sectionTitle}>Prix & Stock</p>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 12 }}>
+            <div className="product-form-grid-3" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 12 }}>
               <div style={groupStyle}>
                 <label style={labelStyle}>Prix (FCFA) *</label>
                 <input name="price" type="number" value={price} onChange={e => setPrice(e.target.value)} required min={0} style={inputStyle} placeholder="9500" />
@@ -169,7 +178,7 @@ export default function ProductForm({ categories, collections, product, onSubmit
           <div style={sectionStyle}>
             <p style={sectionTitle}>Détails du produit</p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+              <div className="product-form-grid-2" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
                 <div style={groupStyle}>
                   <label style={labelStyle}>Matière</label>
                   <input name="material" value={material} onChange={e => setMaterial(e.target.value)} style={inputStyle} placeholder="Ex: 100% Coton 380g" />

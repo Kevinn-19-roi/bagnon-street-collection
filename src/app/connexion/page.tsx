@@ -1,6 +1,7 @@
 import Image from 'next/image'
 import Link from 'next/link'
 import { loginClient } from '@/lib/actions/auth'
+import AuthSubmitButton from '@/components/auth/AuthSubmitButton'
 
 export const dynamic = 'force-dynamic'
 export const metadata = { title: 'Connexion — Bagnon Street' }
@@ -23,6 +24,10 @@ export default async function ConnexionPage({
             <span style={{ fontFamily: 'var(--font-display)', fontSize: 16, fontWeight: 700 }}>Bagnon Street</span>
           </Link>
         </div>
+
+        <Link href="/" style={{ display: 'inline-flex', alignItems: 'center', gap: 6, marginBottom: 16, color: 'var(--text2)', fontFamily: 'var(--font-display)', fontSize: 12, fontWeight: 700, letterSpacing: '.04em', textTransform: 'uppercase' }}>
+          ← Retour à la boutique
+        </Link>
 
         <form action={loginClient} style={{ background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: 8, padding: 28, display: 'flex', flexDirection: 'column', gap: 18 }}>
           <div>
@@ -52,9 +57,7 @@ export default async function ConnexionPage({
             <input name="password" type="password" required autoComplete="current-password" style={{ background: 'var(--bg)', border: '1px solid var(--border2)', borderRadius: 4, padding: '12px 14px', color: 'var(--text)', outline: 'none' }} />
           </label>
 
-          <button type="submit" style={{ background: 'var(--btn)', color: 'var(--btn-t)', borderRadius: 4, padding: '13px 16px', fontFamily: 'var(--font-display)', fontSize: 12, fontWeight: 700, letterSpacing: '.08em', textTransform: 'uppercase' }}>
-            Se connecter
-          </button>
+          <AuthSubmitButton idleLabel="Se connecter" pendingLabel="Connexion..." style={{ background: 'var(--btn)', color: 'var(--btn-t)', borderRadius: 4, padding: '13px 16px', fontFamily: 'var(--font-display)', fontSize: 12, fontWeight: 700, letterSpacing: '.08em', textTransform: 'uppercase' }} />
         </form>
 
         <p style={{ textAlign: 'center', marginTop: 18, color: 'var(--text2)', fontSize: 13 }}>

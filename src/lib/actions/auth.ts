@@ -21,6 +21,27 @@ const RegisterClientSchema = z.object({
   city: z.string().trim().optional(),
 })
 
+function translateAuthError(message?: string) {
+  if (!message) return 'Opération impossible pour le moment'
+
+  const retryMatch = message.match(/after\s+(\d+)\s+seconds?/i)
+  if (/security purposes/i.test(message) && /request this after/i.test(message)) {
+    return retryMatch
+      ? `Veuillez patienter environ ${retryMatch[1]} secondes avant de réessayer.`
+      : 'Veuillez patienter quelques instants avant de réessayer.'
+  }
+
+  if (/already registered|already exists|user already/i.test(message)) {
+    return 'Un compte existe déjà avec cet email.'
+  }
+
+  if (/invalid login credentials/i.test(message)) {
+    return 'Email ou mot de passe incorrect'
+  }
+
+  return message
+}
+
 async function clearSupabaseCookies() {
   const cookieStore = await cookies()
 
@@ -150,7 +171,7 @@ export async function registerClient(formData: FormData): Promise<void> {
   })
 
   if (error || !data.user) {
-    redirect(`/inscription?error=${encodeURIComponent(error?.message || 'Création du compte impossible')}`)
+    redirect(`/inscription?error=${encodeURIComponent(translateAuthError(error?.message || 'Création du compte impossible'))}`)
   }
 
   const adminClient = createAdminClient()

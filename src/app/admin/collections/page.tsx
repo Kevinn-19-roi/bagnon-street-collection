@@ -2,6 +2,7 @@ import AdminShell from '@/components/admin/layout/AdminShell'
 import PageHeader from '@/components/admin/ui/PageHeader'
 import Badge from '@/components/admin/ui/Badge'
 import ConfirmSubmitForm from '@/components/admin/forms/ConfirmSubmitForm'
+import ResponsiveTable from '@/components/admin/ui/ResponsiveTable'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { createCollection, deleteCollection } from '@/lib/actions/categories'
 import { formatDate } from '@/lib/helpers/slugify'
@@ -35,9 +36,15 @@ export default async function CollectionsPage() {
         subtitle={`${collections.length} collection${collections.length > 1 ? 's' : ''}`}
       />
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 380px', gap: 16 }}>
+      <style>{`
+        @media(max-width:980px){
+          .admin-split-grid{grid-template-columns:1fr!important;}
+        }
+      `}</style>
+
+      <div className="admin-split-grid" style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) 380px', gap: 16 }}>
         {/* List */}
-        <div style={{ background: '#17171B', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 6, overflow: 'hidden' }}>
+        <ResponsiveTable minWidth={760}>
           <table style={{ width: '100%', borderCollapse: 'collapse' }}>
             <thead>
               <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
@@ -66,7 +73,7 @@ export default async function CollectionsPage() {
               ))}
             </tbody>
           </table>
-        </div>
+        </ResponsiveTable>
 
         {/* Add form */}
         <div style={{ background: '#17171B', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 6, padding: 20, height: 'fit-content' }}>

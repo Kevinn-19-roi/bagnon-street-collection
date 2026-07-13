@@ -1,6 +1,7 @@
 import AdminShell from '@/components/admin/layout/AdminShell'
 import PageHeader from '@/components/admin/ui/PageHeader'
 import Badge from '@/components/admin/ui/Badge'
+import ResponsiveTable from '@/components/admin/ui/ResponsiveTable'
 import { getOrders } from '@/lib/database/orders'
 import { formatPrice, formatDate } from '@/lib/helpers/slugify'
 import Link from 'next/link'
@@ -76,7 +77,7 @@ export default async function CommandesPage({
       </div>
 
       {/* Table */}
-      <div style={{ background: '#17171B', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 6, overflow: 'hidden' }}>
+      <ResponsiveTable minWidth={900}>
         <table style={{ width: '100%', borderCollapse: 'collapse' }}>
           <thead>
             <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
@@ -138,7 +139,7 @@ export default async function CommandesPage({
             ))}
           </tbody>
         </table>
-      </div>
+      </ResponsiveTable>
 
       {/* Pagination */}
       {total_pages > 1 && (

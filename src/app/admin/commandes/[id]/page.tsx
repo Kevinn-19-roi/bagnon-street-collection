@@ -60,7 +60,20 @@ export default async function OrderDetailPage({
         subtitle={`Créée le ${formatDate(order.created_at)}`}
       />
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 320px', gap: 16 }}>
+      <style>{`
+        @media(max-width:980px){
+          .order-detail-grid,
+          .order-customer-grid{grid-template-columns:1fr!important;}
+          .order-item-row{align-items:flex-start!important;}
+          .order-item-price{text-align:left!important;}
+        }
+        @media(max-width:520px){
+          .order-item-row{flex-wrap:wrap!important;}
+          .order-item-price{width:100%!important;}
+        }
+      `}</style>
+
+      <div className="order-detail-grid" style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) 320px', gap: 16 }}>
         {/* LEFT */}
         <div>
           {/* Items */}
@@ -70,7 +83,7 @@ export default async function OrderDetailPage({
             </p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
               {order.items?.map((item: any) => (
-                <div key={item.id} style={{ display: 'flex', gap: 12, padding: '12px', background: '#0A0A0C', borderRadius: 4, border: '1px solid rgba(255,255,255,0.04)' }}>
+                <div className="order-item-row" key={item.id} style={{ display: 'flex', gap: 12, padding: '12px', background: '#0A0A0C', borderRadius: 4, border: '1px solid rgba(255,255,255,0.04)' }}>
                   <div style={{ width: 56, height: 70, background: '#17171B', borderRadius: 3, flexShrink: 0, position: 'relative', overflow: 'hidden' }}>
                     {item.product?.images?.[0] && (
                       <Image src={item.product.images[0].image_url} alt="" fill style={{ objectFit: 'cover' }} sizes="56px" />
@@ -84,7 +97,7 @@ export default async function OrderDetailPage({
                       <span style={{ fontFamily: 'var(--font-display)', fontSize: 10, color: '#94938E' }}>Qté: {item.quantity}</span>
                     </div>
                   </div>
-                  <div style={{ textAlign: 'right', flexShrink: 0 }}>
+                  <div className="order-item-price" style={{ textAlign: 'right', flexShrink: 0 }}>
                     <p style={{ fontFamily: 'var(--font-display)', fontSize: 14, fontWeight: 700, color: '#F2F1ED' }}>
                       {formatPrice(item.price * item.quantity)}
                     </p>
@@ -118,7 +131,7 @@ export default async function OrderDetailPage({
             <p style={{ fontFamily: 'var(--font-display)', fontSize: 12, fontWeight: 700, letterSpacing: '.1em', textTransform: 'uppercase', color: '#F2F1ED', marginBottom: 16, paddingBottom: 12, borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
               Informations client
             </p>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+            <div className="order-customer-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
               {[
                 { label: 'Nom complet', value: order.customer?.fullname },
                 { label: 'Téléphone', value: order.customer?.phone },

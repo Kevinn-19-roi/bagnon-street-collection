@@ -43,7 +43,15 @@ export default async function ParametresPage() {
       />
 
       <form action={updateSettings}>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+        <style>{`
+          @media(max-width:900px){
+            .settings-grid,
+            .settings-subgrid{grid-template-columns:1fr!important;}
+            .settings-submit{justify-content:stretch!important;}
+            .settings-submit button{width:100%!important;}
+          }
+        `}</style>
+        <div className="settings-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
 
           {/* Réseaux sociaux */}
           <div style={sectionStyle}>
@@ -86,7 +94,7 @@ export default async function ParametresPage() {
           {/* Livraison */}
           <div style={sectionStyle}>
             <p style={sectionTitle}>Livraison</p>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
+            <div className="settings-subgrid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
               <div>
                 <label style={labelStyle}>Frais de livraison (FCFA)</label>
                 <input name="shipping_cost" type="number" defaultValue={settings?.shipping_cost || 2000} style={inputStyle} />
@@ -130,7 +138,7 @@ export default async function ParametresPage() {
         </div>
 
         {/* Submit */}
-        <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 8 }}>
+        <div className="settings-submit" style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 8 }}>
           <button type="submit" style={{
             background: '#7A1620', color: '#fff', border: 'none',
             borderRadius: 3, padding: '12px 32px',

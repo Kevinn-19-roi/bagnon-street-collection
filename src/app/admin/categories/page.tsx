@@ -3,6 +3,8 @@ export const dynamic = 'force-dynamic'
 import AdminShell from '@/components/admin/layout/AdminShell'
 import PageHeader from '@/components/admin/ui/PageHeader'
 import Badge from '@/components/admin/ui/Badge'
+import ConfirmSubmitForm from '@/components/admin/forms/ConfirmSubmitForm'
+import ResponsiveTable from '@/components/admin/ui/ResponsiveTable'
 import { getAllCategoriesAdmin } from '@/lib/database/categories'
 import { createCategory, deleteCategory } from '@/lib/actions/categories'
 import { formatDate } from '@/lib/helpers/slugify'
@@ -30,8 +32,14 @@ export default async function CategoriesPage() {
         title="Catégories"
         subtitle={`${categories.length} catégorie${categories.length > 1 ? 's' : ''}`}
       />
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 360px', gap: 16 }}>
-        <div style={{ background: '#17171B', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 6, overflow: 'hidden' }}>
+      <style>{`
+        @media(max-width:980px){
+          .admin-split-grid{grid-template-columns:1fr!important;}
+        }
+      `}</style>
+
+      <div className="admin-split-grid" style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) 360px', gap: 16 }}>
+        <ResponsiveTable minWidth={680}>
           <table style={{ width: '100%', borderCollapse: 'collapse' }}>
             <thead>
               <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
@@ -50,17 +58,17 @@ export default async function CategoriesPage() {
                   <td style={{ padding: '12px 16px', fontFamily: 'var(--font-display)', fontSize: 13, color: '#94938E' }}>{cat.display_order}</td>
                   <td style={{ padding: '12px 16px' }}><Badge label={cat.active ? 'Active' : 'Inactive'} variant={cat.active ? 'success' : 'default'} /></td>
                   <td style={{ padding: '12px 16px' }}>
-                    <form action={deleteCategory.bind(null, cat.id)}>
+                    <ConfirmSubmitForm action={deleteCategory.bind(null, cat.id)} message={`Supprimer "${cat.name}" ?`}>
                       <button type="submit" style={{ fontFamily: 'var(--font-display)', fontSize: 10, fontWeight: 700, letterSpacing: '.08em', textTransform: 'uppercase', background: 'rgba(122,22,32,0.15)', color: '#EF5350', border: '1px solid rgba(239,83,80,0.3)', borderRadius: 3, padding: '4px 10px', cursor: 'pointer' }}>
                         Supprimer
                       </button>
-                    </form>
+                    </ConfirmSubmitForm>
                   </td>
                 </tr>
               ))}
             </tbody>
           </table>
-        </div>
+        </ResponsiveTable>
 
         <div style={{ background: '#17171B', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 6, padding: 20, height: 'fit-content' }}>
           <p style={{ fontFamily: 'var(--font-display)', fontSize: 12, fontWeight: 700, letterSpacing: '.1em', textTransform: 'uppercase', color: '#F2F1ED', marginBottom: 18, paddingBottom: 12, borderBottom: '1px solid rgba(255,255,255,0.07)' }}>

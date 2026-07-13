@@ -1,6 +1,7 @@
 import Image from 'next/image'
 import Link from 'next/link'
 import { registerClient } from '@/lib/actions/auth'
+import AuthSubmitButton from '@/components/auth/AuthSubmitButton'
 
 export const dynamic = 'force-dynamic'
 export const metadata = { title: 'Inscription — Bagnon Street' }
@@ -24,7 +25,17 @@ export default async function InscriptionPage({
           </Link>
         </div>
 
-        <form action={registerClient} style={{ background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: 8, padding: 28, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 18 }}>
+        <Link href="/" style={{ display: 'inline-flex', alignItems: 'center', gap: 6, marginBottom: 16, color: 'var(--text2)', fontFamily: 'var(--font-display)', fontSize: 12, fontWeight: 700, letterSpacing: '.04em', textTransform: 'uppercase' }}>
+          ← Retour à la boutique
+        </Link>
+
+        <form className="register-form" action={registerClient} style={{ background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: 8, padding: 28, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 18 }}>
+          <style>{`
+            @media(max-width:640px){
+              .register-form{grid-template-columns:1fr!important;}
+              .register-two-col{grid-column:1 / -1!important;}
+            }
+          `}</style>
           <div style={{ gridColumn: '1 / -1' }}>
             <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 22, fontWeight: 700, marginBottom: 6 }}>Créer un compte</h1>
             <p style={{ color: 'var(--text2)', fontSize: 13 }}>Tes informations seront utilisées pour préparer tes futures commandes.</p>
@@ -41,12 +52,12 @@ export default async function InscriptionPage({
             <input name="fullname" required autoComplete="name" style={{ background: 'var(--bg)', border: '1px solid var(--border2)', borderRadius: 4, padding: '12px 14px', color: 'var(--text)', outline: 'none' }} />
           </label>
 
-          <label style={{ display: 'flex', flexDirection: 'column', gap: 8, fontSize: 12, color: 'var(--text2)', fontWeight: 600 }}>
+          <label className="register-two-col" style={{ display: 'flex', flexDirection: 'column', gap: 8, fontSize: 12, color: 'var(--text2)', fontWeight: 600 }}>
             Téléphone
             <input name="phone" required autoComplete="tel" style={{ background: 'var(--bg)', border: '1px solid var(--border2)', borderRadius: 4, padding: '12px 14px', color: 'var(--text)', outline: 'none' }} />
           </label>
 
-          <label style={{ display: 'flex', flexDirection: 'column', gap: 8, fontSize: 12, color: 'var(--text2)', fontWeight: 600 }}>
+          <label className="register-two-col" style={{ display: 'flex', flexDirection: 'column', gap: 8, fontSize: 12, color: 'var(--text2)', fontWeight: 600 }}>
             Ville / commune
             <input name="city" autoComplete="address-level2" style={{ background: 'var(--bg)', border: '1px solid var(--border2)', borderRadius: 4, padding: '12px 14px', color: 'var(--text)', outline: 'none' }} />
           </label>
@@ -66,9 +77,7 @@ export default async function InscriptionPage({
             <input name="password" type="password" required autoComplete="new-password" minLength={8} style={{ background: 'var(--bg)', border: '1px solid var(--border2)', borderRadius: 4, padding: '12px 14px', color: 'var(--text)', outline: 'none' }} />
           </label>
 
-          <button type="submit" style={{ gridColumn: '1 / -1', background: 'var(--btn)', color: 'var(--btn-t)', borderRadius: 4, padding: '13px 16px', fontFamily: 'var(--font-display)', fontSize: 12, fontWeight: 700, letterSpacing: '.08em', textTransform: 'uppercase' }}>
-            Créer le compte
-          </button>
+          <AuthSubmitButton idleLabel="Créer le compte" pendingLabel="Création..." style={{ gridColumn: '1 / -1', background: 'var(--btn)', color: 'var(--btn-t)', borderRadius: 4, padding: '13px 16px', fontFamily: 'var(--font-display)', fontSize: 12, fontWeight: 700, letterSpacing: '.08em', textTransform: 'uppercase' }} />
         </form>
 
         <p style={{ textAlign: 'center', marginTop: 18, color: 'var(--text2)', fontSize: 13 }}>

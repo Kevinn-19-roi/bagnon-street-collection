@@ -3,6 +3,7 @@ import AdminShell from '@/components/admin/layout/AdminShell'
 import PageHeader from '@/components/admin/ui/PageHeader'
 import Badge from '@/components/admin/ui/Badge'
 import ConfirmSubmitForm from '@/components/admin/forms/ConfirmSubmitForm'
+import ResponsiveTable from '@/components/admin/ui/ResponsiveTable'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
@@ -119,9 +120,15 @@ export default async function AdminsPage() {
         subtitle={`${admins.length} administrateur${admins.length > 1 ? 's' : ''}`}
       />
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 360px', gap: 16, alignItems: 'start' }}>
+      <style>{`
+        @media(max-width:980px){
+          .admin-split-grid{grid-template-columns:1fr!important;}
+        }
+      `}</style>
+
+      <div className="admin-split-grid" style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) 360px', gap: 16, alignItems: 'start' }}>
         {/* Admins list */}
-        <div style={{ background: '#17171B', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 6, overflow: 'hidden' }}>
+        <ResponsiveTable minWidth={900}>
           <table style={{ width: '100%', borderCollapse: 'collapse' }}>
             <thead>
               <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
@@ -155,7 +162,7 @@ export default async function AdminsPage() {
                   </td>
                   <td style={{ padding: '12px 16px' }}>
                     {admin.id !== user?.id && (
-                      <div style={{ display: 'flex', gap: 6 }}>
+                      <div style={{ display: 'flex', gap: 6, whiteSpace: 'nowrap' }}>
                         {/* Promote/demote */}
                         <form action={promoteAdmin}>
                           <input type="hidden" name="target_id" value={admin.id} />
@@ -178,7 +185,7 @@ export default async function AdminsPage() {
               ))}
             </tbody>
           </table>
-        </div>
+        </ResponsiveTable>
 
         {/* Add admin form */}
         <div style={{ background: '#17171B', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 6, padding: 20 }}>

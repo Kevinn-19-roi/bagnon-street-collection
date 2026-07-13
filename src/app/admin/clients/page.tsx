@@ -1,5 +1,6 @@
 import AdminShell from '@/components/admin/layout/AdminShell'
 import PageHeader from '@/components/admin/ui/PageHeader'
+import ResponsiveTable from '@/components/admin/ui/ResponsiveTable'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { formatDate } from '@/lib/helpers/slugify'
 
@@ -42,13 +43,13 @@ export default async function ClientsPage({
 
       {/* Search */}
       <form style={{ marginBottom: 20 }}>
-        <div style={{ display: 'flex', gap: 10, maxWidth: 500 }}>
+        <div style={{ display: 'flex', gap: 10, maxWidth: 500, flexWrap: 'wrap' }}>
           <input
             name="search"
             defaultValue={search}
             placeholder="Rechercher un client..."
             style={{
-              flex: 1, background: '#17171B',
+              flex: '1 1 240px', background: '#17171B',
               border: '1px solid rgba(255,255,255,0.1)',
               borderRadius: 3, padding: '10px 14px',
               color: '#F2F1ED', fontSize: 13, outline: 'none',
@@ -65,7 +66,7 @@ export default async function ClientsPage({
         </div>
       </form>
 
-      <div style={{ background: '#17171B', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 6, overflow: 'hidden' }}>
+      <ResponsiveTable minWidth={820}>
         <table style={{ width: '100%', borderCollapse: 'collapse' }}>
           <thead>
             <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
@@ -113,7 +114,7 @@ export default async function ClientsPage({
             ))}
           </tbody>
         </table>
-      </div>
+      </ResponsiveTable>
 
       {total_pages > 1 && (
         <div style={{ display: 'flex', justifyContent: 'center', gap: 8, marginTop: 20 }}>

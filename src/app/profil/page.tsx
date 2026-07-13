@@ -38,12 +38,17 @@ export default async function ProfilPage() {
     <main style={{ minHeight: '100vh', background: 'var(--bg)', color: 'var(--text)', padding: '32px var(--px)' }}>
       <section style={{ maxWidth: 820, margin: '0 auto' }}>
         <header style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, marginBottom: 28 }}>
-          <Link href="/" style={{ display: 'inline-flex', alignItems: 'center', gap: 10, color: 'var(--text)' }}>
-            <span style={{ width: 42, height: 42, borderRadius: '50%', overflow: 'hidden', border: '1px solid var(--border2)', position: 'relative', display: 'inline-block' }}>
-              <Image src="/brand/logo-round.jpg" alt="BSC" fill style={{ objectFit: 'cover' }} sizes="42px" />
-            </span>
-            <span style={{ fontFamily: 'var(--font-display)', fontSize: 16, fontWeight: 700 }}>Bagnon Street</span>
-          </Link>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+            <Link href="/" style={{ display: 'inline-flex', alignItems: 'center', gap: 10, color: 'var(--text)' }}>
+              <span style={{ width: 42, height: 42, borderRadius: '50%', overflow: 'hidden', border: '1px solid var(--border2)', position: 'relative', display: 'inline-block' }}>
+                <Image src="/brand/logo-round.jpg" alt="BSC" fill style={{ objectFit: 'cover' }} sizes="42px" />
+              </span>
+              <span style={{ fontFamily: 'var(--font-display)', fontSize: 16, fontWeight: 700 }}>Bagnon Street</span>
+            </Link>
+            <Link href="/" style={{ color: 'var(--text2)', fontFamily: 'var(--font-display)', fontSize: 11, fontWeight: 700, letterSpacing: '.04em', textTransform: 'uppercase' }}>
+              ← Retour à la boutique
+            </Link>
+          </div>
 
           <form action={logoutUser}>
             <button type="submit" style={{ color: 'var(--red)', fontFamily: 'var(--font-display)', fontSize: 12, fontWeight: 700, letterSpacing: '.06em', textTransform: 'uppercase' }}>

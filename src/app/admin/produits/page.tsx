@@ -1,7 +1,10 @@
 import AdminShell from '@/components/admin/layout/AdminShell'
 import PageHeader from '@/components/admin/ui/PageHeader'
 import Badge from '@/components/admin/ui/Badge'
+import ResponsiveTable from '@/components/admin/ui/ResponsiveTable'
+import ConfirmSubmitForm from '@/components/admin/forms/ConfirmSubmitForm'
 import { getProducts } from '@/lib/database/products'
+import { deleteProduct } from '@/lib/actions/products'
 import { formatPrice, formatDate } from '@/lib/helpers/slugify'
 import Link from 'next/link'
 import Image from 'next/image'
@@ -46,13 +49,13 @@ export default async function ProduitsPage({
 
       {/* Search */}
       <form style={{ marginBottom: 20 }}>
-        <div style={{ display: 'flex', gap: 10, maxWidth: 500 }}>
+        <div style={{ display: 'flex', gap: 10, maxWidth: 500, flexWrap: 'wrap' }}>
           <input
             name="search"
             defaultValue={search}
             placeholder="Rechercher un produit..."
             style={{
-              flex: 1, background: '#17171B', border: '1px solid rgba(255,255,255,0.1)',
+              flex: '1 1 240px', background: '#17171B', border: '1px solid rgba(255,255,255,0.1)',
               borderRadius: 3, padding: '10px 14px', color: '#F2F1ED',
               fontSize: 13, outline: 'none', fontFamily: 'var(--font-display)',
             }}
@@ -68,7 +71,7 @@ export default async function ProduitsPage({
       </form>
 
       {/* Table */}
-      <div style={{ background: '#17171B', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 6, overflow: 'hidden' }}>
+      <ResponsiveTable minWidth={980}>
         <table style={{ width: '100%', borderCollapse: 'collapse' }}>
           <thead>
             <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
@@ -139,7 +142,7 @@ export default async function ProduitsPage({
                 </td>
                 {/* Actions */}
                 <td style={{ padding: '12px 16px' }}>
-                  <div style={{ display: 'flex', gap: 8 }}>
+                  <div style={{ display: 'flex', gap: 8, alignItems: 'center', whiteSpace: 'nowrap' }}>
                     <Link href={`/admin/produits/${p.id}/modifier`} style={{
                       fontFamily: 'var(--font-display)', fontSize: 10, fontWeight: 700,
                       letterSpacing: '.08em', textTransform: 'uppercase',
@@ -149,13 +152,24 @@ export default async function ProduitsPage({
                     }}>
                       Modifier
                     </Link>
+                    <ConfirmSubmitForm action={deleteProduct.bind(null, p.id)} message={`Supprimer "${p.name}" ?`}>
+                      <button type="submit" style={{
+                        fontFamily: 'var(--font-display)', fontSize: 10, fontWeight: 700,
+                        letterSpacing: '.08em', textTransform: 'uppercase',
+                        background: 'rgba(122,22,32,0.15)', color: '#EF5350',
+                        border: '1px solid rgba(239,83,80,0.3)', borderRadius: 3,
+                        padding: '5px 10px', cursor: 'pointer',
+                      }}>
+                        Supprimer
+                      </button>
+                    </ConfirmSubmitForm>
                   </div>
                 </td>
               </tr>
             ))}
           </tbody>
         </table>
-      </div>
+      </ResponsiveTable>
 
       {/* Pagination */}
       {total_pages > 1 && (
