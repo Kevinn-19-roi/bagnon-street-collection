@@ -77,10 +77,26 @@ async function getCurrentUser() {
   }
 }
 
+async function getSiteSettings() {
+  try {
+    const adminClient = createAdminClient()
+    const { data } = await adminClient
+      .from('site_settings')
+      .select('whatsapp, facebook, instagram, tiktok, address, email, phone')
+      .limit(1)
+      .maybeSingle()
+
+    return data || null
+  } catch {
+    return null
+  }
+}
+
 export default async function HomePage() {
-  const [products, currentUser] = await Promise.all([
+  const [products, currentUser, siteSettings] = await Promise.all([
     getHomeProducts(),
     getCurrentUser(),
+    getSiteSettings(),
   ])
 
   return (
@@ -90,6 +106,7 @@ export default async function HomePage() {
       bestsellers={products.bestsellers}
       allProducts={products.allProducts}
       currentUser={currentUser}
+      siteSettings={siteSettings}
     />
   )
 }
