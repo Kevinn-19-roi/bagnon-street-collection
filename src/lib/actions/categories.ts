@@ -2,10 +2,13 @@
 
 import { redirect } from 'next/navigation'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { requireAdmin } from '@/lib/actions/auth'
 import { revalidatePath } from 'next/cache'
 import { generateSlug } from '@/lib/helpers/slugify'
 
 export async function createCategory(formData: FormData): Promise<void> {
+  await requireAdmin()
+
   const adminClient = createAdminClient()
   const name = formData.get('name') as string
   const slug = formData.get('slug') as string || generateSlug(name)
@@ -21,6 +24,8 @@ export async function createCategory(formData: FormData): Promise<void> {
 }
 
 export async function updateCategory(id: string, formData: FormData): Promise<void> {
+  await requireAdmin()
+
   const adminClient = createAdminClient()
   const name = formData.get('name') as string
   const slug = formData.get('slug') as string
@@ -36,6 +41,8 @@ export async function updateCategory(id: string, formData: FormData): Promise<vo
 }
 
 export async function deleteCategory(id: string): Promise<void> {
+  await requireAdmin()
+
   const adminClient = createAdminClient()
   const { error } = await adminClient.from('categories').delete().eq('id', id)
   if (error) throw new Error(error.message)
@@ -45,6 +52,8 @@ export async function deleteCategory(id: string): Promise<void> {
 }
 
 export async function createCollection(formData: FormData): Promise<void> {
+  await requireAdmin()
+
   const adminClient = createAdminClient()
   const name = formData.get('name') as string
   const slug = formData.get('slug') as string || generateSlug(name)
@@ -59,6 +68,8 @@ export async function createCollection(formData: FormData): Promise<void> {
 }
 
 export async function updateCollection(id: string, formData: FormData): Promise<void> {
+  await requireAdmin()
+
   const adminClient = createAdminClient()
   const name = formData.get('name') as string
   const slug = formData.get('slug') as string
@@ -73,6 +84,8 @@ export async function updateCollection(id: string, formData: FormData): Promise<
 }
 
 export async function deleteCollection(id: string): Promise<void> {
+  await requireAdmin()
+
   const adminClient = createAdminClient()
   const { error } = await adminClient.from('collections').delete().eq('id', id)
   if (error) throw new Error(error.message)
