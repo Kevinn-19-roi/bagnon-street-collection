@@ -32,32 +32,32 @@ export async function middleware(request: NextRequest) {
 
   const { data: { user } } = await supabase.auth.getUser()
 
-  if (!user && !isAdminLogin) {
+  if (!user) {
+    if (isAdminLogin) return response
+
     const loginUrl = new URL(ADMIN_LOGIN, request.url)
     loginUrl.searchParams.set('redirect', pathname)
     return NextResponse.redirect(loginUrl)
   }
 
-  if (user && isAdminLogin) {
-    return NextResponse.redirect(new URL('/admin/dashboard', request.url))
-  }
+  const { data: admin } = await supabase
+    .from('admins')
+    .select('id, role')
+    .eq('id', user.id)
+    .maybeSingle()
 
-  if (user && !isAdminLogin) {
-    const { data: admin } = await supabase
-      .from('admins')
-      .select('id, role')
-      .eq('id', user.id)
-      .single()
-
-    if (!admin) {
-      await supabase.auth.signOut()
-      return NextResponse.redirect(new URL(ADMIN_LOGIN, request.url))
-    }
+  if (admin) {
+    if (isAdminLogin) return NextResponse.redirect(new URL('/admin/dashboard', request.url))
 
     response.headers.set('x-admin-role', admin.role)
+    return response
   }
 
-  return response
+  if (isAdminLogin) {
+    return NextResponse.redirect(new URL('/', request.url))
+  }
+
+  return NextResponse.redirect(new URL('/', request.url))
 }
 
 export const config = {
