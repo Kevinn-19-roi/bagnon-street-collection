@@ -43,11 +43,35 @@ async function getCurrentUser() {
     const adminClient = createAdminClient()
     const { data: admin } = await adminClient
       .from('admins')
-      .select('id, role, fullname')
+      .select('id, role, fullname, email')
       .eq('id', user.id)
-      .single()
+      .maybeSingle()
 
-    return admin || null
+    const { data: customer } = user.email
+      ? await adminClient
+        .from('customers')
+        .select('id, fullname, phone, email, address, city, country')
+        .eq('email', user.email)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle()
+      : { data: null }
+
+    const fullname = admin?.fullname
+      || customer?.fullname
+      || user.user_metadata?.fullname
+      || user.user_metadata?.name
+      || user.email?.split('@')[0]
+      || 'Client'
+
+    return {
+      id: user.id,
+      email: user.email || admin?.email || customer?.email || null,
+      fullname,
+      role: admin?.role || 'client',
+      isAdmin: Boolean(admin),
+      profile: customer || null,
+    }
   } catch {
     return null
   }
