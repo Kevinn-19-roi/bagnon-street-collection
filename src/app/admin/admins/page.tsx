@@ -2,6 +2,7 @@ export const dynamic = 'force-dynamic'
 import AdminShell from '@/components/admin/layout/AdminShell'
 import PageHeader from '@/components/admin/ui/PageHeader'
 import Badge from '@/components/admin/ui/Badge'
+import ConfirmSubmitForm from '@/components/admin/forms/ConfirmSubmitForm'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
@@ -164,12 +165,12 @@ export default async function AdminsPage() {
                           </button>
                         </form>
                         {/* Remove */}
-                        <form action={removeAdmin} onSubmit={e => { if (!confirm(`Supprimer ${admin.fullname} ?`)) e.preventDefault() }}>
+                        <ConfirmSubmitForm action={removeAdmin} message={`Supprimer ${admin.fullname} ?`}>
                           <input type="hidden" name="target_id" value={admin.id} />
                           <button type="submit" style={{ fontFamily: 'var(--font-display)', fontSize: 10, fontWeight: 700, letterSpacing: '.08em', textTransform: 'uppercase', background: 'rgba(122,22,32,0.15)', color: '#EF5350', border: '1px solid rgba(239,83,80,0.3)', borderRadius: 3, padding: '4px 10px', cursor: 'pointer' }}>
                             Retirer
                           </button>
-                        </form>
+                        </ConfirmSubmitForm>
                       </div>
                     )}
                   </td>
