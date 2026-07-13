@@ -2,9 +2,12 @@
 
 import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
+import { requireAdmin } from '@/lib/actions/auth'
 import { revalidatePath } from 'next/cache'
 
 export async function updateSettings(formData: FormData): Promise<void> {
+  await requireAdmin()
+
   const adminClient = createAdminClient()
   const supabase = await createClient()
 
@@ -63,6 +66,8 @@ export async function updateSettings(formData: FormData): Promise<void> {
 }
 
 export async function getSettings() {
+  await requireAdmin()
+
   const adminClient = createAdminClient()
   const { data } = await adminClient.from('site_settings').select('*').single()
   return data
