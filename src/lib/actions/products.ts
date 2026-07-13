@@ -3,12 +3,15 @@
 import { redirect } from 'next/navigation'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
+import { requireAdmin } from '@/lib/actions/auth'
 import { generateSlug, generateSKU } from '@/lib/helpers/slugify'
 import { revalidatePath } from 'next/cache'
 
 // ─── CREATE PRODUCT ──────────────────────────────────────────
 
 export async function createProduct(formData: FormData): Promise<void> {
+  await requireAdmin()
+
   const adminClient = createAdminClient()
   const supabase = await createClient()
 
@@ -80,6 +83,8 @@ export async function createProduct(formData: FormData): Promise<void> {
 // ─── UPDATE PRODUCT ──────────────────────────────────────────
 
 export async function updateProduct(id: string, formData: FormData): Promise<void> {
+  await requireAdmin()
+
   const adminClient = createAdminClient()
   const supabase = await createClient()
 
@@ -157,6 +162,8 @@ export async function updateProduct(id: string, formData: FormData): Promise<voi
 // ─── DELETE PRODUCT ──────────────────────────────────────────
 
 export async function deleteProduct(id: string): Promise<void> {
+  await requireAdmin()
+
   const adminClient = createAdminClient()
 
   const { error } = await adminClient
@@ -173,6 +180,8 @@ export async function deleteProduct(id: string): Promise<void> {
 // ─── DELETE PRODUCT IMAGE ────────────────────────────────────
 
 export async function deleteProductImage(imageId: string, productId: string): Promise<void> {
+  await requireAdmin()
+
   const adminClient = createAdminClient()
 
   await adminClient
