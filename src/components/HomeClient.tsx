@@ -3,7 +3,7 @@ import { useState, useEffect, useRef } from 'react'
 import Image from 'next/image'
 import { Product, CATEGORIES } from '@/lib/products'
 import { useCart } from '@/hooks/useCart'
-import { logoutAdmin } from '@/lib/actions/auth'
+import { logoutUser } from '@/lib/actions/auth'
 
 // ─── SVG ICONS ────────────────────────────────────
 const I = {
@@ -31,6 +31,23 @@ const I = {
 
 // ─── STYLES helpers ───────────────────────────────
 const px = 'var(--px)'
+
+type CurrentUser = {
+  id: string
+  email?: string | null
+  role: string
+  fullname?: string | null
+  isAdmin?: boolean
+  profile?: {
+    id: string
+    fullname: string
+    phone: string | null
+    email: string | null
+    address: string | null
+    city: string | null
+    country: string | null
+  } | null
+}
 
 // ─── PRODUCT CARD ─────────────────────────────────
 function ProductCard({ product }: { product: Product }) {
@@ -167,14 +184,16 @@ function CartDrawer() {
 }
 
 // ─── MOBILE MENU ──────────────────────────────────
-function MobileMenu({ open, onClose, currentUser }: { open: boolean; onClose: () => void; currentUser?: { id: string; role: string; fullname: string } | null }) {
+function MobileMenu({ open, onClose, currentUser }: { open: boolean; onClose: () => void; currentUser?: CurrentUser | null }) {
   if (!open) return null
   const links = [
     { label: 'Accueil', href: '/' },
     { label: 'Boutique', href: '#collection' },
     ...(currentUser
-      ? [{ label: 'BSC Admin', href: '/admin/dashboard' }]
-      : [{ label: 'Connexion', href: '/admin/login' }]),
+      ? [currentUser.isAdmin
+        ? { label: 'BSC Admin', href: '/admin/dashboard' }
+        : { label: 'Profil', href: '/profil' }]
+      : [{ label: 'Connexion', href: '/connexion' }]),
   ]
   return (
     <>
@@ -191,7 +210,7 @@ function MobileMenu({ open, onClose, currentUser }: { open: boolean; onClose: ()
             </a>
           ))}
           {currentUser && (
-            <form action={logoutAdmin} style={{ borderBottom: '1px solid var(--border)' }}>
+            <form action={logoutUser} style={{ borderBottom: '1px solid var(--border)' }}>
               <button type="submit" onClick={onClose} style={{ width: '100%', fontFamily: 'var(--font-display)', fontSize: 16, fontWeight: 600, letterSpacing: '.03em', padding: '16px 0', color: 'var(--red)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', textAlign: 'left' }}>
                 Déconnexion {I.arrow}
               </button>
@@ -207,7 +226,7 @@ function MobileMenu({ open, onClose, currentUser }: { open: boolean; onClose: ()
 }
 
 // ─── NAVBAR ───────────────────────────────────────
-function Navbar({ onMenuOpen, currentUser }: { onMenuOpen: () => void; currentUser?: { id: string; role: string; fullname: string } | null }) {
+function Navbar({ onMenuOpen, currentUser }: { onMenuOpen: () => void; currentUser?: CurrentUser | null }) {
   const [theme, setTheme] = useState<'dark' | 'light'>('dark')
   const [scrolled, setScrolled] = useState(false)
   const count = useCart(s => s.count)
@@ -262,17 +281,23 @@ function Navbar({ onMenuOpen, currentUser }: { onMenuOpen: () => void; currentUs
           <a href="#collection" style={navLinkStyle}>Boutique</a>
           {currentUser ? (
             <>
-              <a href="/admin/dashboard" style={{ ...navLinkStyle, color: '#fff', background: 'var(--blue)', borderRadius: 3 }}>
-                BSC Admin
-              </a>
-              <form action={logoutAdmin}>
+              {currentUser.isAdmin ? (
+                <a href="/admin/dashboard" style={{ ...navLinkStyle, color: '#fff', background: 'var(--blue)', borderRadius: 3 }}>
+                  BSC Admin
+                </a>
+              ) : (
+                <a href="/profil" style={{ ...navLinkStyle, color: '#fff', background: 'var(--btn)', borderRadius: 3 }}>
+                  Profil
+                </a>
+              )}
+              <form action={logoutUser}>
                 <button type="submit" style={{ ...navLinkStyle, color: 'var(--red)' }}>
                   Déconnexion
                 </button>
               </form>
             </>
           ) : (
-            <a href="/admin/login" style={{ ...navLinkStyle, color: '#fff', background: 'var(--btn)', borderRadius: 3 }}>
+            <a href="/connexion" style={{ ...navLinkStyle, color: '#fff', background: 'var(--btn)', borderRadius: 3 }}>
               Connexion
             </a>
           )}
@@ -284,9 +309,9 @@ function Navbar({ onMenuOpen, currentUser }: { onMenuOpen: () => void; currentUs
             {theme === 'dark' ? I.moon : I.sun}
           </button>
           {/* Hide user+heart on small screens */}
-          <button style={{ width: 38, height: 38, borderRadius: '50%', display: 'none', alignItems: 'center', justifyContent: 'center', color: 'var(--text)' }} className="desktop-only">
+          <a href={currentUser ? (currentUser.isAdmin ? '/admin/dashboard' : '/profil') : '/connexion'} style={{ width: 38, height: 38, borderRadius: '50%', display: 'none', alignItems: 'center', justifyContent: 'center', color: 'var(--text)' }} className="desktop-only">
             {I.user}
-          </button>
+          </a>
           <button onClick={toggleCart} style={{ position: 'relative', width: 38, height: 38, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text)' }}>
             {I.bag}
             {count() > 0 && <span style={{ position: 'absolute', top: 0, right: 0, background: 'var(--red)', color: '#fff', fontFamily: 'var(--font-display)', fontSize: 9, fontWeight: 700, width: 16, height: 16, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '2px solid var(--bg)' }}>{count()}</span>}
@@ -306,7 +331,7 @@ interface Props {
   newItems: Product[]
   bestsellers: Product[]
   allProducts: Product[]
-  currentUser?: { id: string; role: string; fullname: string } | null
+  currentUser?: CurrentUser | null
 }
 
 export default function HomeClient({ featured, newItems, bestsellers, allProducts, currentUser }: Props) {
@@ -570,7 +595,7 @@ export default function HomeClient({ featured, newItems, bestsellers, allProduct
 
       {/* BOTTOM NAV — mobile only */}
       <div className="mobile-only" style={{ position: 'fixed', bottom: 0, left: 0, right: 0, background: 'var(--nav-bg)', backdropFilter: 'blur(20px)', borderTop: '1px solid var(--border)', zIndex: 200, display: 'flex', justifyContent: 'space-around', padding: '8px 0 max(8px, env(safe-area-inset-bottom))' }}>
-        {[{ icon: I.home, label: 'Accueil', href: '#' }, { icon: I.search, label: 'Recherche', href: '#' }, { icon: I.grid, label: 'Catalogue', href: '#collection' }, { icon: I.heart, label: 'Favoris', href: '#' }, { icon: I.user, label: 'Compte', href: '#' }].map(n => (
+        {[{ icon: I.home, label: 'Accueil', href: '#' }, { icon: I.search, label: 'Recherche', href: '#' }, { icon: I.grid, label: 'Catalogue', href: '#collection' }, { icon: I.heart, label: 'Favoris', href: '#' }, { icon: I.user, label: 'Compte', href: currentUser ? (currentUser.isAdmin ? '/admin/dashboard' : '/profil') : '/connexion' }].map(n => (
           <a key={n.label} href={n.href} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3, fontFamily: 'var(--font-display)', fontSize: 9, fontWeight: 600, color: 'var(--text2)', letterSpacing: '.03em', padding: '2px 10px', textTransform: 'uppercase' }}>
             {n.icon}{n.label}
           </a>
