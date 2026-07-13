@@ -3,6 +3,7 @@ import { useState, useEffect, useRef } from 'react'
 import Image from 'next/image'
 import { Product, CATEGORIES } from '@/lib/products'
 import { useCart } from '@/hooks/useCart'
+import { logoutAdmin } from '@/lib/actions/auth'
 
 // ─── SVG ICONS ────────────────────────────────────
 const I = {
@@ -166,9 +167,15 @@ function CartDrawer() {
 }
 
 // ─── MOBILE MENU ──────────────────────────────────
-function MobileMenu({ open, onClose }: { open: boolean; onClose: () => void }) {
+function MobileMenu({ open, onClose, currentUser }: { open: boolean; onClose: () => void; currentUser?: { id: string; role: string; fullname: string } | null }) {
   if (!open) return null
-  const links = ['Collection', 'Hoodies', 'T-shirts', 'Sacs', 'Nouveautés', 'À propos']
+  const links = [
+    { label: 'Accueil', href: '/' },
+    { label: 'Boutique', href: '#collection' },
+    ...(currentUser
+      ? [{ label: 'BSC Admin', href: '/admin/dashboard' }]
+      : [{ label: 'Connexion', href: '/admin/login' }]),
+  ]
   return (
     <>
       <div onClick={onClose} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,.6)', zIndex: 400, backdropFilter: 'blur(4px)' }} />
@@ -179,10 +186,17 @@ function MobileMenu({ open, onClose }: { open: boolean; onClose: () => void }) {
         </div>
         <nav style={{ flex: 1, padding: `24px var(--px)`, display: 'flex', flexDirection: 'column', gap: 0 }}>
           {links.map(l => (
-            <a key={l} href="#" onClick={onClose} style={{ fontFamily: 'var(--font-display)', fontSize: 16, fontWeight: 600, letterSpacing: '.03em', padding: '16px 0', borderBottom: '1px solid var(--border)', color: 'var(--text)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              {l} {I.arrow}
+            <a key={l.label} href={l.href} onClick={onClose} style={{ fontFamily: 'var(--font-display)', fontSize: 16, fontWeight: 600, letterSpacing: '.03em', padding: '16px 0', borderBottom: '1px solid var(--border)', color: 'var(--text)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              {l.label} {I.arrow}
             </a>
           ))}
+          {currentUser && (
+            <form action={logoutAdmin} style={{ borderBottom: '1px solid var(--border)' }}>
+              <button type="submit" onClick={onClose} style={{ width: '100%', fontFamily: 'var(--font-display)', fontSize: 16, fontWeight: 600, letterSpacing: '.03em', padding: '16px 0', color: 'var(--red)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', textAlign: 'left' }}>
+                Déconnexion {I.arrow}
+              </button>
+            </form>
+          )}
         </nav>
         <div style={{ padding: `20px var(--px)`, borderTop: '1px solid var(--border)' }}>
           <p style={{ fontSize: 12, color: 'var(--text2)', lineHeight: 1.7 }}>Bagnon Street Collection<br />Abidjan, Côte d&apos;Ivoire</p>
@@ -214,6 +228,17 @@ function Navbar({ onMenuOpen, currentUser }: { onMenuOpen: () => void; currentUs
     document.documentElement.setAttribute('data-theme', next)
   }
 
+  const navLinkStyle = {
+    fontFamily: 'var(--font-display)',
+    fontSize: 11,
+    fontWeight: 700,
+    letterSpacing: '.08em',
+    textTransform: 'uppercase' as const,
+    color: 'var(--text2)',
+    padding: '9px 10px',
+    whiteSpace: 'nowrap' as const,
+  }
+
   return (
     <nav style={{ position: 'sticky', top: 0, zIndex: 300, background: scrolled ? 'var(--nav-bg)' : 'var(--bg)', backdropFilter: scrolled ? 'blur(20px)' : 'none', borderBottom: '1px solid var(--border)', transition: 'background .4s' }}>
       <div style={{ maxWidth: 1440, margin: '0 auto', display: 'flex', alignItems: 'center', gap: 12, padding: `12px var(--px)` }}>
@@ -230,6 +255,27 @@ function Navbar({ onMenuOpen, currentUser }: { onMenuOpen: () => void; currentUs
           <span style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: 'var(--text3)' }}>{I.search}</span>
           <input type="text" placeholder="Rechercher…" style={{ width: '100%', background: 'var(--search)', border: '1px solid var(--border2)', borderRadius: 3, padding: '10px 42px 10px 36px', fontSize: 13, color: 'var(--text)', outline: 'none', fontFamily: 'var(--font-body)' }} />
           <button style={{ position: 'absolute', right: 4, top: '50%', transform: 'translateY(-50%)', background: 'var(--btn)', color: 'var(--btn-t)', borderRadius: 3, width: 32, height: 32, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{I.arrow}</button>
+        </div>
+
+        <div className="desktop-only" style={{ display: 'none', alignItems: 'center', gap: 2 }}>
+          <a href="/" style={navLinkStyle}>Accueil</a>
+          <a href="#collection" style={navLinkStyle}>Boutique</a>
+          {currentUser ? (
+            <>
+              <a href="/admin/dashboard" style={{ ...navLinkStyle, color: '#fff', background: 'var(--blue)', borderRadius: 3 }}>
+                BSC Admin
+              </a>
+              <form action={logoutAdmin}>
+                <button type="submit" style={{ ...navLinkStyle, color: 'var(--red)' }}>
+                  Déconnexion
+                </button>
+              </form>
+            </>
+          ) : (
+            <a href="/admin/login" style={{ ...navLinkStyle, color: '#fff', background: 'var(--btn)', borderRadius: 3 }}>
+              Connexion
+            </a>
+          )}
         </div>
 
         {/* Icons */}
@@ -306,7 +352,7 @@ export default function HomeClient({ featured, newItems, bestsellers, allProduct
       </div>
 
       <Navbar onMenuOpen={() => setMenuOpen(true)} currentUser={currentUser} />
-      <MobileMenu open={menuOpen} onClose={() => setMenuOpen(false)} />
+      <MobileMenu open={menuOpen} onClose={() => setMenuOpen(false)} currentUser={currentUser} />
 
       {/* CATEGORY PILLS */}
       <div className="no-scrollbar" style={{ display: 'flex', gap: 8, padding: `10px var(--px)`, overflowX: 'auto', borderBottom: '1px solid var(--border)', background: 'var(--bg)' }}>
