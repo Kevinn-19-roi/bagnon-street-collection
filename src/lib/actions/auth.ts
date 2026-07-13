@@ -31,6 +31,15 @@ async function clearSupabaseCookies() {
   })
 }
 
+async function performSignOut() {
+  const supabase = await createClient()
+  await supabase.auth.signOut()
+  await clearSupabaseCookies()
+  revalidatePath('/')
+  revalidatePath('/profil')
+  revalidatePath('/admin/dashboard')
+}
+
 async function getAdminByUserId(userId: string) {
   const adminClient = createAdminClient()
   const { data: admin } = await adminClient
@@ -79,8 +88,7 @@ export async function loginAdmin(formData: FormData): Promise<void> {
   const admin = await getAdminByUserId(data.user.id)
 
   if (!admin) {
-    await supabase.auth.signOut()
-    await clearSupabaseCookies()
+    await performSignOut()
     redirect(`/admin/login?error=${encodeURIComponent('Accès non autorisé')}`)
   }
 
@@ -173,17 +181,19 @@ export async function registerClient(formData: FormData): Promise<void> {
   redirect('/profil')
 }
 
+export async function signOutUser(): Promise<{ success: true }> {
+  await performSignOut()
+  return { success: true }
+}
+
 export async function logoutUser(): Promise<void> {
-  const supabase = await createClient()
-  await supabase.auth.signOut()
-  await clearSupabaseCookies()
-  revalidatePath('/')
-  revalidatePath('/profil')
+  await performSignOut()
   redirect('/')
 }
 
 export async function logoutAdmin(): Promise<void> {
-  await logoutUser()
+  await performSignOut()
+  redirect('/')
 }
 
 export async function getCurrentAdmin() {
