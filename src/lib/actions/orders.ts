@@ -1,6 +1,7 @@
 'use server'
 
 import { createAdminClient } from '@/lib/supabase/admin'
+import { requireAdmin } from '@/lib/actions/auth'
 import { revalidatePath } from 'next/cache'
 import { OrderStatus, PaymentStatus } from '@/types/database'
 
@@ -9,6 +10,8 @@ export async function updateOrderStatus(
   orderStatus: OrderStatus,
   paymentStatus?: PaymentStatus
 ): Promise<void> {
+  await requireAdmin()
+
   const adminClient = createAdminClient()
 
   const updateData: Record<string, string> = { order_status: orderStatus }
