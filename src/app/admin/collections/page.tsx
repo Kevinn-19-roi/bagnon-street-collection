@@ -1,6 +1,7 @@
 import AdminShell from '@/components/admin/layout/AdminShell'
 import PageHeader from '@/components/admin/ui/PageHeader'
 import Badge from '@/components/admin/ui/Badge'
+import ConfirmSubmitForm from '@/components/admin/forms/ConfirmSubmitForm'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { createCollection, deleteCollection } from '@/lib/actions/categories'
 import { formatDate } from '@/lib/helpers/slugify'
@@ -55,11 +56,11 @@ export default async function CollectionsPage() {
                   </td>
                   <td style={{ padding: '12px 16px', fontFamily: 'var(--font-display)', fontSize: 11, color: '#4D4D52' }}>{formatDate(col.created_at)}</td>
                   <td style={{ padding: '12px 16px' }}>
-                    <form action={deleteCollection.bind(null, col.id)} onSubmit={e => { if (!confirm(`Supprimer "${col.name}" ?`)) e.preventDefault() }}>
+                    <ConfirmSubmitForm action={deleteCollection.bind(null, col.id)} message={`Supprimer "${col.name}" ?`}>
                       <button type="submit" style={{ fontFamily: 'var(--font-display)', fontSize: 10, fontWeight: 700, letterSpacing: '.08em', textTransform: 'uppercase', background: 'rgba(122,22,32,0.15)', color: '#EF5350', border: '1px solid rgba(239,83,80,0.3)', borderRadius: 3, padding: '4px 10px', cursor: 'pointer' }}>
                         Supprimer
                       </button>
-                    </form>
+                    </ConfirmSubmitForm>
                   </td>
                 </tr>
               ))}
