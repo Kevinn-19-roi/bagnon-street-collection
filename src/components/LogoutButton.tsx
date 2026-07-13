@@ -2,12 +2,13 @@
 
 import { useRouter } from 'next/navigation'
 import { useTransition } from 'react'
+import type { CSSProperties, ReactNode } from 'react'
 import { signOutUser } from '@/lib/actions/auth'
 
 type LogoutButtonProps = {
-  children: React.ReactNode
+  children: ReactNode
   className?: string
-  style?: React.CSSProperties
+  style?: CSSProperties
   onBeforeLogout?: () => void
 }
 

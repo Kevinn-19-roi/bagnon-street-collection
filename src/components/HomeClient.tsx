@@ -3,7 +3,8 @@ import { useState, useEffect, useRef } from 'react'
 import Image from 'next/image'
 import { Product, CATEGORIES } from '@/lib/products'
 import { useCart } from '@/hooks/useCart'
-import { logoutUser } from '@/lib/actions/auth'
+import LogoutButton from '@/components/LogoutButton'
+import type { SiteSettings } from '@/types/database'
 
 // ─── SVG ICONS ────────────────────────────────────
 const I = {
@@ -47,6 +48,29 @@ type CurrentUser = {
     city: string | null
     country: string | null
   } | null
+}
+
+type PublicSiteSettings = Pick<SiteSettings, 'whatsapp' | 'facebook' | 'instagram' | 'tiktok' | 'address' | 'email' | 'phone'>
+
+type FooterLink = {
+  label: string
+  href: string
+  external?: boolean
+}
+
+function normalizeExternalUrl(value?: string | null) {
+  const trimmed = value?.trim()
+  if (!trimmed) return null
+  return /^https?:\/\//i.test(trimmed) ? trimmed : `https://${trimmed}`
+}
+
+function cleanPhone(value?: string | null) {
+  return value?.replace(/[\s+\-()]/g, '') || ''
+}
+
+function whatsappUrl(value?: string | null) {
+  const cleaned = cleanPhone(value)
+  return cleaned ? `https://wa.me/${cleaned}` : null
 }
 
 // ─── PRODUCT CARD ─────────────────────────────────
@@ -190,9 +214,10 @@ function MobileMenu({ open, onClose, currentUser }: { open: boolean; onClose: ()
     { label: 'Accueil', href: '/' },
     { label: 'Boutique', href: '#collection' },
     ...(currentUser
-      ? [currentUser.isAdmin
-        ? { label: 'BSC Admin', href: '/admin/dashboard' }
-        : { label: 'Profil', href: '/profil' }]
+      ? [
+        { label: 'Mon compte', href: '/profil' },
+        ...(currentUser.isAdmin ? [{ label: 'BSC Admin', href: '/admin/dashboard' }] : []),
+      ]
       : [{ label: 'Connexion', href: '/connexion' }]),
   ]
   return (
@@ -210,11 +235,11 @@ function MobileMenu({ open, onClose, currentUser }: { open: boolean; onClose: ()
             </a>
           ))}
           {currentUser && (
-            <form action={logoutUser} style={{ borderBottom: '1px solid var(--border)' }}>
-              <button type="submit" onClick={onClose} style={{ width: '100%', fontFamily: 'var(--font-display)', fontSize: 16, fontWeight: 600, letterSpacing: '.03em', padding: '16px 0', color: 'var(--red)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', textAlign: 'left' }}>
+            <div style={{ borderBottom: '1px solid var(--border)' }}>
+              <LogoutButton onBeforeLogout={onClose} style={{ width: '100%', fontFamily: 'var(--font-display)', fontSize: 16, fontWeight: 600, letterSpacing: '.03em', padding: '16px 0', color: 'var(--red)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', textAlign: 'left' }}>
                 Déconnexion {I.arrow}
-              </button>
-            </form>
+              </LogoutButton>
+            </div>
           )}
         </nav>
         <div style={{ padding: `20px var(--px)`, borderTop: '1px solid var(--border)' }}>
@@ -281,20 +306,17 @@ function Navbar({ onMenuOpen, currentUser }: { onMenuOpen: () => void; currentUs
           <a href="#collection" style={navLinkStyle}>Boutique</a>
           {currentUser ? (
             <>
-              {currentUser.isAdmin ? (
+              <a href="/profil" style={{ ...navLinkStyle, color: '#fff', background: 'var(--btn)', borderRadius: 3 }}>
+                Mon compte
+              </a>
+              {currentUser.isAdmin && (
                 <a href="/admin/dashboard" style={{ ...navLinkStyle, color: '#fff', background: 'var(--blue)', borderRadius: 3 }}>
                   BSC Admin
                 </a>
-              ) : (
-                <a href="/profil" style={{ ...navLinkStyle, color: '#fff', background: 'var(--btn)', borderRadius: 3 }}>
-                  Profil
-                </a>
               )}
-              <form action={logoutUser}>
-                <button type="submit" style={{ ...navLinkStyle, color: 'var(--red)' }}>
-                  Déconnexion
-                </button>
-              </form>
+              <LogoutButton style={{ ...navLinkStyle, color: 'var(--red)' }}>
+                Déconnexion
+              </LogoutButton>
             </>
           ) : (
             <a href="/connexion" style={{ ...navLinkStyle, color: '#fff', background: 'var(--btn)', borderRadius: 3 }}>
@@ -309,7 +331,7 @@ function Navbar({ onMenuOpen, currentUser }: { onMenuOpen: () => void; currentUs
             {theme === 'dark' ? I.moon : I.sun}
           </button>
           {/* Hide user+heart on small screens */}
-          <a href={currentUser ? (currentUser.isAdmin ? '/admin/dashboard' : '/profil') : '/connexion'} style={{ width: 38, height: 38, borderRadius: '50%', display: 'none', alignItems: 'center', justifyContent: 'center', color: 'var(--text)' }} className="desktop-only">
+          <a href={currentUser ? '/profil' : '/connexion'} style={{ width: 38, height: 38, borderRadius: '50%', display: 'none', alignItems: 'center', justifyContent: 'center', color: 'var(--text)' }} className="desktop-only">
             {I.user}
           </a>
           <button onClick={toggleCart} style={{ position: 'relative', width: 38, height: 38, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text)' }}>
@@ -332,13 +354,53 @@ interface Props {
   bestsellers: Product[]
   allProducts: Product[]
   currentUser?: CurrentUser | null
+  siteSettings?: PublicSiteSettings | null
 }
 
-export default function HomeClient({ featured, newItems, bestsellers, allProducts, currentUser }: Props) {
+export default function HomeClient({ featured, newItems, bestsellers, allProducts, currentUser, siteSettings }: Props) {
   const [activeCat, setActiveCat] = useState('all')
   const [countdown, setCountdown] = useState('07:23:59')
   const [nlSuccess, setNlSuccess] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
+
+  const socialLinks: FooterLink[] = [
+    { label: 'Instagram', href: normalizeExternalUrl(siteSettings?.instagram) || '', external: true },
+    { label: 'TikTok', href: normalizeExternalUrl(siteSettings?.tiktok) || '', external: true },
+    { label: 'Facebook', href: normalizeExternalUrl(siteSettings?.facebook) || '', external: true },
+    { label: 'WhatsApp', href: whatsappUrl(siteSettings?.whatsapp) || '', external: true },
+  ].filter(link => link.href)
+
+  const contactLinks: FooterLink[] = [
+    ...(siteSettings?.phone?.trim()
+      ? [{ label: siteSettings.phone.trim(), href: `tel:${cleanPhone(siteSettings.phone)}` }]
+      : []),
+    ...(siteSettings?.email?.trim()
+      ? [{ label: siteSettings.email.trim(), href: `mailto:${siteSettings.email.trim()}` }]
+      : []),
+  ]
+
+  const footerColumns = [
+    {
+      title: 'Collection',
+      links: [
+        { label: 'Tous les produits', href: '#collection' },
+        { label: 'Hoodies', href: '#collection' },
+        { label: 'T-shirts', href: '#collection' },
+        { label: 'Sacs', href: '#collection' },
+        { label: 'Joggers', href: '#collection' },
+      ],
+    },
+    { title: 'Service Client', links: contactLinks },
+    { title: 'Entreprise', links: socialLinks },
+    {
+      title: 'Légal',
+      links: [
+        { label: 'Conditions', href: '#' },
+        { label: 'Confidentialité', href: '#' },
+        { label: 'Cookies', href: '#' },
+      ],
+    },
+  ].filter(col => col.links.length)
 
   useEffect(() => {
     let end = parseInt(localStorage.getItem('bsc-end') || '0')
@@ -574,16 +636,17 @@ export default function HomeClient({ featured, newItems, bestsellers, allProduct
             </div>
             <p style={{ fontSize: 13, color: 'var(--text2)', lineHeight: 1.8, maxWidth: 260, marginBottom: 20 }}>Une marque née à Abidjan. Portée partout où l&apos;identité compte.</p>
           </div>
-          {[
-            { title: 'Collection', links: ['Tous les produits', 'Hoodies', 'T-shirts', 'Sacs', 'Joggers'] },
-            { title: 'Service Client', links: ["Centre d'aide", 'Suivi commande', 'Retours', 'Livraison', 'Contact'] },
-            { title: 'Entreprise', links: ['À propos', 'Instagram', 'TikTok', 'WhatsApp'] },
-            { title: 'Légal', links: ['Conditions', 'Confidentialité', 'Cookies'] },
-          ].map(col => (
+          {footerColumns.map(col => (
             <div key={col.title}>
               <p style={{ fontFamily: 'var(--font-display)', fontSize: 10, fontWeight: 700, letterSpacing: '.2em', textTransform: 'uppercase', marginBottom: 14, color: 'var(--text2)' }}>{col.title}</p>
               <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: 10 }}>
-                {col.links.map(l => <li key={l}><a href="#" style={{ fontSize: 13, color: 'var(--text2)', transition: 'color .2s' }}>{l}</a></li>)}
+                {col.links.map(l => (
+                  <li key={l.label}>
+                    <a href={l.href} target={l.external ? '_blank' : undefined} rel={l.external ? 'noopener noreferrer' : undefined} style={{ fontSize: 13, color: 'var(--text2)', transition: 'color .2s' }}>
+                      {l.label}
+                    </a>
+                  </li>
+                ))}
               </ul>
             </div>
           ))}
@@ -595,7 +658,7 @@ export default function HomeClient({ featured, newItems, bestsellers, allProduct
 
       {/* BOTTOM NAV — mobile only */}
       <div className="mobile-only" style={{ position: 'fixed', bottom: 0, left: 0, right: 0, background: 'var(--nav-bg)', backdropFilter: 'blur(20px)', borderTop: '1px solid var(--border)', zIndex: 200, display: 'flex', justifyContent: 'space-around', padding: '8px 0 max(8px, env(safe-area-inset-bottom))' }}>
-        {[{ icon: I.home, label: 'Accueil', href: '#' }, { icon: I.search, label: 'Recherche', href: '#' }, { icon: I.grid, label: 'Catalogue', href: '#collection' }, { icon: I.heart, label: 'Favoris', href: '#' }, { icon: I.user, label: 'Compte', href: currentUser ? (currentUser.isAdmin ? '/admin/dashboard' : '/profil') : '/connexion' }].map(n => (
+        {[{ icon: I.home, label: 'Accueil', href: '#' }, { icon: I.search, label: 'Recherche', href: '#' }, { icon: I.grid, label: 'Catalogue', href: '#collection' }, { icon: I.heart, label: 'Favoris', href: '#' }, { icon: I.user, label: currentUser ? 'Mon compte' : 'Compte', href: currentUser ? '/profil' : '/connexion' }].map(n => (
           <a key={n.label} href={n.href} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3, fontFamily: 'var(--font-display)', fontSize: 9, fontWeight: 600, color: 'var(--text2)', letterSpacing: '.03em', padding: '2px 10px', textTransform: 'uppercase' }}>
             {n.icon}{n.label}
           </a>
