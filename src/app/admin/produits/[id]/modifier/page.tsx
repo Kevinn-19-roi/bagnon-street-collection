@@ -2,6 +2,7 @@ export const dynamic = 'force-dynamic'
 import AdminShell from '@/components/admin/layout/AdminShell'
 import PageHeader from '@/components/admin/ui/PageHeader'
 import ProductForm from '@/components/admin/forms/ProductForm'
+import ConfirmSubmitForm from '@/components/admin/forms/ConfirmSubmitForm'
 import { getAllCategoriesAdmin, getCollections } from '@/lib/database/categories'
 import { updateProduct, deleteProduct, deleteProductImage } from '@/lib/actions/products'
 import { createAdminClient } from '@/lib/supabase/admin'
@@ -45,11 +46,11 @@ export default async function ModifierProduitPage({
         title={`Modifier — ${product.name}`}
         subtitle={`SKU: ${product.sku}`}
         action={
-          <form action={deleteWithId} onSubmit={e => { if (!confirm('Supprimer ce produit ?')) e.preventDefault() }}>
+          <ConfirmSubmitForm action={deleteWithId} message="Supprimer ce produit ?">
             <Button type="submit" variant="danger" size="sm">
               Supprimer
             </Button>
-          </form>
+          </ConfirmSubmitForm>
         }
       />
 
