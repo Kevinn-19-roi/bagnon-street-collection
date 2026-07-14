@@ -1,5 +1,42 @@
 # Changelog Bagnon Street Collection
 
+## 2026-07-14 - Sprint 4.5 Performance et gestion admin
+
+- Developpements :
+  - Optimisation de l'accueil : une seule requete produits cachee remplace les requetes separees par section.
+  - Mise en cache courte des produits et des parametres publics avec invalidation apres modification admin.
+  - Recherche frontend agrandie au focus.
+  - Navigation categories mobile avec defilement horizontal tactile.
+  - Preparation de la banniere principale editable depuis `admin/parametres`.
+  - Ajout d'une migration non destructive pour les champs de banniere dans `site_settings`.
+- Bugs corriges :
+  - Creation produit et modification produit pouvaient rester bloquees car le formulaire client appelait une Server Action avec `redirect()` interne.
+  - Les images selectionnees etaient envoyees deux fois dans le `FormData`.
+  - Absence de message de confirmation visible apres creation/modification produit.
+- Fichiers modifies :
+  - `src/app/page.tsx`
+  - `src/components/HomeClient.tsx`
+  - `src/components/admin/forms/ProductForm.tsx`
+  - `src/lib/actions/products.ts`
+  - `src/lib/actions/settings.ts`
+  - `src/app/admin/produits/page.tsx`
+  - `src/app/admin/parametres/page.tsx`
+  - `src/types/database.ts`
+  - `supabase/migrations/005_home_hero_settings.sql`
+  - `ROADMAP.md`
+  - `CHANGELOG.md`
+- Commits importants :
+  - A publier apres validation finale.
+- Validations effectuees :
+  - Mesure avant optimisation sur production : accueil environ 4,9 s a 6,1 s depuis cette machine.
+  - TypeScript local : OK.
+  - ESLint local : OK.
+  - Build production local : OK.
+- Points restant a traiter :
+  - Appliquer la migration Supabase sur la base de production.
+  - Mesurer apres deploiement Vercel.
+  - Tester les formulaires admin et la banniere sur l'URL de production avec une session admin.
+
 ## 2026-07-14 - Sprint 4 Page Produit
 
 - Developpements :

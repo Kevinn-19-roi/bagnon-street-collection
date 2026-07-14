@@ -1,18 +1,21 @@
 'use client'
 import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { Category, Collection, Product } from '@/types/database'
 import { generateSlug, generateSKU } from '@/lib/helpers/slugify'
 import Button from '@/components/admin/ui/Button'
+import type { ProductActionResult } from '@/lib/actions/products'
 
 interface Props {
   categories: Category[]
   collections: Collection[]
   product?: Partial<Product>
-  onSubmit: (data: FormData) => Promise<void>
+  onSubmit: (data: FormData) => Promise<ProductActionResult>
   isEdit?: boolean
 }
 
 export default function ProductForm({ categories, collections, product, onSubmit, isEdit }: Props) {
+  const router = useRouter()
   const [name, setName] = useState(product?.name || '')
   const [slug, setSlug] = useState(product?.slug || '')
   const [sku, setSku] = useState(product?.sku || '')
@@ -30,6 +33,7 @@ export default function ProductForm({ categories, collections, product, onSubmit
   const [onSale, setOnSale] = useState(product?.on_sale || false)
   const [active, setActive] = useState(product?.active ?? true)
   const [loading, setLoading] = useState(false)
+  const [formMessage, setFormMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
   const [imageFiles, setImageFiles] = useState<File[]>([])
   const [imagePreviews, setImagePreviews] = useState<string[]>([])
 
@@ -54,14 +58,32 @@ export default function ProductForm({ categories, collections, product, onSubmit
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
     setLoading(true)
-    const formData = new FormData(e.currentTarget)
-    formData.set('featured', featured.toString())
-    formData.set('new_arrival', newArrival.toString())
-    formData.set('on_sale', onSale.toString())
-    formData.set('active', active.toString())
-    imageFiles.forEach(f => formData.append('images', f))
-    await onSubmit(formData)
-    setLoading(false)
+    setFormMessage(null)
+
+    try {
+      const formData = new FormData(e.currentTarget)
+      formData.set('featured', featured.toString())
+      formData.set('new_arrival', newArrival.toString())
+      formData.set('on_sale', onSale.toString())
+      formData.set('active', active.toString())
+      formData.delete('images')
+      imageFiles.forEach(f => formData.append('images', f))
+
+      const result = await onSubmit(formData)
+      setFormMessage({ type: result.success ? 'success' : 'error', text: result.message })
+
+      if (result.success) {
+        router.refresh()
+        router.push(result.redirectTo || '/admin/produits')
+      }
+    } catch (error) {
+      setFormMessage({
+        type: 'error',
+        text: error instanceof Error ? error.message : "Une erreur est survenue pendant l'enregistrement.",
+      })
+    } finally {
+      setLoading(false)
+    }
   }
 
   const inputStyle = {
@@ -200,7 +222,7 @@ export default function ProductForm({ categories, collections, product, onSubmit
             <p style={sectionTitle}>Images du produit</p>
             <div>
               <label style={{ display: 'block', border: '2px dashed rgba(255,255,255,0.1)', borderRadius: 6, padding: '32px', textAlign: 'center', cursor: 'pointer', transition: 'border-color .2s' }}>
-                <input type="file" name="images" accept="image/*" multiple onChange={handleImageChange} style={{ display: 'none' }} />
+                <input type="file" accept="image/*" multiple onChange={handleImageChange} style={{ display: 'none' }} />
                 <svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="currentColor" strokeWidth="1.4" style={{ margin: '0 auto 12px', color: '#4D4D52' }}>
                   <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>
                 </svg>
@@ -258,6 +280,23 @@ export default function ProductForm({ categories, collections, product, onSubmit
 
           {/* Submit */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            {formMessage && (
+              <div
+                role={formMessage.type === 'error' ? 'alert' : 'status'}
+                style={{
+                  background: formMessage.type === 'error' ? 'rgba(239,83,80,0.12)' : 'rgba(76,175,80,0.12)',
+                  border: `1px solid ${formMessage.type === 'error' ? 'rgba(239,83,80,0.32)' : 'rgba(76,175,80,0.32)'}`,
+                  color: formMessage.type === 'error' ? '#EF5350' : '#81C784',
+                  borderRadius: 3,
+                  padding: '10px 12px',
+                  fontFamily: 'var(--font-display)',
+                  fontSize: 11,
+                  lineHeight: 1.5,
+                }}
+              >
+                {formMessage.text}
+              </div>
+            )}
             <Button type="submit" disabled={loading} fullWidth>
               {loading ? 'Enregistrement...' : isEdit ? 'Mettre à jour' : 'Créer le produit'}
             </Button>

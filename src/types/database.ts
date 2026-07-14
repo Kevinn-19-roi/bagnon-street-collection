@@ -159,6 +159,13 @@ export interface SiteSettings {
   free_shipping_from: number
   logo_url: string | null
   favicon_url: string | null
+  hero_image_url: string | null
+  hero_eyebrow: string | null
+  hero_title: string | null
+  hero_title_accent: string | null
+  hero_description: string | null
+  hero_button_text: string | null
+  hero_button_link: string | null
   updated_at: string
 }
 

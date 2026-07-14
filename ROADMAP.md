@@ -8,6 +8,7 @@ Ce document sert de point de reprise entre les sprints. Il doit rester synchroni
 - Termine - Sprint 2 - Authentification
 - Termine - Sprint 3 - UX
 - Termine - Sprint 4 - Page Produit
+- En validation - Sprint 4.5 - Performance et gestion admin
 - En attente - Sprint 5 - Panier
 - En attente - Sprint 6 - Checkout
 - En attente - Sprint 7 - Paiement Wave
@@ -54,9 +55,18 @@ Ce document sert de point de reprise entre les sprints. Il doit rester synchroni
 - Problemes rencontres : pas de stock combine taille/couleur dans le schema actuel ; la page utilise donc le stock global et le stock par option separee sans migration destructive.
 - Prochaines etapes : attendre feu vert avant le Sprint 5 - Panier complet.
 
+## Sprint 4.5 - Performance et gestion admin
+
+- Objectif : optimiser l'accueil, finaliser la recherche/categories mobile, corriger la creation/modification produit et rendre la banniere d'accueil administrable.
+- Etat : en validation.
+- Date : 2026-07-14.
+- Fichiers principaux concernes : `src/app/page.tsx`, `src/components/HomeClient.tsx`, `src/components/admin/forms/ProductForm.tsx`, `src/lib/actions/products.ts`, `src/lib/actions/settings.ts`, `src/app/admin/parametres/page.tsx`, `supabase/migrations/005_home_hero_settings.sql`.
+- Problemes rencontres : les formulaires produit appelaient une Server Action qui redirigeait directement depuis un handler client ; les images etaient aussi presentes deux fois dans le `FormData`. La banniere necessite une migration Supabase non destructive avant edition en production.
+- Prochaines etapes : appliquer la migration Supabase, publier sur `main`, verifier Vercel READY puis valider les tests de creation/modification produit et banniere avant Sprint 5.
+
 ## Sprints suivants
 
-- Sprint 5 - Panier : panier persistant et ergonomique, en attente de validation du Sprint 4.
+- Sprint 5 - Panier : panier persistant et ergonomique, en attente de validation du Sprint 4.5.
 - Sprint 6 - Checkout : informations client, livraison, creation commande.
 - Sprint 7 - Paiement Wave : integration paiement.
 - Sprint 8 - Orange Money : integration paiement.

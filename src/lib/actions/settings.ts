@@ -3,7 +3,7 @@
 import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
 import { requireAdmin } from '@/lib/actions/auth'
-import { revalidatePath } from 'next/cache'
+import { revalidatePath, revalidateTag } from 'next/cache'
 
 export async function updateSettings(formData: FormData): Promise<void> {
   await requireAdmin()
@@ -20,6 +20,16 @@ export async function updateSettings(formData: FormData): Promise<void> {
   const phone = formData.get('phone') as string
   const shipping_cost = parseFloat(formData.get('shipping_cost') as string) || 2000
   const free_shipping_from = parseFloat(formData.get('free_shipping_from') as string) || 25000
+
+  const { data: existing } = await adminClient.from('site_settings').select('*').limit(1).single()
+  const supportsHeroSettings = Boolean(existing && 'hero_image_url' in existing)
+
+  const hero_eyebrow = formData.get('hero_eyebrow') as string
+  const hero_title = formData.get('hero_title') as string
+  const hero_title_accent = formData.get('hero_title_accent') as string
+  const hero_description = formData.get('hero_description') as string
+  const hero_button_text = formData.get('hero_button_text') as string
+  const hero_button_link = formData.get('hero_button_link') as string
 
   // Handle logo upload
   let logo_url: string | undefined
@@ -47,6 +57,18 @@ export async function updateSettings(formData: FormData): Promise<void> {
     }
   }
 
+  let hero_image_url: string | undefined
+  const heroFile = formData.get('hero_image') as File
+  if (supportsHeroSettings && heroFile && heroFile.size > 0) {
+    const ext = heroFile.name.split('.').pop()
+    const path = `home-hero-${Date.now()}.${ext}`
+    const { data: upload } = await supabase.storage.from('banners').upload(path, heroFile, { upsert: true })
+    if (upload) {
+      const { data: { publicUrl } } = supabase.storage.from('banners').getPublicUrl(upload.path)
+      hero_image_url = publicUrl
+    }
+  }
+
   const updateData: Record<string, unknown> = {
     whatsapp, facebook, instagram, tiktok,
     address, email, phone,
@@ -54,15 +76,29 @@ export async function updateSettings(formData: FormData): Promise<void> {
     updated_at: new Date().toISOString(),
   }
 
+  if (supportsHeroSettings) {
+    updateData.hero_eyebrow = hero_eyebrow
+    updateData.hero_title = hero_title
+    updateData.hero_title_accent = hero_title_accent
+    updateData.hero_description = hero_description
+    updateData.hero_button_text = hero_button_text
+    updateData.hero_button_link = hero_button_link
+  }
+
   if (logo_url) updateData.logo_url = logo_url
   if (favicon_url) updateData.favicon_url = favicon_url
+  if (hero_image_url) updateData.hero_image_url = hero_image_url
 
-  const { data: existing } = await adminClient.from('site_settings').select('id').limit(1).single()
   if (existing) {
-    await adminClient.from('site_settings').update(updateData).eq('id', existing.id)
+    const { error } = await adminClient.from('site_settings').update(updateData).eq('id', existing.id)
+    if (error) {
+      throw new Error(error.message)
+    }
   }
 
   revalidatePath('/admin/parametres')
+  revalidatePath('/')
+  revalidateTag('site-settings')
 }
 
 export async function getSettings() {

@@ -15,11 +15,16 @@ export const dynamic = 'force-dynamic'
 export default async function ProduitsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ page?: string; search?: string; category?: string }>
+  searchParams: Promise<{ page?: string; search?: string; category?: string; success?: string }>
 }) {
   const params = await searchParams
   const page = Number(params.page || 1)
   const search = params.search || ''
+  const successMessage = params.success === 'created'
+    ? 'Produit créé avec succès.'
+    : params.success === 'updated'
+      ? 'Produit modifié avec succès.'
+      : null
 
   const { data: products, total, total_pages } = await getProducts({
     search: search || undefined,
@@ -46,6 +51,24 @@ export default async function ProduitsPage({
           </Link>
         }
       />
+
+      {successMessage && (
+        <div
+          role="status"
+          style={{
+            background: 'rgba(76,175,80,0.12)',
+            border: '1px solid rgba(76,175,80,0.32)',
+            color: '#81C784',
+            borderRadius: 3,
+            padding: '10px 14px',
+            marginBottom: 16,
+            fontFamily: 'var(--font-display)',
+            fontSize: 12,
+          }}
+        >
+          {successMessage}
+        </div>
+      )}
 
       {/* Search */}
       <form style={{ marginBottom: 20 }}>

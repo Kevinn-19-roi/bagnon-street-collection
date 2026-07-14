@@ -1,18 +1,19 @@
 import HomeClient from '@/components/HomeClient'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
+import { unstable_cache } from 'next/cache'
 
 export const dynamic = 'force-dynamic'
 
-async function getHomeProducts() {
+const getHomeProducts = unstable_cache(async () => {
   const adminClient = createAdminClient()
 
-  const [featuredRes, newRes, bestsellersRes, allRes] = await Promise.all([
-    adminClient.from('products').select('*, images:product_images(image_url, display_order), category:categories(name, slug)').eq('active', true).eq('featured', true).order('created_at', { ascending: false }).limit(6),
-    adminClient.from('products').select('*, images:product_images(image_url, display_order), category:categories(name, slug)').eq('active', true).eq('new_arrival', true).order('created_at', { ascending: false }).limit(6),
-    adminClient.from('products').select('*, images:product_images(image_url, display_order), category:categories(name, slug)').eq('active', true).eq('on_sale', true).order('created_at', { ascending: false }).limit(6),
-    adminClient.from('products').select('*, images:product_images(image_url, display_order), category:categories(name, slug)').eq('active', true).order('created_at', { ascending: false }).limit(20),
-  ])
+  const { data } = await adminClient
+    .from('products')
+    .select('*, images:product_images(image_url, display_order), category:categories(name, slug)')
+    .eq('active', true)
+    .order('created_at', { ascending: false })
+    .limit(24)
 
   function normalize(products: any[]) {
     return (products || []).map(p => ({
@@ -26,13 +27,15 @@ async function getHomeProducts() {
     }))
   }
 
+  const products = normalize(data || [])
+
   return {
-    featured: normalize(featuredRes.data || []),
-    newItems: normalize(newRes.data || []),
-    bestsellers: normalize(bestsellersRes.data || []),
-    allProducts: normalize(allRes.data || []),
+    featured: products.filter(p => p.featured).slice(0, 6),
+    newItems: products.filter(p => p.new_arrival).slice(0, 6),
+    bestsellers: products.filter(p => p.on_sale).slice(0, 6),
+    allProducts: products.slice(0, 20),
   }
-}
+}, ['home-products'], { revalidate: 300, tags: ['home-products', 'site-products'] })
 
 async function getCurrentUser() {
   try {
@@ -77,12 +80,12 @@ async function getCurrentUser() {
   }
 }
 
-async function getSiteSettings() {
+const getSiteSettings = unstable_cache(async () => {
   try {
     const adminClient = createAdminClient()
     const { data } = await adminClient
       .from('site_settings')
-      .select('whatsapp, facebook, instagram, tiktok, address, email, phone')
+      .select('whatsapp, facebook, instagram, tiktok, address, email, phone, hero_image_url, hero_eyebrow, hero_title, hero_title_accent, hero_description, hero_button_text, hero_button_link')
       .limit(1)
       .maybeSingle()
 
@@ -90,7 +93,7 @@ async function getSiteSettings() {
   } catch {
     return null
   }
-}
+}, ['site-settings'], { revalidate: 300, tags: ['site-settings'] })
 
 export default async function HomePage() {
   const [products, currentUser, siteSettings] = await Promise.all([

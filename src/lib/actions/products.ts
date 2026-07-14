@@ -1,31 +1,42 @@
 'use server'
 
-import { redirect } from 'next/navigation'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
 import { requireAdmin } from '@/lib/actions/auth'
 import { generateSlug, generateSKU } from '@/lib/helpers/slugify'
-import { revalidatePath } from 'next/cache'
+import { revalidatePath, revalidateTag } from 'next/cache'
 
-// ─── CREATE PRODUCT ──────────────────────────────────────────
+export type ProductActionResult = {
+  success: boolean
+  message: string
+  redirectTo?: string
+}
 
-export async function createProduct(formData: FormData): Promise<void> {
+function refreshProductCaches(path?: string) {
+  revalidatePath('/admin/produits')
+  revalidatePath('/')
+  revalidateTag('home-products')
+  revalidateTag('site-products')
+  if (path) revalidatePath(path)
+}
+
+export async function createProduct(formData: FormData): Promise<ProductActionResult> {
   await requireAdmin()
 
   const adminClient = createAdminClient()
   const supabase = await createClient()
 
   const name = formData.get('name') as string
-  const slug = formData.get('slug') as string || generateSlug(name)
+  const slug = (formData.get('slug') as string) || generateSlug(name)
   const skuRaw = formData.get('sku') as string
   const sku = skuRaw?.trim() || generateSKU(name, 'BSC')
   const description = formData.get('description') as string
   const short_description = formData.get('short_description') as string
   const category_id = formData.get('category_id') as string
-  const collection_id = formData.get('collection_id') as string || null
+  const collection_id = (formData.get('collection_id') as string) || null
   const price = parseFloat(formData.get('price') as string)
   const old_price = formData.get('old_price') ? parseFloat(formData.get('old_price') as string) : null
-  const stock = parseInt(formData.get('stock') as string)
+  const stock = parseInt(formData.get('stock') as string, 10)
   const featured = formData.get('featured') === 'true'
   const new_arrival = formData.get('new_arrival') === 'true'
   const on_sale = formData.get('on_sale') === 'true'
@@ -34,25 +45,39 @@ export async function createProduct(formData: FormData): Promise<void> {
   const care_instructions = formData.get('care_instructions') as string
   const weight = formData.get('weight') ? parseFloat(formData.get('weight') as string) : null
 
-  // Insert product
   const { data: product, error } = await adminClient
     .from('products')
     .insert({
-      name, slug, sku, description, short_description,
-      category_id, collection_id, price, old_price,
-      stock, featured, new_arrival, on_sale, active,
-      material, care_instructions, weight,
+      name,
+      slug,
+      sku,
+      description,
+      short_description,
+      category_id,
+      collection_id,
+      price,
+      old_price,
+      stock,
+      featured,
+      new_arrival,
+      on_sale,
+      active,
+      material,
+      care_instructions,
+      weight,
     })
     .select()
     .single()
 
   if (error || !product) {
-    throw new Error(error?.message || 'Erreur création produit')
+    return {
+      success: false,
+      message: error?.message || 'Erreur lors de la creation du produit.',
+    }
   }
 
-  // Upload images
   const images = formData.getAll('images') as File[]
-  const validImages = images.filter(f => f && f.size > 0)
+  const validImages = images.filter(file => file && file.size > 0)
 
   for (let i = 0; i < validImages.length; i++) {
     const file = validImages[i]
@@ -63,7 +88,14 @@ export async function createProduct(formData: FormData): Promise<void> {
       .from('products')
       .upload(path, file, { cacheControl: '3600', upsert: false })
 
-    if (!uploadError && upload) {
+    if (uploadError) {
+      return {
+        success: false,
+        message: `Produit cree, mais une image n'a pas pu etre envoyee : ${uploadError.message}`,
+      }
+    }
+
+    if (upload) {
       const { data: { publicUrl } } = supabase.storage
         .from('products')
         .getPublicUrl(upload.path)
@@ -76,13 +108,16 @@ export async function createProduct(formData: FormData): Promise<void> {
     }
   }
 
-  revalidatePath('/admin/produits')
-  redirect('/admin/produits')
+  refreshProductCaches()
+
+  return {
+    success: true,
+    message: 'Produit cree avec succes.',
+    redirectTo: '/admin/produits?success=created',
+  }
 }
 
-// ─── UPDATE PRODUCT ──────────────────────────────────────────
-
-export async function updateProduct(id: string, formData: FormData): Promise<void> {
+export async function updateProduct(id: string, formData: FormData): Promise<ProductActionResult> {
   await requireAdmin()
 
   const adminClient = createAdminClient()
@@ -94,10 +129,10 @@ export async function updateProduct(id: string, formData: FormData): Promise<voi
   const description = formData.get('description') as string
   const short_description = formData.get('short_description') as string
   const category_id = formData.get('category_id') as string
-  const collection_id = formData.get('collection_id') as string || null
+  const collection_id = (formData.get('collection_id') as string) || null
   const price = parseFloat(formData.get('price') as string)
   const old_price = formData.get('old_price') ? parseFloat(formData.get('old_price') as string) : null
-  const stock = parseInt(formData.get('stock') as string)
+  const stock = parseInt(formData.get('stock') as string, 10)
   const featured = formData.get('featured') === 'true'
   const new_arrival = formData.get('new_arrival') === 'true'
   const on_sale = formData.get('on_sale') === 'true'
@@ -109,18 +144,35 @@ export async function updateProduct(id: string, formData: FormData): Promise<voi
   const { error } = await adminClient
     .from('products')
     .update({
-      name, slug, sku, description, short_description,
-      category_id, collection_id, price, old_price,
-      stock, featured, new_arrival, on_sale, active,
-      material, care_instructions, weight,
+      name,
+      slug,
+      sku,
+      description,
+      short_description,
+      category_id,
+      collection_id,
+      price,
+      old_price,
+      stock,
+      featured,
+      new_arrival,
+      on_sale,
+      active,
+      material,
+      care_instructions,
+      weight,
     })
     .eq('id', id)
 
-  if (error) throw new Error(error.message)
+  if (error) {
+    return {
+      success: false,
+      message: error.message,
+    }
+  }
 
-  // Upload new images if any
   const images = formData.getAll('images') as File[]
-  const validImages = images.filter(f => f && f.size > 0)
+  const validImages = images.filter(file => file && file.size > 0)
 
   for (let i = 0; i < validImages.length; i++) {
     const file = validImages[i]
@@ -131,12 +183,18 @@ export async function updateProduct(id: string, formData: FormData): Promise<voi
       .from('products')
       .upload(path, file, { cacheControl: '3600', upsert: false })
 
-    if (!uploadError && upload) {
+    if (uploadError) {
+      return {
+        success: false,
+        message: `Produit modifie, mais une image n'a pas pu etre envoyee : ${uploadError.message}`,
+      }
+    }
+
+    if (upload) {
       const { data: { publicUrl } } = supabase.storage
         .from('products')
         .getPublicUrl(upload.path)
 
-      // Get current max order
       const { data: existing } = await adminClient
         .from('product_images')
         .select('display_order')
@@ -154,12 +212,14 @@ export async function updateProduct(id: string, formData: FormData): Promise<voi
     }
   }
 
-  revalidatePath('/admin/produits')
-  revalidatePath(`/admin/produits/${id}/modifier`)
-  redirect('/admin/produits')
-}
+  refreshProductCaches(`/admin/produits/${id}/modifier`)
 
-// ─── DELETE PRODUCT ──────────────────────────────────────────
+  return {
+    success: true,
+    message: 'Produit modifie avec succes.',
+    redirectTo: '/admin/produits?success=updated',
+  }
+}
 
 export async function deleteProduct(id: string): Promise<void> {
   await requireAdmin()
@@ -173,11 +233,8 @@ export async function deleteProduct(id: string): Promise<void> {
 
   if (error) throw new Error(error.message)
 
-  revalidatePath('/admin/produits')
-  redirect('/admin/produits')
+  refreshProductCaches()
 }
-
-// ─── DELETE PRODUCT IMAGE ────────────────────────────────────
 
 export async function deleteProductImage(imageId: string, productId: string): Promise<void> {
   await requireAdmin()
@@ -190,4 +247,7 @@ export async function deleteProductImage(imageId: string, productId: string): Pr
     .eq('id', imageId)
 
   revalidatePath(`/admin/produits/${productId}/modifier`)
+  revalidatePath('/')
+  revalidateTag('home-products')
+  revalidateTag('site-products')
 }

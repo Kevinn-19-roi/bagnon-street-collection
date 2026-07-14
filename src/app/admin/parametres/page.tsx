@@ -7,6 +7,7 @@ export const dynamic = 'force-dynamic'
 
 export default async function ParametresPage() {
   const settings = await getSettings()
+  const heroSettingsReady = Boolean(settings && 'hero_image_url' in settings)
 
   const inputStyle = {
     width: '100%', background: '#0A0A0C',
@@ -110,6 +111,59 @@ export default async function ParametresPage() {
           </div>
 
           {/* Médias */}
+          {heroSettingsReady ? (
+            <div style={sectionStyle}>
+              <p style={sectionTitle}>Banniere principale</p>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+                <div>
+                  <label style={labelStyle}>Image principale</label>
+                  {settings?.hero_image_url && (
+                    <div style={{ marginBottom: 10 }}>
+                      <img src={settings.hero_image_url} alt="Banniere actuelle" style={{ width: '100%', maxHeight: 180, objectFit: 'cover', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 3 }} />
+                      <p style={{ fontSize: 10, color: '#4D4D52', marginTop: 4, fontFamily: 'var(--font-display)' }}>Image actuelle</p>
+                    </div>
+                  )}
+                  <input name="hero_image" type="file" accept="image/*" style={{ ...inputStyle, padding: '8px' }} />
+                </div>
+                <div>
+                  <label style={labelStyle}>Sous-titre court</label>
+                  <input name="hero_eyebrow" defaultValue={settings?.hero_eyebrow || ''} placeholder="Collection 2025 - Abidjan" style={inputStyle} />
+                </div>
+                <div className="settings-subgrid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
+                  <div>
+                    <label style={labelStyle}>Titre</label>
+                    <input name="hero_title" defaultValue={settings?.hero_title || ''} placeholder="Wear Your" style={inputStyle} />
+                  </div>
+                  <div>
+                    <label style={labelStyle}>Titre accent</label>
+                    <input name="hero_title_accent" defaultValue={settings?.hero_title_accent || ''} placeholder="Identity." style={inputStyle} />
+                  </div>
+                </div>
+                <div>
+                  <label style={labelStyle}>Texte descriptif</label>
+                  <textarea name="hero_description" defaultValue={settings?.hero_description || ''} rows={3} placeholder="Texte affiche sous le titre..." style={{ ...inputStyle, resize: 'vertical' }} />
+                </div>
+                <div className="settings-subgrid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
+                  <div>
+                    <label style={labelStyle}>Texte du bouton</label>
+                    <input name="hero_button_text" defaultValue={settings?.hero_button_text || ''} placeholder="Explorer la collection" style={inputStyle} />
+                  </div>
+                  <div>
+                    <label style={labelStyle}>Lien du bouton</label>
+                    <input name="hero_button_link" defaultValue={settings?.hero_button_link || ''} placeholder="#collection" style={inputStyle} />
+                  </div>
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div style={sectionStyle}>
+              <p style={sectionTitle}>Banniere principale</p>
+              <p style={{ fontSize: 12, color: '#94938E', lineHeight: 1.7, fontFamily: 'var(--font-display)' }}>
+                La migration `005_home_hero_settings.sql` doit etre appliquee dans Supabase pour activer cette gestion.
+              </p>
+            </div>
+          )}
+
           <div style={sectionStyle}>
             <p style={sectionTitle}>Logo & Favicon</p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>

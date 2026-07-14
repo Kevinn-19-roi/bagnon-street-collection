@@ -51,7 +51,23 @@ type CurrentUser = {
   } | null
 }
 
-type PublicSiteSettings = Pick<SiteSettings, 'whatsapp' | 'facebook' | 'instagram' | 'tiktok' | 'address' | 'email' | 'phone'>
+type PublicSiteSettings = Pick<
+  SiteSettings,
+  | 'whatsapp'
+  | 'facebook'
+  | 'instagram'
+  | 'tiktok'
+  | 'address'
+  | 'email'
+  | 'phone'
+  | 'hero_image_url'
+  | 'hero_eyebrow'
+  | 'hero_title'
+  | 'hero_title_accent'
+  | 'hero_description'
+  | 'hero_button_text'
+  | 'hero_button_link'
+>
 
 type FooterLink = {
   label: string
@@ -89,7 +105,7 @@ function ProductCard({ product }: { product: Product }) {
       onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-4px)'; e.currentTarget.style.borderColor = 'var(--border2)' }}
       onMouseLeave={e => { e.currentTarget.style.transform = 'none'; e.currentTarget.style.borderColor = 'var(--border)' }}>
       <div style={{ position: 'relative', aspectRatio: '4/5', overflow: 'hidden', background: 'var(--bg3)' }}>
-        <Link href={`/produit/${product.slug}`} aria-label={`Voir ${product.name}`} style={{ display: 'block', position: 'absolute', inset: 0 }}>
+        <Link href={`/produit/${product.slug}`} prefetch={false} aria-label={`Voir ${product.name}`} style={{ display: 'block', position: 'absolute', inset: 0 }}>
           {product.images[0]
             ? <Image src={product.images[0]} alt={product.name} fill style={{ objectFit: 'cover', transition: 'transform .6s' }} sizes="(max-width:640px) 44vw, (max-width:1024px) 30vw, 220px" />
             : <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'var(--font-display)', fontSize: 20, fontWeight: 700, color: 'rgba(128,128,128,.08)' }}>BSC</div>}
@@ -110,7 +126,7 @@ function ProductCard({ product }: { product: Product }) {
         <div style={{ display: 'flex', gap: 2, marginBottom: 6 }}>
           {[...Array(5)].map((_, i) => <div key={i} style={{ width: 8, height: 8, background: i < 4 ? '#C9A24B' : 'var(--border2)', clipPath: 'polygon(50% 0%,61% 35%,98% 35%,68% 57%,79% 91%,50% 70%,21% 91%,32% 57%,2% 35%,39% 35%)' }} />)}
         </div>
-        <Link href={`/produit/${product.slug}`} style={{ display: 'block' }}>
+        <Link href={`/produit/${product.slug}`} prefetch={false} style={{ display: 'block' }}>
           <h3 style={{ fontFamily: 'var(--font-display)', fontSize: 'clamp(12px,3vw,14px)', fontWeight: 700, marginBottom: 4, lineHeight: 1.3 }}>{product.name}</h3>
           <p style={{ fontSize: 11, color: 'var(--text2)', lineHeight: 1.5, marginBottom: 10, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{product.description}</p>
         </Link>
@@ -264,6 +280,7 @@ function MobileMenu({ open, onClose, currentUser }: { open: boolean; onClose: ()
 function Navbar({ onMenuOpen, currentUser }: { onMenuOpen: () => void; currentUser?: CurrentUser | null }) {
   const [theme, setTheme] = useState<'dark' | 'light'>('dark')
   const [scrolled, setScrolled] = useState(false)
+  const [searchFocused, setSearchFocused] = useState(false)
   const count = useCart(s => s.count)
   const toggleCart = useCart(s => s.toggleCart)
 
@@ -305,7 +322,7 @@ function Navbar({ onMenuOpen, currentUser }: { onMenuOpen: () => void; currentUs
         </a>
 
         {/* Search bar */}
-        <div style={{ flex: 1, maxWidth: 460, margin: '0 auto', position: 'relative' }}>
+        <div onFocus={() => setSearchFocused(true)} onBlur={() => setSearchFocused(false)} style={{ flex: searchFocused ? '1 1 620px' : '1 1 280px', maxWidth: searchFocused ? 620 : 460, margin: '0 auto', position: 'relative', transition: 'max-width .22s ease, flex-basis .22s ease' }}>
           <span style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: 'var(--text3)' }}>{I.search}</span>
           <input type="text" placeholder="Rechercher…" style={{ width: '100%', background: 'var(--search)', border: '1px solid var(--border2)', borderRadius: 3, padding: '10px 42px 10px 36px', fontSize: 13, color: 'var(--text)', outline: 'none', fontFamily: 'var(--font-body)' }} />
           <button style={{ position: 'absolute', right: 4, top: '50%', transform: 'translateY(-50%)', background: 'var(--btn)', color: 'var(--btn-t)', borderRadius: 3, width: 32, height: 32, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{I.arrow}</button>
@@ -372,6 +389,13 @@ export default function HomeClient({ featured, newItems, bestsellers, allProduct
   const [countdown, setCountdown] = useState('07:23:59')
   const [nlSuccess, setNlSuccess] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
+  const heroImage = siteSettings?.hero_image_url?.trim() || '/brand/hero-model.jpg'
+  const heroEyebrow = siteSettings?.hero_eyebrow?.trim() || 'Collection 2025 — Abidjan'
+  const heroTitle = siteSettings?.hero_title?.trim() || 'Wear Your'
+  const heroTitleAccent = siteSettings?.hero_title_accent?.trim() || 'Identity.'
+  const heroDescription = siteSettings?.hero_description?.trim() || 'Bagnon Street naît de la rue. Chaque pièce porte une intention. Chaque détail raconte une histoire.'
+  const heroButtonText = siteSettings?.hero_button_text?.trim() || 'Explorer la collection'
+  const heroButtonLink = siteSettings?.hero_button_link?.trim() || '#collection'
 
   const socialLinks: FooterLink[] = [
     { label: 'Instagram', href: normalizeExternalUrl(siteSettings?.instagram) || '', external: true },
@@ -452,9 +476,9 @@ export default function HomeClient({ featured, newItems, bestsellers, allProduct
       <MobileMenu open={menuOpen} onClose={() => setMenuOpen(false)} currentUser={currentUser} />
 
       {/* CATEGORY PILLS */}
-      <div className="no-scrollbar" style={{ display: 'flex', gap: 8, padding: `10px var(--px)`, overflowX: 'auto', borderBottom: '1px solid var(--border)', background: 'var(--bg)' }}>
+      <div className="no-scrollbar" style={{ display: 'flex', gap: 8, padding: `10px var(--px)`, overflowX: 'auto', WebkitOverflowScrolling: 'touch', scrollSnapType: 'x proximity', touchAction: 'pan-x', borderBottom: '1px solid var(--border)', background: 'var(--bg)' }}>
         {CATEGORIES.map(c => (
-          <button key={c.id} onClick={() => setActiveCat(c.id)} style={{ fontFamily: 'var(--font-display)', fontSize: 11, fontWeight: 600, letterSpacing: '.04em', textTransform: 'uppercase', color: activeCat === c.id ? 'var(--btn-t)' : 'var(--text2)', background: activeCat === c.id ? 'var(--btn)' : 'var(--pill)', border: '1px solid', borderColor: activeCat === c.id ? 'transparent' : 'var(--border)', borderRadius: 3, padding: '7px 14px', whiteSpace: 'nowrap', transition: 'all .2s', flexShrink: 0 }}>
+          <button key={c.id} onClick={() => setActiveCat(c.id)} style={{ fontFamily: 'var(--font-display)', fontSize: 11, fontWeight: 600, letterSpacing: '.04em', textTransform: 'uppercase', color: activeCat === c.id ? 'var(--btn-t)' : 'var(--text2)', background: activeCat === c.id ? 'var(--btn)' : 'var(--pill)', border: '1px solid', borderColor: activeCat === c.id ? 'transparent' : 'var(--border)', borderRadius: 3, padding: '7px 14px', whiteSpace: 'nowrap', transition: 'all .2s', flexShrink: 0, scrollSnapAlign: 'start' }}>
             {c.label}
           </button>
         ))}
@@ -473,25 +497,25 @@ export default function HomeClient({ featured, newItems, bestsellers, allProduct
       <section className="hero-grid" style={{ display: 'grid', gridTemplateColumns: '1fr', background: 'var(--bg2)', position: 'relative', overflow: 'hidden' }}>
         {/* Image — top on mobile, right on desktop */}
         <div className="hero-img" style={{ display: 'none', position: 'relative', overflow: 'hidden', minHeight: 500 }}>
-          <Image src="/brand/hero-model.jpg" alt="BSC" fill style={{ objectFit: 'cover', filter: 'grayscale(10%) contrast(1.05)' }} priority sizes="(max-width:768px) 100vw, 50vw" />
+          <Image src={heroImage} alt="BSC" fill style={{ objectFit: 'cover', filter: 'grayscale(10%) contrast(1.05)' }} priority sizes="(max-width:768px) 100vw, 50vw" />
           <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to right, var(--bg2) 0%, transparent 15%)' }} />
         </div>
 
         {/* Mobile hero image */}
         <div className="mobile-only" style={{ position: 'relative', height: '45vw', minHeight: 200, maxHeight: 340, overflow: 'hidden' }}>
-          <Image src="/brand/hero-model.jpg" alt="BSC" fill style={{ objectFit: 'cover', objectPosition: 'top center' }} priority sizes="100vw" />
+          <Image src={heroImage} alt="BSC" fill style={{ objectFit: 'cover', objectPosition: 'top center' }} priority sizes="100vw" />
           <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, transparent 50%, var(--bg2) 100%)' }} />
         </div>
 
         <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: `clamp(32px,6vw,80px) var(--px)` }}>
           <p style={{ fontFamily: 'var(--font-display)', fontSize: 10, fontWeight: 600, letterSpacing: '.35em', textTransform: 'uppercase', color: 'var(--red)', marginBottom: 16, display: 'flex', alignItems: 'center', gap: 8 }}>
-            <span style={{ width: 20, height: 1, background: 'var(--red)', display: 'inline-block' }} />Collection 2025 — Abidjan
+            <span style={{ width: 20, height: 1, background: 'var(--red)', display: 'inline-block' }} />{heroEyebrow}
           </p>
           <h1 style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 'clamp(36px,8vw,84px)', letterSpacing: '-.03em', lineHeight: .92, marginBottom: 20 }}>
-            Wear Your<br /><em style={{ color: 'var(--blue)', fontStyle: 'italic', fontWeight: 400 }}>Identity.</em>
+            {heroTitle}<br /><em style={{ color: 'var(--blue)', fontStyle: 'italic', fontWeight: 400 }}>{heroTitleAccent}</em>
           </h1>
           <p style={{ fontSize: 'clamp(13px,2vw,14px)', lineHeight: 1.8, color: 'var(--text2)', maxWidth: 400, marginBottom: 28, fontWeight: 300 }}>
-            Bagnon Street naît de la rue. Chaque pièce porte une intention. Chaque détail raconte une histoire.
+            {heroDescription}
           </p>
           <div style={{ display: 'flex', gap: 16, marginBottom: 32, flexWrap: 'wrap' }}>
             {[{ icon: I.shield, label: 'Paiement sécurisé' }, { icon: I.truck, label: 'Livraison rapide' }, { icon: I.check, label: 'Qualité garantie' }].map(t => (
@@ -500,8 +524,8 @@ export default function HomeClient({ featured, newItems, bestsellers, allProduct
               </div>
             ))}
           </div>
-          <a href="#collection" style={{ display: 'inline-flex', alignItems: 'center', gap: 10, background: 'var(--btn)', color: 'var(--btn-t)', borderRadius: 3, padding: 'clamp(12px,3vw,17px) clamp(20px,4vw,36px)', fontFamily: 'var(--font-display)', fontSize: 'clamp(11px,2.5vw,13px)', fontWeight: 700, letterSpacing: '.08em', textTransform: 'uppercase', width: 'fit-content', transition: 'transform .3s' }}>
-            {I.bag} Explorer la collection
+          <a href={heroButtonLink} style={{ display: 'inline-flex', alignItems: 'center', gap: 10, background: 'var(--btn)', color: 'var(--btn-t)', borderRadius: 3, padding: 'clamp(12px,3vw,17px) clamp(20px,4vw,36px)', fontFamily: 'var(--font-display)', fontSize: 'clamp(11px,2.5vw,13px)', fontWeight: 700, letterSpacing: '.08em', textTransform: 'uppercase', width: 'fit-content', transition: 'transform .3s' }}>
+            {I.bag} {heroButtonText}
           </a>
         </div>
       </section>
