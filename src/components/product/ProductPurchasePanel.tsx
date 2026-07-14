@@ -1,6 +1,7 @@
 'use client'
 
 import { useMemo, useState } from 'react'
+import Link from 'next/link'
 import { useCart } from '@/hooks/useCart'
 import type { Product } from '@/lib/products'
 import type { ProductDetailViewModel } from '@/components/product/product-view-model'
@@ -22,6 +23,7 @@ function toCartProduct(product: ProductDetailViewModel): Product {
     old_price: product.oldPrice,
     discount: product.discount,
     category: product.category || '',
+    stock: product.stock,
     images: product.images,
     featured: false,
     inStock: product.inStock,
@@ -77,8 +79,8 @@ export default function ProductPurchasePanel({ product }: ProductPurchasePanelPr
       return
     }
 
-    addItem(toCartProduct(product), 1, selectedSize || undefined, selectedColor || undefined)
-    setMessage('Produit ajouté au panier.')
+    const result = addItem(toCartProduct(product), 1, selectedSize || undefined, selectedColor || undefined, effectiveStock)
+    setMessage(result.message)
   }
 
   return (
@@ -128,9 +130,16 @@ export default function ProductPurchasePanel({ product }: ProductPurchasePanelPr
       </button>
 
       {message && (
-        <p role="status" style={{ fontSize: 12, color: message.includes('ajouté') ? '#4CAF50' : 'var(--red)', lineHeight: 1.6 }}>
-          {message}
-        </p>
+        <div role="status" style={{ display: 'grid', gap: 8 }}>
+          <p style={{ fontSize: 12, color: message.includes('ajoute') || message.includes('ajouté') ? '#4CAF50' : 'var(--red)', lineHeight: 1.6 }}>
+            {message}
+          </p>
+          {(message.includes('ajoute') || message.includes('ajouté')) && (
+            <Link href="/panier" style={{ width: 'fit-content', fontFamily: 'var(--font-display)', fontSize: 11, fontWeight: 700, letterSpacing: '.08em', textTransform: 'uppercase', color: 'var(--text2)', borderBottom: '1px solid var(--border2)', paddingBottom: 2 }}>
+              Voir le panier
+            </Link>
+          )}
+        </div>
       )}
     </div>
   )

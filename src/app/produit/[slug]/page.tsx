@@ -9,6 +9,7 @@ import ProductPurchasePanel from '@/components/product/ProductPurchasePanel'
 import RelatedProductCard from '@/components/product/RelatedProductCard'
 import { toProductDetailViewModel } from '@/components/product/product-view-model'
 import FavoriteButton from '@/components/FavoriteButton'
+import CartHeaderLink from '@/components/cart/CartHeaderLink'
 import type { Product, SiteSettings } from '@/types/database'
 
 export const dynamic = 'force-dynamic'
@@ -132,9 +133,12 @@ export default async function ProductPage({ params }: ProductPageProps) {
           <Link href="/" style={{ fontFamily: 'var(--font-display)', fontSize: 12, fontWeight: 700, letterSpacing: '.08em', textTransform: 'uppercase', color: 'var(--text2)' }}>
             ← Retour à la boutique
           </Link>
-          <Link href="/#collection" style={{ fontFamily: 'var(--font-display)', fontSize: 12, fontWeight: 700, letterSpacing: '.08em', textTransform: 'uppercase' }}>
-            Catalogue
-          </Link>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+            <Link href="/#collection" style={{ fontFamily: 'var(--font-display)', fontSize: 12, fontWeight: 700, letterSpacing: '.08em', textTransform: 'uppercase' }}>
+              Catalogue
+            </Link>
+            <CartHeaderLink />
+          </div>
         </div>
       </header>
 

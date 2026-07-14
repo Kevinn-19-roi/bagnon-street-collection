@@ -22,6 +22,7 @@ export interface Product {
   discount: number
   category: string
   category_id?: string
+  stock?: number
   images: string[]
   featured: boolean
   inStock: boolean

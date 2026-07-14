@@ -1,5 +1,45 @@
 # Changelog Bagnon Street Collection
 
+## 2026-07-14 - Sprint 5 Panier complet
+
+- Developpements :
+  - Creation de la route frontend `/panier`.
+  - Ajout d'une page panier responsive avec etat vide, liste articles, variantes, quantites, suppression, sous-total et total provisoire.
+  - Renforcement du hook `useCart` persistant dans `localStorage`.
+  - Unicite des lignes panier par produit + taille + couleur.
+  - Controle du stock lors de l'ajout et de l'augmentation des quantites.
+  - Badge panier synchronise avec le nombre total d'articles.
+  - Ajout d'un lien panier avec badge sur les fiches produit.
+  - Lien du tiroir panier vers la page `/panier`.
+- Bugs corriges :
+  - Le panier preparatoire ne possedait pas de vraie page consultable.
+  - Les quantites pouvaient etre augmentees sans verifier le stock connu.
+  - Les variantes devaient etre mieux isolees dans les lignes panier.
+- Fichiers modifies :
+  - `src/hooks/useCart.ts`
+  - `src/lib/products.ts`
+  - `src/app/panier/page.tsx`
+  - `src/components/cart/CartPageClient.tsx`
+  - `src/components/cart/CartHeaderLink.tsx`
+  - `src/components/product/ProductPurchasePanel.tsx`
+  - `src/components/HomeClient.tsx`
+  - `src/app/produit/[slug]/page.tsx`
+  - `src/styles/globals.css`
+  - `ROADMAP.md`
+  - `CHANGELOG.md`
+- Commits importants :
+  - A renseigner apres publication sur `main`.
+- Validations effectuees :
+  - TypeScript local : OK.
+  - ESLint local : OK.
+  - Build production local : OK.
+  - Route locale `/panier` : 200.
+- Points restant a traiter :
+  - Publication sur `main`.
+  - Verification Vercel READY.
+  - Test production de `/panier` et des ajouts depuis l'accueil et la fiche produit.
+  - Synchronisation serveur multi-appareil a etudier plus tard si une table panier est ajoutee ; le checkout utilisera d'abord les tables `orders` et `order_items`.
+
 ## 2026-07-14 - Sprint 4.7 Duplication, suppression et page favoris
 
 - Developpements :

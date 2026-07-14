@@ -62,6 +62,8 @@ button{font-family:var(--font-body);cursor:pointer;border:none;background:none;c
 @media(max-width:900px){
   .product-detail-grid{grid-template-columns:1fr!important;}
   .favorites-grid{grid-template-columns:repeat(3,minmax(0,1fr))!important;}
+  .cart-page-grid{grid-template-columns:1fr!important;}
+  .cart-page-grid aside{position:static!important;}
 }
 
 @media(max-width:640px){

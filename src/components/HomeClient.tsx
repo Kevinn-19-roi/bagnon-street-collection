@@ -97,7 +97,9 @@ function ProductCard({ product }: { product: Product }) {
   const [added, setAdded] = useState(false)
   function handleAdd(e: React.MouseEvent) {
     e.preventDefault(); e.stopPropagation()
-    addItem(product); setAdded(true)
+    const result = addItem(product, 1, undefined, undefined, product.stock)
+    if (!result.success) return
+    setAdded(true)
     setTimeout(() => setAdded(false), 1600)
   }
   return (
@@ -175,17 +177,23 @@ function Section({ id, eyebrow, eyebrowColor, title, sub, products }: {
 
 // ─── CART DRAWER ──────────────────────────────────
 function CartDrawer() {
-  const { items, isOpen, toggleCart, removeItem, updateQuantity, total } = useCart()
+  const { items, isOpen, toggleCart, removeItem, updateQuantity, total, count, closeCart } = useCart()
+  const [message, setMessage] = useState('')
   if (!isOpen) return null
   return (
     <>
       <div onClick={toggleCart} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,.6)', zIndex: 400, backdropFilter: 'blur(4px)' }} />
       <div style={{ position: 'fixed', right: 0, top: 0, bottom: 0, width: 'min(400px, 100vw)', background: 'var(--bg2)', zIndex: 401, display: 'flex', flexDirection: 'column', borderLeft: '1px solid var(--border)' }}>
         <div style={{ padding: '20px var(--px)', borderBottom: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <h2 style={{ fontFamily: 'var(--font-display)', fontSize: 14, fontWeight: 700, letterSpacing: '.1em', textTransform: 'uppercase' }}>Panier ({items.length})</h2>
+          <h2 style={{ fontFamily: 'var(--font-display)', fontSize: 14, fontWeight: 700, letterSpacing: '.1em', textTransform: 'uppercase' }}>Panier ({count()})</h2>
           <button onClick={toggleCart} style={{ color: 'var(--text2)', padding: 4 }}>{I.x}</button>
         </div>
         <div className="no-scrollbar" style={{ flex: 1, overflowY: 'auto', padding: `16px var(--px)` }}>
+          {message && (
+            <p role="status" style={{ marginBottom: 12, fontFamily: 'var(--font-display)', fontSize: 11, color: message.includes('limite') || message.includes('maximum') ? 'var(--red)' : '#4CAF50' }}>
+              {message}
+            </p>
+          )}
           {items.length === 0
             ? <p style={{ fontFamily: 'var(--font-display)', fontSize: 12, color: 'var(--text3)', letterSpacing: '.2em', textTransform: 'uppercase', textAlign: 'center', marginTop: 80 }}>Ton panier est vide</p>
             : items.map(item => (
@@ -208,7 +216,7 @@ function CartDrawer() {
                     </div>
                     <span style={{ fontFamily: 'var(--font-display)', fontSize: 13, fontWeight: 700 }}>{(item.product.price * item.quantity).toLocaleString()} F</span>
                   </div>
-                  <button onClick={() => removeItem(item.id)} style={{ fontSize: 10, color: 'var(--text3)', letterSpacing: '.15em', textTransform: 'uppercase', fontFamily: 'var(--font-display)', marginTop: 6 }}>Supprimer</button>
+                  <button onClick={() => { removeItem(item.id); setMessage('Produit retire du panier.') }} style={{ fontSize: 10, color: 'var(--text3)', letterSpacing: '.15em', textTransform: 'uppercase', fontFamily: 'var(--font-display)', marginTop: 6 }}>Supprimer</button>
                 </div>
               </div>
             ))}
@@ -219,9 +227,9 @@ function CartDrawer() {
               <span style={{ fontFamily: 'var(--font-display)', fontSize: 11, color: 'var(--text2)', letterSpacing: '.1em', textTransform: 'uppercase' }}>Total</span>
               <span style={{ fontFamily: 'var(--font-display)', fontSize: 16, fontWeight: 700 }}>{total().toLocaleString()} FCFA</span>
             </div>
-            <button style={{ width: '100%', background: 'var(--btn)', color: 'var(--btn-t)', borderRadius: 3, padding: '14px', fontFamily: 'var(--font-display)', fontSize: 12, fontWeight: 700, letterSpacing: '.08em', textTransform: 'uppercase' }}>
-              Commander
-            </button>
+            <Link href="/panier" onClick={closeCart} style={{ width: '100%', display: 'flex', justifyContent: 'center', background: 'var(--btn)', color: 'var(--btn-t)', borderRadius: 3, padding: '14px', fontFamily: 'var(--font-display)', fontSize: 12, fontWeight: 700, letterSpacing: '.08em', textTransform: 'uppercase' }}>
+              Voir le panier
+            </Link>
             <p style={{ textAlign: 'center', marginTop: 8, fontSize: 11, color: 'var(--text3)', fontFamily: 'var(--font-display)' }}>Livraison gratuite dès 25 000 FCFA</p>
           </div>
         )}
