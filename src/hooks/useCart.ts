@@ -75,7 +75,6 @@ export const useCart = create<CartStore>()(
         } else {
           set({ items: [...items, { id: key, product, quantity: requestedQuantity, size, color, maxStock: limit }] })
         }
-        set({ isOpen: true })
         return { success: true, message: 'Produit ajoute au panier.' }
       },
       removeItem: (id) => set({ items: get().items.filter(i => i.id !== id) }),

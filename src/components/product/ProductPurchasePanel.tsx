@@ -37,6 +37,7 @@ export default function ProductPurchasePanel({ product }: ProductPurchasePanelPr
   const [selectedSize, setSelectedSize] = useState('')
   const [selectedColor, setSelectedColor] = useState('')
   const [message, setMessage] = useState('')
+  const [justAdded, setJustAdded] = useState(false)
 
   const sizeOptions = product.sizes.filter(size => size.value.trim())
   const colorOptions = product.colors.filter(color => color.value.trim())
@@ -58,29 +59,40 @@ export default function ProductPurchasePanel({ product }: ProductPurchasePanelPr
 
   const isAvailable = product.inStock && effectiveStock > 0
 
+  function showError(nextMessage: string) {
+    setMessage(nextMessage)
+    setJustAdded(false)
+  }
+
   function addToCart() {
     if (!product.inStock) {
-      setMessage('Ce produit est en rupture de stock.')
+      showError('Ce produit est en rupture de stock.')
       return
     }
 
     if (mustSelectSize && !selectedSize) {
-      setMessage('Choisis une taille avant d’ajouter ce produit.')
+      showError('Choisis une taille avant d’ajouter ce produit.')
       return
     }
 
     if (mustSelectColor && !selectedColor) {
-      setMessage('Choisis une couleur avant d’ajouter ce produit.')
+      showError('Choisis une couleur avant d’ajouter ce produit.')
       return
     }
 
     if (!isAvailable) {
-      setMessage('Cette option est indisponible.')
+      showError('Cette option est indisponible.')
       return
     }
 
     const result = addItem(toCartProduct(product), 1, selectedSize || undefined, selectedColor || undefined, effectiveStock)
     setMessage(result.message)
+    if (result.success) {
+      setJustAdded(false)
+      window.requestAnimationFrame(() => setJustAdded(true))
+    } else {
+      setJustAdded(false)
+    }
   }
 
   return (
@@ -111,6 +123,7 @@ export default function ProductPurchasePanel({ product }: ProductPurchasePanelPr
         type="button"
         onClick={addToCart}
         disabled={!product.inStock}
+        className={justAdded ? 'cart-add-button-pop' : undefined}
         style={{
           width: '100%',
           minHeight: 52,
@@ -129,17 +142,33 @@ export default function ProductPurchasePanel({ product }: ProductPurchasePanelPr
         {product.inStock ? 'Ajouter au panier' : 'Rupture de stock'}
       </button>
 
-      {message && (
-        <div role="status" style={{ display: 'grid', gap: 8 }}>
-          <p style={{ fontSize: 12, color: message.includes('ajoute') || message.includes('ajouté') ? '#4CAF50' : 'var(--red)', lineHeight: 1.6 }}>
-            {message}
+      {message && justAdded && (
+        <div className="cart-confirmation" role="status" style={{ display: 'grid', gap: 12, background: 'var(--bg2)', border: '1px solid rgba(76,175,80,.35)', borderRadius: 6, padding: 14 }}>
+          <p style={{ fontFamily: 'var(--font-display)', fontSize: 12, fontWeight: 700, color: '#4CAF50', letterSpacing: '.04em', textTransform: 'uppercase', lineHeight: 1.5 }}>
+            ✓ Produit ajouté au panier
           </p>
-          {(message.includes('ajoute') || message.includes('ajouté')) && (
-            <Link href="/panier" style={{ width: 'fit-content', fontFamily: 'var(--font-display)', fontSize: 11, fontWeight: 700, letterSpacing: '.08em', textTransform: 'uppercase', color: 'var(--text2)', borderBottom: '1px solid var(--border2)', paddingBottom: 2 }}>
+          <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+            <button
+              type="button"
+              onClick={() => {
+                setMessage('')
+                setJustAdded(false)
+              }}
+              style={{ border: '1px solid var(--border2)', borderRadius: 3, padding: '9px 12px', fontFamily: 'var(--font-display)', fontSize: 11, fontWeight: 700, letterSpacing: '.08em', textTransform: 'uppercase', color: 'var(--text2)' }}
+            >
+              Continuer mes achats
+            </button>
+            <Link href="/panier" style={{ background: 'var(--btn)', color: 'var(--btn-t)', borderRadius: 3, padding: '9px 12px', fontFamily: 'var(--font-display)', fontSize: 11, fontWeight: 700, letterSpacing: '.08em', textTransform: 'uppercase' }}>
               Voir le panier
             </Link>
-          )}
+          </div>
         </div>
+      )}
+
+      {message && !justAdded && (
+        <p role="status" style={{ fontSize: 12, color: 'var(--red)', lineHeight: 1.6 }}>
+          {message}
+        </p>
       )}
     </div>
   )

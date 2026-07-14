@@ -54,9 +54,26 @@ button{font-family:var(--font-body);cursor:pointer;border:none;background:none;c
 
 .favorite-button-pop{animation:favorite-pop .26s ease;}
 
+@keyframes cart-confirm-in{
+  0%{opacity:0;transform:translateY(6px);}
+  100%{opacity:1;transform:translateY(0);}
+}
+
+@keyframes cart-badge-pop{
+  0%{transform:scale(1);}
+  45%{transform:scale(1.22);}
+  100%{transform:scale(1);}
+}
+
+.cart-confirmation{animation:cart-confirm-in .22s ease;}
+.cart-add-button-pop,.cart-badge-pop{animation:cart-badge-pop .28s ease;}
+
 @media(prefers-reduced-motion:reduce){
   .favorite-button,
-  .favorite-button-pop{transition:none!important;animation:none!important;}
+  .favorite-button-pop,
+  .cart-confirmation,
+  .cart-add-button-pop,
+  .cart-badge-pop{transition:none!important;animation:none!important;}
 }
 
 @media(max-width:900px){

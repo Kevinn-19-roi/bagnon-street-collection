@@ -91,6 +91,7 @@ Ce document sert de point de reprise entre les sprints. Il doit rester synchroni
 - Date : 2026-07-14.
 - Fichiers principaux concernes : `src/hooks/useCart.ts`, `src/app/panier/page.tsx`, `src/components/cart/*`, `src/components/product/ProductPurchasePanel.tsx`, `src/components/HomeClient.tsx`, `src/app/produit/[slug]/page.tsx`.
 - Problemes rencontres : aucune table panier n'existe dans le schema Supabase ; le panier reste donc local et persistant, tandis que la transformation en commande utilisera plus tard `orders` et `order_items`.
+- Correctif avant Sprint 6 : ajout sans ouverture automatique du panier, confirmation legere sur fiche produit, lien volontaire vers `/panier`, animation courte du badge et du bouton.
 - Prochaines etapes : Sprint 6 - Checkout, avec transformation du panier local en commande.
 
 ## Sprints suivants

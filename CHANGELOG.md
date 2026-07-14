@@ -1,5 +1,31 @@
 # Changelog Bagnon Street Collection
 
+## 2026-07-14 - Correctif panier avant Sprint 6
+
+- Developpements :
+  - Suppression de l'ouverture automatique du panier apres `addItem`.
+  - Ajout d'une confirmation legere sur fiche produit apres ajout reussi.
+  - Ajout des actions `Continuer mes achats` et `Voir le panier`.
+  - Ajout d'une animation courte du bouton d'ajout et du badge panier, compatible `prefers-reduced-motion`.
+- Bugs corriges :
+  - L'ajout au panier interrompait le parcours d'achat au lieu de laisser le client continuer sur la fiche produit.
+- Fichiers modifies :
+  - `src/hooks/useCart.ts`
+  - `src/components/product/ProductPurchasePanel.tsx`
+  - `src/components/cart/CartHeaderLink.tsx`
+  - `src/styles/globals.css`
+  - `ROADMAP.md`
+  - `CHANGELOG.md`
+- Commits importants :
+  - A renseigner apres publication sur `main`.
+- Validations effectuees :
+  - TypeScript local : OK.
+  - ESLint local : OK.
+  - Build production local : OK.
+- Points restant a traiter :
+  - Publication sur `main`.
+  - Verification Vercel READY et test production.
+
 ## 2026-07-14 - Sprint 5 Panier complet
 
 - Developpements :
