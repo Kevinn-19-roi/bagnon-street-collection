@@ -26,15 +26,16 @@
   - `ROADMAP.md`
   - `CHANGELOG.md`
 - Commits importants :
-  - A publier apres validation finale.
+  - `c20d49b` - Improve performance and admin product management.
 - Validations effectuees :
   - Mesure avant optimisation sur production : accueil environ 4,9 s a 6,1 s depuis cette machine.
   - TypeScript local : OK.
   - ESLint local : OK.
   - Build production local : OK.
+  - Deploiement Vercel production : READY.
+  - Routes production testees en HTTP : `/`, `/connexion`, `/inscription`, `/produit/hoodie-bsc-kaki`, `/admin/produits`.
 - Points restant a traiter :
   - Appliquer la migration Supabase sur la base de production.
-  - Mesurer apres deploiement Vercel.
   - Tester les formulaires admin et la banniere sur l'URL de production avec une session admin.
 
 ## 2026-07-14 - Sprint 4 Page Produit
