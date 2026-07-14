@@ -11,7 +11,7 @@ Ce document sert de point de reprise entre les sprints. Il doit rester synchroni
 - Termine - Sprint 4.5 - Performance et gestion admin
 - Termine - Sprint 4.6 - Variantes, duplication, UX mobile et favoris
 - Termine - Sprint 4.7 - Duplication, suppression et page favoris
-- En validation - Sprint 5 - Panier
+- Publie - Sprint 5 - Panier
 - En attente - Sprint 6 - Checkout
 - En attente - Sprint 7 - Paiement Wave
 - En attente - Sprint 8 - Orange Money
@@ -87,15 +87,15 @@ Ce document sert de point de reprise entre les sprints. Il doit rester synchroni
 ## Sprint 5 - Panier
 
 - Objectif : livrer un panier frontend complet, persistant et pret pour le futur checkout.
-- Etat : en validation.
+- Etat : publie sur `main`, verifie en production.
 - Date : 2026-07-14.
 - Fichiers principaux concernes : `src/hooks/useCart.ts`, `src/app/panier/page.tsx`, `src/components/cart/*`, `src/components/product/ProductPurchasePanel.tsx`, `src/components/HomeClient.tsx`, `src/app/produit/[slug]/page.tsx`.
 - Problemes rencontres : aucune table panier n'existe dans le schema Supabase ; le panier reste donc local et persistant, tandis que la transformation en commande utilisera plus tard `orders` et `order_items`.
-- Prochaines etapes : publier sur `main`, verifier Vercel READY, tester `/panier`, puis commencer Sprint 6 - Checkout seulement apres validation.
+- Prochaines etapes : Sprint 6 - Checkout, avec transformation du panier local en commande.
 
 ## Sprints suivants
 
-- Sprint 6 - Checkout : informations client, livraison, creation commande, en attente de validation du Sprint 5.
+- Sprint 6 - Checkout : informations client, livraison, creation commande, en attente de lancement.
 - Sprint 7 - Paiement Wave : integration paiement.
 - Sprint 8 - Orange Money : integration paiement.
 - Sprint 9 - WhatsApp : notifications commande.

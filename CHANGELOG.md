@@ -28,16 +28,15 @@
   - `ROADMAP.md`
   - `CHANGELOG.md`
 - Commits importants :
-  - A renseigner apres publication sur `main`.
+  - `67cb16c` - Add persistent shopping cart page.
 - Validations effectuees :
   - TypeScript local : OK.
   - ESLint local : OK.
   - Build production local : OK.
   - Route locale `/panier` : 200.
+  - Publication GitHub `main` : OK.
+  - Production HTTP : `/`, `/panier`, `/produit/hoodie-bsc-kaki`, `/favoris` repondent en 200.
 - Points restant a traiter :
-  - Publication sur `main`.
-  - Verification Vercel READY.
-  - Test production de `/panier` et des ajouts depuis l'accueil et la fiche produit.
   - Synchronisation serveur multi-appareil a etudier plus tard si une table panier est ajoutee ; le checkout utilisera d'abord les tables `orders` et `order_items`.
 
 ## 2026-07-14 - Sprint 4.7 Duplication, suppression et page favoris
