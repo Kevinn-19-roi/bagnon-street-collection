@@ -10,7 +10,7 @@ Ce document sert de point de reprise entre les sprints. Il doit rester synchroni
 - Termine - Sprint 4 - Page Produit
 - Termine - Sprint 4.5 - Performance et gestion admin
 - Termine - Sprint 4.6 - Variantes, duplication, UX mobile et favoris
-- En validation - Sprint 4.7 - Duplication, suppression et page favoris
+- Publie - Sprint 4.7 - Duplication, suppression et page favoris
 - En attente - Sprint 5 - Panier
 - En attente - Sprint 6 - Checkout
 - En attente - Sprint 7 - Paiement Wave
@@ -78,15 +78,15 @@ Ce document sert de point de reprise entre les sprints. Il doit rester synchroni
 ## Sprint 4.7 - Duplication, suppression et page favoris
 
 - Objectif : corriger la visibilite des duplicatas brouillons, securiser la redirection apres suppression produit et creer une vraie page favoris frontend.
-- Etat : en validation.
+- Etat : publie sur `main`, validation admin reelle restante.
 - Date : 2026-07-14.
 - Fichiers principaux concernes : `src/lib/database/products.ts`, `src/lib/actions/products.ts`, `src/app/admin/produits/page.tsx`, `src/app/favoris/page.tsx`, `src/components/favorites/FavoritesClient.tsx`, `src/components/HomeClient.tsx`, `src/hooks/useFavorites.ts`.
 - Problemes rencontres : la liste admin utilisait le filtre actif par defaut meme quand elle devait afficher tous les statuts ; la suppression produit ne redirigeait pas explicitement vers la liste ; les liens Favoris pointaient vers une ancre au lieu d'une route dediee.
-- Prochaines etapes : publier sur `main`, verifier Vercel READY et tester `/favoris` ainsi que les routes produits/admin en production avant Sprint 5.
+- Prochaines etapes : tester duplication/suppression avec une session admin reelle avant Sprint 5.
 
 ## Sprints suivants
 
-- Sprint 5 - Panier : panier persistant et ergonomique, en attente de validation du Sprint 4.7.
+- Sprint 5 - Panier : panier persistant et ergonomique, en attente de validation admin reelle du Sprint 4.7.
 - Sprint 6 - Checkout : informations client, livraison, creation commande.
 - Sprint 7 - Paiement Wave : integration paiement.
 - Sprint 8 - Orange Money : integration paiement.

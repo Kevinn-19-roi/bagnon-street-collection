@@ -25,15 +25,15 @@
   - `ROADMAP.md`
   - `CHANGELOG.md`
 - Commits importants :
-  - A renseigner apres publication sur `main`.
+  - `1d80c65` - Fix product drafts deletion and favorites page.
 - Validations effectuees :
   - TypeScript local : OK.
   - ESLint local : OK.
   - Build production local : OK.
+  - Publication GitHub `main` : OK.
+  - Production HTTP : `/`, `/favoris`, `/admin/produits`, `/produit/hoodie-bsc-kaki` repondent en 200.
 - Points restant a traiter :
-  - Publication sur `main`.
-  - Verification Vercel READY.
-  - Tests production HTTP et verification manuelle avec session admin reelle.
+  - Verification manuelle avec session admin reelle : duplication/suppression depuis l'interface admin en production.
 
 ## 2026-07-14 - Sprint 4.6 Variantes, duplication, UX mobile et favoris
 
