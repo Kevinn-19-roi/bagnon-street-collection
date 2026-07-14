@@ -15,6 +15,7 @@ export type ProductDetailViewModel = {
   collection: string | null
   sizes: Array<{ label: string; value: string; stock: number }>
   colors: Array<{ label: string; value: string; stock: number; colorHex: string }>
+  discount: number
 }
 
 export function toProductDetailViewModel(product: Product): ProductDetailViewModel {
@@ -44,5 +45,6 @@ export function toProductDetailViewModel(product: Product): ProductDetailViewMod
       stock: color.stock,
       colorHex: color.color_hex,
     })),
+    discount: product.old_price ? Math.max(0, Math.round((1 - product.price / product.old_price) * 100)) : 0,
   }
 }

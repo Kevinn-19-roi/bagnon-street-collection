@@ -14,6 +14,8 @@ type ProductOptionSelectorProps = {
   name: string
   options: ProductOption[]
   required?: boolean
+  value?: string
+  onChange?: (value: string) => void
 }
 
 export default function ProductOptionSelector({
@@ -21,9 +23,16 @@ export default function ProductOptionSelector({
   name,
   options,
   required = false,
+  value,
+  onChange,
 }: ProductOptionSelectorProps) {
-  const firstAvailable = options.find(option => (option.stock ?? 1) > 0)?.value || ''
-  const [selected, setSelected] = useState(firstAvailable)
+  const [internalSelected, setInternalSelected] = useState('')
+  const selected = value ?? internalSelected
+
+  function select(value: string) {
+    setInternalSelected(value)
+    onChange?.(value)
+  }
 
   if (options.length === 0) return null
 
@@ -44,7 +53,7 @@ export default function ProductOptionSelector({
               type="button"
               disabled={disabled}
               aria-pressed={active}
-              onClick={() => setSelected(option.value)}
+              onClick={() => select(option.value)}
               style={{
                 minWidth: option.colorHex ? 42 : 48,
                 height: 42,
@@ -61,7 +70,10 @@ export default function ProductOptionSelector({
               }}
             >
               {option.colorHex ? (
-                <span style={{ display: 'inline-block', width: 20, height: 20, borderRadius: '50%', background: option.colorHex, border: '1px solid rgba(255,255,255,0.35)' }} />
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
+                  <span style={{ display: 'inline-block', width: 20, height: 20, borderRadius: '50%', background: option.colorHex, border: '1px solid rgba(255,255,255,0.35)' }} />
+                  <span style={{ position: 'absolute', width: 1, height: 1, overflow: 'hidden', clip: 'rect(0 0 0 0)', whiteSpace: 'nowrap' }}>{option.label}</span>
+                </span>
               ) : (
                 option.label
               )}

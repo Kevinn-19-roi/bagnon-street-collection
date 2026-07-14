@@ -1,6 +1,7 @@
 'use client'
 import { useState, useEffect, useRef } from 'react'
 import Image from 'next/image'
+import Link from 'next/link'
 import { Product, CATEGORIES } from '@/lib/products'
 import { useCart } from '@/hooks/useCart'
 import LogoutButton from '@/components/LogoutButton'
@@ -88,12 +89,14 @@ function ProductCard({ product }: { product: Product }) {
       onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-4px)'; e.currentTarget.style.borderColor = 'var(--border2)' }}
       onMouseLeave={e => { e.currentTarget.style.transform = 'none'; e.currentTarget.style.borderColor = 'var(--border)' }}>
       <div style={{ position: 'relative', aspectRatio: '4/5', overflow: 'hidden', background: 'var(--bg3)' }}>
-        {product.images[0]
-          ? <Image src={product.images[0]} alt={product.name} fill style={{ objectFit: 'cover', transition: 'transform .6s' }} sizes="(max-width:640px) 44vw, (max-width:1024px) 30vw, 220px" />
-          : <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'var(--font-display)', fontSize: 20, fontWeight: 700, color: 'rgba(128,128,128,.08)' }}>BSC</div>}
-        <span style={{ position: 'absolute', top: 8, left: 8, background: product.isNew ? 'var(--blue)' : 'rgba(0,0,0,.78)', color: '#fff', fontFamily: 'var(--font-display)', fontSize: 10, fontWeight: 700, padding: '3px 8px', borderRadius: 2 }}>
-          {product.isNew ? 'Nouveau' : `-${product.discount}%`}
-        </span>
+        <Link href={`/produit/${product.slug}`} aria-label={`Voir ${product.name}`} style={{ display: 'block', position: 'absolute', inset: 0 }}>
+          {product.images[0]
+            ? <Image src={product.images[0]} alt={product.name} fill style={{ objectFit: 'cover', transition: 'transform .6s' }} sizes="(max-width:640px) 44vw, (max-width:1024px) 30vw, 220px" />
+            : <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'var(--font-display)', fontSize: 20, fontWeight: 700, color: 'rgba(128,128,128,.08)' }}>BSC</div>}
+          <span style={{ position: 'absolute', top: 8, left: 8, background: product.isNew ? 'var(--blue)' : 'rgba(0,0,0,.78)', color: '#fff', fontFamily: 'var(--font-display)', fontSize: 10, fontWeight: 700, padding: '3px 8px', borderRadius: 2 }}>
+            {product.isNew ? 'Nouveau' : `-${product.discount}%`}
+          </span>
+        </Link>
         <button onClick={e => { e.stopPropagation(); setWished(w => !w) }}
           style={{ position: 'absolute', top: 6, right: 6, width: 28, height: 28, borderRadius: '50%', background: 'var(--card)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 2px 8px rgba(0,0,0,.2)', color: wished ? 'var(--red)' : 'var(--text2)' }}>
           {I.heart}
@@ -107,8 +110,10 @@ function ProductCard({ product }: { product: Product }) {
         <div style={{ display: 'flex', gap: 2, marginBottom: 6 }}>
           {[...Array(5)].map((_, i) => <div key={i} style={{ width: 8, height: 8, background: i < 4 ? '#C9A24B' : 'var(--border2)', clipPath: 'polygon(50% 0%,61% 35%,98% 35%,68% 57%,79% 91%,50% 70%,21% 91%,32% 57%,2% 35%,39% 35%)' }} />)}
         </div>
-        <h3 style={{ fontFamily: 'var(--font-display)', fontSize: 'clamp(12px,3vw,14px)', fontWeight: 700, marginBottom: 4, lineHeight: 1.3 }}>{product.name}</h3>
-        <p style={{ fontSize: 11, color: 'var(--text2)', lineHeight: 1.5, marginBottom: 10, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{product.description}</p>
+        <Link href={`/produit/${product.slug}`} style={{ display: 'block' }}>
+          <h3 style={{ fontFamily: 'var(--font-display)', fontSize: 'clamp(12px,3vw,14px)', fontWeight: 700, marginBottom: 4, lineHeight: 1.3 }}>{product.name}</h3>
+          <p style={{ fontSize: 11, color: 'var(--text2)', lineHeight: 1.5, marginBottom: 10, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{product.description}</p>
+        </Link>
         <div style={{ display: 'flex', alignItems: 'baseline', gap: 6, marginBottom: 10 }}>
           <span style={{ fontFamily: 'var(--font-display)', fontSize: 'clamp(13px,3.5vw,15px)', fontWeight: 700 }}>{product.price.toLocaleString()} F</span>
           {product.compareAt && <span style={{ fontSize: 10, color: 'var(--text3)', textDecoration: 'line-through' }}>{product.compareAt.toLocaleString()}</span>}
@@ -177,6 +182,11 @@ function CartDrawer() {
                 </div>
                 <div style={{ flex: 1 }}>
                   <p style={{ fontFamily: 'var(--font-display)', fontSize: 11, fontWeight: 700, letterSpacing: '.03em', textTransform: 'uppercase', marginBottom: 6 }}>{item.product.name}</p>
+                  {(item.size || item.color) && (
+                    <p style={{ fontSize: 10, color: 'var(--text3)', marginBottom: 8 }}>
+                      {[item.size ? `Taille ${item.size}` : null, item.color || null].filter(Boolean).join(' · ')}
+                    </p>
+                  )}
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                       <button onClick={() => updateQuantity(item.id, item.quantity - 1)} style={{ width: 26, height: 26, border: '1px solid var(--border2)', borderRadius: 2, fontSize: 14, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>−</button>

@@ -4,17 +4,17 @@ Ce document sert de point de reprise entre les sprints. Il doit rester synchroni
 
 ## Vue d'ensemble
 
-- ✅ Sprint 1 - Stabilisation
-- ✅ Sprint 2 - Authentification
-- ✅ Sprint 3 - UX
-- 🔄 Sprint 4 - Page Produit
-- ⏳ Sprint 5 - Panier
-- ⏳ Sprint 6 - Checkout
-- ⏳ Sprint 7 - Paiement Wave
-- ⏳ Sprint 8 - Orange Money
-- ⏳ Sprint 9 - WhatsApp
-- ⏳ Sprint 10 - Optimisation SEO
-- ⏳ Sprint 11 - Mise en production finale
+- Termine - Sprint 1 - Stabilisation
+- Termine - Sprint 2 - Authentification
+- Termine - Sprint 3 - UX
+- Termine - Sprint 4 - Page Produit
+- En attente - Sprint 5 - Panier
+- En attente - Sprint 6 - Checkout
+- En attente - Sprint 7 - Paiement Wave
+- En attente - Sprint 8 - Orange Money
+- En attente - Sprint 9 - WhatsApp
+- En attente - Sprint 10 - Optimisation SEO
+- En attente - Sprint 11 - Mise en production finale
 
 ## Sprint 1 - Stabilisation
 
@@ -46,17 +46,17 @@ Ce document sert de point de reprise entre les sprints. Il doit rester synchroni
 ## Sprint 4 - Page Produit
 
 - Objectif : creer la page produit individuelle sans casser le catalogue existant.
-- Etat : pret a demarrer.
-- Date : a planifier.
-- Fichiers principaux concernes : future route produit, `src/lib/database/products.ts`, composants `src/components/product/*`.
+- Etat : termine, publie sur `main` apres validations.
+- Date : 2026-07-14.
+- Fichiers principaux concernes : `src/app/produit/[slug]/page.tsx`, `src/components/product/*`, `src/components/HomeClient.tsx`, `src/hooks/useCart.ts`, `src/styles/globals.css`.
 - Structure disponible : produits avec categorie, collection, images ordonnees, tailles, couleurs, stock global et stock par option.
-- Composants prepares : galerie media, selecteur d'options taille/couleur, normalisation `ProductDetailViewModel`.
-- Problemes rencontres : aucun pour le moment.
-- Prochaines etapes : attendre validation avant implementation, puis brancher `getProductBySlug` sur la route produit.
+- Developpement realise : route `/produit/[slug]`, galerie interactive, variantes facultatives, stock, ajout panier preparatoire, partage WhatsApp, produits similaires et metadata SEO.
+- Problemes rencontres : pas de stock combine taille/couleur dans le schema actuel ; la page utilise donc le stock global et le stock par option separee sans migration destructive.
+- Prochaines etapes : attendre feu vert avant le Sprint 5 - Panier complet.
 
 ## Sprints suivants
 
-- Sprint 5 - Panier : panier persistant et ergonomique.
+- Sprint 5 - Panier : panier persistant et ergonomique, en attente de validation du Sprint 4.
 - Sprint 6 - Checkout : informations client, livraison, creation commande.
 - Sprint 7 - Paiement Wave : integration paiement.
 - Sprint 8 - Orange Money : integration paiement.

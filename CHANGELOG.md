@@ -1,5 +1,40 @@
 # Changelog Bagnon Street Collection
 
+## 2026-07-14 - Sprint 4 Page Produit
+
+- Developpements :
+  - Creation de la route frontend `/produit/[slug]`.
+  - Ajout d'une fiche produit avec galerie, prix, ancien prix, badge promotion, description, categorie, collection, stock et disponibilite.
+  - Ajout d'un panneau d'achat preparatoire avec validation taille/couleur facultative.
+  - Ajout des produits similaires par collection puis categorie.
+  - Ajout du partage client WhatsApp.
+  - Ajout de metadata SEO par fiche produit.
+  - Liaison des cartes produit du catalogue vers la fiche individuelle.
+- Bugs corriges :
+  - Les cartes produit frontend ne permettaient pas d'ouvrir une fiche produit dediee.
+  - La galerie preparee au Sprint 3 n'etait pas encore interactive.
+- Fichiers modifies :
+  - `src/app/produit/[slug]/page.tsx`
+  - `src/components/HomeClient.tsx`
+  - `src/components/product/ProductMediaGallery.tsx`
+  - `src/components/product/ProductOptionSelector.tsx`
+  - `src/components/product/ProductPurchasePanel.tsx`
+  - `src/components/product/RelatedProductCard.tsx`
+  - `src/components/product/product-view-model.ts`
+  - `src/hooks/useCart.ts`
+  - `src/styles/globals.css`
+  - `ROADMAP.md`
+  - `CHANGELOG.md`
+- Commits importants :
+  - `Add product detail page`
+- Validations effectuees :
+  - TypeScript local : OK.
+  - ESLint local : OK.
+  - Build production local : OK.
+- Points restant a traiter :
+  - Sprint 5 : panier complet, persistance ergonomique et preparation checkout.
+  - Stock combine taille/couleur a envisager plus tard uniquement si le catalogue l'exige.
+
 ## 2026-07-14 - Sprint 3 UX
 
 - Developpements :
