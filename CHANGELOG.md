@@ -30,11 +30,14 @@
   - `ROADMAP.md`
   - `CHANGELOG.md`
 - Commits importants :
-  - A publier apres validation finale.
+  - `2d07305` - Add product variants duplication and favorites UX.
 - Validations effectuees :
   - TypeScript local : OK.
   - ESLint local : OK.
   - Build production local : OK.
+  - Deploiement Vercel production : READY.
+  - Routes production testees en HTTP : `/`, `/produit/hoodie-bsc-kaki`, `/admin/produits`, `/admin/produits/nouveau`.
+  - Logs runtime Vercel recents : aucune erreur.
 - Points restant a traiter :
   - Tests admin reels de creation/modification/duplication avec session admin sur production.
   - La migration `005_home_hero_settings.sql` reste reportee volontairement et ne bloque pas ce sprint.
