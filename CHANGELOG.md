@@ -1,5 +1,44 @@
 # Changelog Bagnon Street Collection
 
+## 2026-07-14 - Sprint 4.6 Variantes, duplication, UX mobile et favoris
+
+- Developpements :
+  - Ajout des sections Tailles et Couleurs dans creation et modification produit.
+  - Enregistrement des variantes dans les tables existantes `product_sizes` et `product_colors`.
+  - Ajout de l'action Dupliquer depuis la liste produits et la page modification.
+  - Generation automatique d'un slug et d'un SKU uniques pour les duplicatas.
+  - Ajout d'un hook favoris partage via `localStorage`.
+  - Ajout d'un bouton coeur reutilisable avec etat rouge rempli et animation legere.
+  - Synchronisation favoris entre catalogue, carrousels, fiche produit et produits similaires.
+  - Renforcement du scroll horizontal tactile des categories mobile.
+  - Recherche header mobile avec comportement agrandi type Dynamic Island, compatible `prefers-reduced-motion`.
+- Bugs corriges :
+  - Tailles/couleurs existantes invisibles dans les formulaires admin.
+  - Favoris non persistants et non synchronises entre les cartes.
+  - Categories mobiles difficiles a faire defiler au doigt.
+- Fichiers modifies :
+  - `src/components/admin/forms/ProductForm.tsx`
+  - `src/lib/actions/products.ts`
+  - `src/app/admin/produits/page.tsx`
+  - `src/app/admin/produits/[id]/modifier/page.tsx`
+  - `src/components/HomeClient.tsx`
+  - `src/app/produit/[slug]/page.tsx`
+  - `src/components/product/RelatedProductCard.tsx`
+  - `src/components/FavoriteButton.tsx`
+  - `src/hooks/useFavorites.ts`
+  - `src/styles/globals.css`
+  - `ROADMAP.md`
+  - `CHANGELOG.md`
+- Commits importants :
+  - A publier apres validation finale.
+- Validations effectuees :
+  - TypeScript local : OK.
+  - ESLint local : OK.
+  - Build production local : OK.
+- Points restant a traiter :
+  - Tests admin reels de creation/modification/duplication avec session admin sur production.
+  - La migration `005_home_hero_settings.sql` reste reportee volontairement et ne bloque pas ce sprint.
+
 ## 2026-07-14 - Sprint 4.5 Performance et gestion admin
 
 - Developpements :

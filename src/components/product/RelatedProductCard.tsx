@@ -1,6 +1,7 @@
 import Image from 'next/image'
 import Link from 'next/link'
 import type { Product } from '@/types/database'
+import FavoriteButton from '@/components/FavoriteButton'
 
 type RelatedProductCardProps = {
   product: Product
@@ -17,6 +18,7 @@ export default function RelatedProductCard({ product }: RelatedProductCardProps)
   return (
     <Link
       href={`/produit/${product.slug}`}
+      prefetch={false}
       style={{
         display: 'block',
         background: 'var(--card)',
@@ -36,6 +38,7 @@ export default function RelatedProductCard({ product }: RelatedProductCardProps)
             -{discount}%
           </span>
         )}
+        <FavoriteButton productId={product.id} size={18} style={{ position: 'absolute', top: 8, right: 8, zIndex: 2 }} />
       </div>
       <div style={{ padding: '11px 12px 13px' }}>
         <h3 style={{ fontFamily: 'var(--font-display)', fontSize: 13, fontWeight: 700, lineHeight: 1.35, marginBottom: 7 }}>{product.name}</h3>

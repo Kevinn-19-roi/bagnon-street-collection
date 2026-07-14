@@ -6,6 +6,7 @@ import { Product, CATEGORIES } from '@/lib/products'
 import { useCart } from '@/hooks/useCart'
 import LogoutButton from '@/components/LogoutButton'
 import type { SiteSettings } from '@/types/database'
+import FavoriteButton from '@/components/FavoriteButton'
 
 // ─── SVG ICONS ────────────────────────────────────
 const I = {
@@ -94,7 +95,6 @@ function whatsappUrl(value?: string | null) {
 function ProductCard({ product }: { product: Product }) {
   const addItem = useCart(s => s.addItem)
   const [added, setAdded] = useState(false)
-  const [wished, setWished] = useState(false)
   function handleAdd(e: React.MouseEvent) {
     e.preventDefault(); e.stopPropagation()
     addItem(product); setAdded(true)
@@ -113,10 +113,7 @@ function ProductCard({ product }: { product: Product }) {
             {product.isNew ? 'Nouveau' : `-${product.discount}%`}
           </span>
         </Link>
-        <button onClick={e => { e.stopPropagation(); setWished(w => !w) }}
-          style={{ position: 'absolute', top: 6, right: 6, width: 28, height: 28, borderRadius: '50%', background: 'var(--card)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 2px 8px rgba(0,0,0,.2)', color: wished ? 'var(--red)' : 'var(--text2)' }}>
-          {I.heart}
-        </button>
+        <FavoriteButton productId={product.id} size={18} style={{ position: 'absolute', top: 6, right: 6, zIndex: 2 }} />
         {product.inStock && (
           <span style={{ position: 'absolute', bottom: 8, left: 8, background: 'rgba(0,0,0,.65)', backdropFilter: 'blur(4px)', borderRadius: 2, padding: '3px 7px', fontSize: 10, fontWeight: 600, color: '#fff', display: 'flex', alignItems: 'center', gap: 4 }}>
             <span style={{ width: 5, height: 5, borderRadius: '50%', background: '#4CAF50', flexShrink: 0 }} />En stock
@@ -322,7 +319,7 @@ function Navbar({ onMenuOpen, currentUser }: { onMenuOpen: () => void; currentUs
         </a>
 
         {/* Search bar */}
-        <div onFocus={() => setSearchFocused(true)} onBlur={() => setSearchFocused(false)} style={{ flex: searchFocused ? '1 1 620px' : '1 1 280px', maxWidth: searchFocused ? 620 : 460, margin: '0 auto', position: 'relative', transition: 'max-width .22s ease, flex-basis .22s ease' }}>
+        <div className={searchFocused ? 'nav-search nav-search-open' : 'nav-search'} onFocus={() => setSearchFocused(true)} onBlur={() => setSearchFocused(false)} style={{ flex: searchFocused ? '1 1 620px' : '1 1 280px', maxWidth: searchFocused ? 620 : 460, margin: '0 auto', position: 'relative', transition: 'max-width .22s ease, flex-basis .22s ease, transform .22s ease' }}>
           <span style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: 'var(--text3)' }}>{I.search}</span>
           <input type="text" placeholder="Rechercher…" style={{ width: '100%', background: 'var(--search)', border: '1px solid var(--border2)', borderRadius: 3, padding: '10px 42px 10px 36px', fontSize: 13, color: 'var(--text)', outline: 'none', fontFamily: 'var(--font-body)' }} />
           <button style={{ position: 'absolute', right: 4, top: '50%', transform: 'translateY(-50%)', background: 'var(--btn)', color: 'var(--btn-t)', borderRadius: 3, width: 32, height: 32, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{I.arrow}</button>
@@ -462,6 +459,17 @@ export default function HomeClient({ featured, newItems, bestsellers, allProduct
           .footer-grid{grid-template-columns:1.6fr 1fr 1fr 1fr!important;}
           .mobile-search{display:none!important;}
         }
+        @media(max-width:767px){
+          .nav-search{flex:0 1 132px!important; max-width:132px!important; min-width:96px!important; margin-left:auto!important;}
+          .nav-search input{border-radius:999px!important;}
+          .nav-search-open{position:absolute!important; left:var(--px)!important; right:var(--px)!important; top:8px!important; z-index:5!important; flex:1 1 auto!important; max-width:none!important; min-width:0!important; transform:translateY(0)!important;}
+          .nav-search-open input{box-shadow:0 10px 28px rgba(0,0,0,.28); border-color:rgba(122,22,32,.45)!important; padding-top:13px!important; padding-bottom:13px!important;}
+          .category-scroll-row{overscroll-behavior-inline:contain;}
+        }
+        @media(prefers-reduced-motion:reduce){
+          .nav-search,
+          .nav-search input{transition:none!important; animation:none!important;}
+        }
         @media(min-width:1024px){
           .editorial-img{aspect-ratio:3/4!important;}
         }
@@ -476,12 +484,15 @@ export default function HomeClient({ featured, newItems, bestsellers, allProduct
       <MobileMenu open={menuOpen} onClose={() => setMenuOpen(false)} currentUser={currentUser} />
 
       {/* CATEGORY PILLS */}
-      <div className="no-scrollbar" style={{ display: 'flex', gap: 8, padding: `10px var(--px)`, overflowX: 'auto', WebkitOverflowScrolling: 'touch', scrollSnapType: 'x proximity', touchAction: 'pan-x', borderBottom: '1px solid var(--border)', background: 'var(--bg)' }}>
+      <div style={{ position: 'relative', borderBottom: '1px solid var(--border)', background: 'var(--bg)' }}>
+        <div className="no-scrollbar category-scroll-row" style={{ display: 'flex', gap: 8, padding: `10px var(--px)`, overflowX: 'auto', overflowY: 'hidden', WebkitOverflowScrolling: 'touch', scrollSnapType: 'x proximity', touchAction: 'pan-x pan-y', whiteSpace: 'nowrap' }}>
         {CATEGORIES.map(c => (
           <button key={c.id} onClick={() => setActiveCat(c.id)} style={{ fontFamily: 'var(--font-display)', fontSize: 11, fontWeight: 600, letterSpacing: '.04em', textTransform: 'uppercase', color: activeCat === c.id ? 'var(--btn-t)' : 'var(--text2)', background: activeCat === c.id ? 'var(--btn)' : 'var(--pill)', border: '1px solid', borderColor: activeCat === c.id ? 'transparent' : 'var(--border)', borderRadius: 3, padding: '7px 14px', whiteSpace: 'nowrap', transition: 'all .2s', flexShrink: 0, scrollSnapAlign: 'start' }}>
             {c.label}
           </button>
         ))}
+        </div>
+        <div aria-hidden="true" style={{ position: 'absolute', right: 0, top: 0, bottom: 0, width: 42, pointerEvents: 'none', background: 'linear-gradient(to left, var(--bg), transparent)' }} />
       </div>
 
       {/* PROMO */}

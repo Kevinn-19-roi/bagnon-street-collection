@@ -4,7 +4,7 @@ import Badge from '@/components/admin/ui/Badge'
 import ResponsiveTable from '@/components/admin/ui/ResponsiveTable'
 import ConfirmSubmitForm from '@/components/admin/forms/ConfirmSubmitForm'
 import { getProducts } from '@/lib/database/products'
-import { deleteProduct } from '@/lib/actions/products'
+import { deleteProduct, duplicateProduct } from '@/lib/actions/products'
 import { formatPrice, formatDate } from '@/lib/helpers/slugify'
 import Link from 'next/link'
 import Image from 'next/image'
@@ -175,6 +175,17 @@ export default async function ProduitsPage({
                     }}>
                       Modifier
                     </Link>
+                    <ConfirmSubmitForm action={duplicateProduct.bind(null, p.id)} message={`Dupliquer "${p.name}" ?`}>
+                      <button type="submit" style={{
+                        fontFamily: 'var(--font-display)', fontSize: 10, fontWeight: 700,
+                        letterSpacing: '.08em', textTransform: 'uppercase',
+                        background: 'rgba(76,175,80,0.12)', color: '#81C784',
+                        border: '1px solid rgba(76,175,80,0.3)', borderRadius: 3,
+                        padding: '5px 10px', cursor: 'pointer',
+                      }}>
+                        Dupliquer
+                      </button>
+                    </ConfirmSubmitForm>
                     <ConfirmSubmitForm action={deleteProduct.bind(null, p.id)} message={`Supprimer "${p.name}" ?`}>
                       <button type="submit" style={{
                         fontFamily: 'var(--font-display)', fontSize: 10, fontWeight: 700,

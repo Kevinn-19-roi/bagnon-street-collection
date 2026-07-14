@@ -4,7 +4,7 @@ import PageHeader from '@/components/admin/ui/PageHeader'
 import ProductForm from '@/components/admin/forms/ProductForm'
 import ConfirmSubmitForm from '@/components/admin/forms/ConfirmSubmitForm'
 import { getAllCategoriesAdmin, getCollections } from '@/lib/database/categories'
-import { updateProduct, deleteProduct, deleteProductImage } from '@/lib/actions/products'
+import { updateProduct, deleteProduct, deleteProductImage, duplicateProduct } from '@/lib/actions/products'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { notFound } from 'next/navigation'
 import Image from 'next/image'
@@ -24,10 +24,13 @@ async function getProductAdmin(id: string) {
 
 export default async function ModifierProduitPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ id: string }>
+  searchParams: Promise<{ success?: string }>
 }) {
   const { id } = await params
+  const query = await searchParams
   const [product, categories, collections] = await Promise.all([
     getProductAdmin(id),
     getAllCategoriesAdmin(),
@@ -38,6 +41,7 @@ export default async function ModifierProduitPage({
 
   const updateWithId = updateProduct.bind(null, id)
   const deleteWithId = deleteProduct.bind(null, id)
+  const duplicateWithId = duplicateProduct.bind(null, id)
 
   return (
     <AdminShell>
@@ -46,13 +50,38 @@ export default async function ModifierProduitPage({
         title={`Modifier — ${product.name}`}
         subtitle={`SKU: ${product.sku}`}
         action={
-          <ConfirmSubmitForm action={deleteWithId} message="Supprimer ce produit ?">
-            <Button type="submit" variant="danger" size="sm">
-              Supprimer
-            </Button>
-          </ConfirmSubmitForm>
+          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+            <ConfirmSubmitForm action={duplicateWithId} message="Dupliquer ce produit ?">
+              <Button type="submit" variant="secondary" size="sm">
+                Dupliquer
+              </Button>
+            </ConfirmSubmitForm>
+            <ConfirmSubmitForm action={deleteWithId} message="Supprimer ce produit ?">
+              <Button type="submit" variant="danger" size="sm">
+                Supprimer
+              </Button>
+            </ConfirmSubmitForm>
+          </div>
         }
       />
+
+      {query.success === 'duplicated' && (
+        <div
+          role="status"
+          style={{
+            background: 'rgba(76,175,80,0.12)',
+            border: '1px solid rgba(76,175,80,0.32)',
+            color: '#81C784',
+            borderRadius: 3,
+            padding: '10px 14px',
+            marginBottom: 16,
+            fontFamily: 'var(--font-display)',
+            fontSize: 12,
+          }}
+        >
+          Produit duplique avec succes. Tu peux maintenant modifier le nom, la couleur, les images et le stock avant publication.
+        </div>
+      )}
 
       {/* Current images */}
       {product.images && product.images.length > 0 && (

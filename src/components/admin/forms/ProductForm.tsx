@@ -6,6 +6,19 @@ import { generateSlug, generateSKU } from '@/lib/helpers/slugify'
 import Button from '@/components/admin/ui/Button'
 import type { ProductActionResult } from '@/lib/actions/products'
 
+const SIZE_OPTIONS = ['XS', 'S', 'M', 'L', 'XL', 'XXL', 'Taille unique']
+
+const COLOR_OPTIONS = [
+  { name: 'Noir', hex: '#111111' },
+  { name: 'Blanc', hex: '#F5F3EE' },
+  { name: 'Kaki', hex: '#5B6042' },
+  { name: 'Rouge', hex: '#7A1620' },
+  { name: 'Bleu', hex: '#1A2A6C' },
+  { name: 'Gris', hex: '#737373' },
+  { name: 'Beige', hex: '#C8B89A' },
+  { name: 'Marron', hex: '#5C4033' },
+]
+
 interface Props {
   categories: Category[]
   collections: Collection[]
@@ -32,10 +45,18 @@ export default function ProductForm({ categories, collections, product, onSubmit
   const [newArrival, setNewArrival] = useState(product?.new_arrival || false)
   const [onSale, setOnSale] = useState(product?.on_sale || false)
   const [active, setActive] = useState(product?.active ?? true)
+  const [selectedSizes, setSelectedSizes] = useState(() => new Set((product?.sizes || []).map(size => size.size)))
+  const [selectedColors, setSelectedColors] = useState(() => new Set((product?.colors || []).map(color => color.color_name)))
   const [loading, setLoading] = useState(false)
   const [formMessage, setFormMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
   const [imageFiles, setImageFiles] = useState<File[]>([])
   const [imagePreviews, setImagePreviews] = useState<string[]>([])
+  const colorOptions = [
+    ...COLOR_OPTIONS,
+    ...(product?.colors || [])
+      .filter(color => !COLOR_OPTIONS.some(option => option.name === color.color_name))
+      .map(color => ({ name: color.color_name, hex: color.color_hex })),
+  ]
 
   function handleNameChange(val: string) {
     setName(val)
@@ -86,6 +107,13 @@ export default function ProductForm({ categories, collections, product, onSubmit
     }
   }
 
+  function toggleSetValue(current: Set<string>, value: string) {
+    const next = new Set(current)
+    if (next.has(value)) next.delete(value)
+    else next.add(value)
+    return next
+  }
+
   const inputStyle = {
     width: '100%', background: '#0A0A0C',
     border: '1px solid rgba(255,255,255,0.1)', borderRadius: 3,
@@ -128,6 +156,21 @@ export default function ProductForm({ categories, collections, product, onSubmit
     </label>
   )
 
+  const optionButtonStyle = (selected: boolean) => ({
+    border: `1px solid ${selected ? '#7A1620' : 'rgba(255,255,255,0.1)'}`,
+    background: selected ? 'rgba(122,22,32,0.22)' : '#0A0A0C',
+    color: selected ? '#F2F1ED' : '#94938E',
+    borderRadius: 3,
+    padding: '9px 10px',
+    fontFamily: 'var(--font-display)',
+    fontSize: 11,
+    fontWeight: 700,
+    letterSpacing: '.06em',
+    textTransform: 'uppercase' as const,
+    cursor: 'pointer',
+    minHeight: 36,
+  })
+
   return (
     <form onSubmit={handleSubmit}>
       <style>{`
@@ -135,10 +178,24 @@ export default function ProductForm({ categories, collections, product, onSubmit
           .product-form-shell,
           .product-form-grid-2,
           .product-form-grid-3{grid-template-columns:1fr!important;}
+          .product-option-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important;}
           .product-sku-row{flex-wrap:wrap!important;}
           .product-sku-row input{min-width:180px!important;}
         }
       `}</style>
+      {[...selectedSizes].map(size => <input key={size} type="hidden" name="sizes" value={size} />)}
+      {[...selectedColors].map(colorName => {
+        const option = colorOptions.find(color => color.name === colorName)
+        const existing = product?.colors?.find(color => color.color_name === colorName)
+        return (
+          <input
+            key={colorName}
+            type="hidden"
+            name="colors"
+            value={`${colorName}|${option?.hex || existing?.color_hex || '#111111'}`}
+          />
+        )
+      })}
       <div className="product-form-shell" style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) 320px', gap: 16 }}>
 
         {/* LEFT COLUMN */}
@@ -215,6 +272,54 @@ export default function ProductForm({ categories, collections, product, onSubmit
                 <textarea name="care_instructions" value={care} onChange={e => setCare(e.target.value)} rows={2} style={{ ...inputStyle, resize: 'vertical' }} placeholder="Ex: Lavage à 30°C, ne pas sécher au sèche-linge..." />
               </div>
             </div>
+          </div>
+
+          {/* Variantes */}
+          <div style={sectionStyle}>
+            <p style={sectionTitle}>Tailles</p>
+            <div className="product-option-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(4,minmax(0,1fr))', gap: 8 }}>
+              {SIZE_OPTIONS.map(size => {
+                const selected = selectedSizes.has(size)
+                return (
+                  <button
+                    key={size}
+                    type="button"
+                    aria-pressed={selected}
+                    onClick={() => setSelectedSizes(current => toggleSetValue(current, size))}
+                    style={optionButtonStyle(selected)}
+                  >
+                    {size}
+                  </button>
+                )
+              })}
+            </div>
+            <p style={{ fontSize: 11, color: '#4D4D52', marginTop: 10, fontFamily: 'var(--font-display)' }}>
+              Facultatif. Laisse vide si le produit n'a pas de taille.
+            </p>
+          </div>
+
+          <div style={sectionStyle}>
+            <p style={sectionTitle}>Couleurs</p>
+            <div className="product-option-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(4,minmax(0,1fr))', gap: 8 }}>
+              {colorOptions.map(color => {
+                const selected = selectedColors.has(color.name)
+                return (
+                  <button
+                    key={color.name}
+                    type="button"
+                    aria-pressed={selected}
+                    onClick={() => setSelectedColors(current => toggleSetValue(current, color.name))}
+                    style={{ ...optionButtonStyle(selected), display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7 }}
+                  >
+                    <span style={{ width: 12, height: 12, borderRadius: '50%', background: color.hex, border: '1px solid rgba(255,255,255,0.25)', flexShrink: 0 }} />
+                    {color.name}
+                  </button>
+                )
+              })}
+            </div>
+            <p style={{ fontSize: 11, color: '#4D4D52', marginTop: 10, fontFamily: 'var(--font-display)' }}>
+              Facultatif. Affiche le selecteur couleur sur la fiche produit uniquement si plusieurs couleurs sont disponibles.
+            </p>
           </div>
 
           {/* Images */}

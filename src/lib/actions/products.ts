@@ -5,6 +5,7 @@ import { createClient } from '@/lib/supabase/server'
 import { requireAdmin } from '@/lib/actions/auth'
 import { generateSlug, generateSKU } from '@/lib/helpers/slugify'
 import { revalidatePath, revalidateTag } from 'next/cache'
+import { redirect } from 'next/navigation'
 
 export type ProductActionResult = {
   success: boolean
@@ -18,6 +19,103 @@ function refreshProductCaches(path?: string) {
   revalidateTag('home-products')
   revalidateTag('site-products')
   if (path) revalidatePath(path)
+}
+
+function parseVariants(formData: FormData, stock: number) {
+  const sizes = formData
+    .getAll('sizes')
+    .map(value => String(value).trim())
+    .filter(Boolean)
+
+  const colors = formData
+    .getAll('colors')
+    .map(value => {
+      const [name, hex] = String(value).split('|')
+      return {
+        color_name: name?.trim(),
+        color_hex: hex?.trim() || '#111111',
+      }
+    })
+    .filter(color => color.color_name)
+
+  return {
+    sizes: [...new Set(sizes)].map(size => ({ size, stock })),
+    colors: colors.filter((color, index, list) => list.findIndex(item => item.color_name === color.color_name) === index)
+      .map(color => ({ ...color, stock })),
+  }
+}
+
+async function syncProductVariants(productId: string, formData: FormData, stock: number) {
+  const adminClient = createAdminClient()
+  const { sizes, colors } = parseVariants(formData, stock)
+
+  const [existingSizesRes, existingColorsRes] = await Promise.all([
+    adminClient.from('product_sizes').select('size, stock').eq('product_id', productId),
+    adminClient.from('product_colors').select('color_name, color_hex, stock').eq('product_id', productId),
+  ])
+
+  const sizeStock = new Map((existingSizesRes.data || []).map(size => [size.size, size.stock]))
+  const colorStock = new Map((existingColorsRes.data || []).map(color => [color.color_name, color.stock]))
+
+  await Promise.all([
+    adminClient.from('product_sizes').delete().eq('product_id', productId),
+    adminClient.from('product_colors').delete().eq('product_id', productId),
+  ])
+
+  if (sizes.length) {
+    const { error } = await adminClient.from('product_sizes').insert(
+      sizes.map(size => ({
+        product_id: productId,
+        size: size.size,
+        stock: sizeStock.get(size.size) ?? stock,
+      }))
+    )
+    if (error) throw new Error(error.message)
+  }
+
+  if (colors.length) {
+    const { error } = await adminClient.from('product_colors').insert(
+      colors.map(color => ({
+        product_id: productId,
+        color_name: color.color_name,
+        color_hex: color.color_hex,
+        stock: colorStock.get(color.color_name) ?? stock,
+      }))
+    )
+    if (error) throw new Error(error.message)
+  }
+}
+
+async function uniqueSlug(baseSlug: string, excludeId?: string) {
+  const adminClient = createAdminClient()
+  const cleanBase = generateSlug(baseSlug || 'produit') || 'produit'
+  let candidate = cleanBase
+  let index = 2
+
+  while (true) {
+    let query = adminClient.from('products').select('id').eq('slug', candidate).limit(1)
+    if (excludeId) query = query.neq('id', excludeId)
+    const { data, error } = await query
+    if (error) throw new Error(error.message)
+    if (!data || data.length === 0) return candidate
+    candidate = `${cleanBase}-${index}`
+    index += 1
+  }
+}
+
+async function uniqueSku(baseSku: string) {
+  const adminClient = createAdminClient()
+  const cleanBase = (baseSku || 'BSC-PROD').trim() || 'BSC-PROD'
+  let candidate = `${cleanBase}-COPY`
+  let index = 2
+
+  while (true) {
+    const { data, error } = await adminClient.from('products').select('id').eq('sku', candidate).limit(1)
+    if (error) throw new Error(error.message)
+    if (!data || data.length === 0) return candidate
+    candidate = `${cleanBase}-COPY-${index}`
+    index += 1
+  }
 }
 
 export async function createProduct(formData: FormData): Promise<ProductActionResult> {
@@ -73,6 +171,15 @@ export async function createProduct(formData: FormData): Promise<ProductActionRe
     return {
       success: false,
       message: error?.message || 'Erreur lors de la creation du produit.',
+    }
+  }
+
+  try {
+    await syncProductVariants(product.id, formData, stock)
+  } catch (variantError) {
+    return {
+      success: false,
+      message: variantError instanceof Error ? variantError.message : 'Produit cree, mais les variantes n ont pas pu etre enregistrees.',
     }
   }
 
@@ -171,6 +278,15 @@ export async function updateProduct(id: string, formData: FormData): Promise<Pro
     }
   }
 
+  try {
+    await syncProductVariants(id, formData, stock)
+  } catch (variantError) {
+    return {
+      success: false,
+      message: variantError instanceof Error ? variantError.message : 'Produit modifie, mais les variantes n ont pas pu etre enregistrees.',
+    }
+  }
+
   const images = formData.getAll('images') as File[]
   const validImages = images.filter(file => file && file.size > 0)
 
@@ -234,6 +350,79 @@ export async function deleteProduct(id: string): Promise<void> {
   if (error) throw new Error(error.message)
 
   refreshProductCaches()
+}
+
+export async function duplicateProduct(id: string): Promise<void> {
+  await requireAdmin()
+
+  const adminClient = createAdminClient()
+
+  const { data: original, error } = await adminClient
+    .from('products')
+    .select('*, images:product_images(*), sizes:product_sizes(*), colors:product_colors(*)')
+    .eq('id', id)
+    .single()
+
+  if (error || !original) throw new Error(error?.message || 'Produit introuvable.')
+
+  const slug = await uniqueSlug(`${original.slug}-copie`)
+  const sku = await uniqueSku(original.sku)
+
+  const { data: copy, error: insertError } = await adminClient
+    .from('products')
+    .insert({
+      name: `${original.name} - copie`,
+      slug,
+      sku,
+      description: original.description,
+      short_description: original.short_description,
+      category_id: original.category_id,
+      collection_id: original.collection_id,
+      price: original.price,
+      old_price: original.old_price,
+      stock: original.stock,
+      featured: false,
+      new_arrival: original.new_arrival,
+      on_sale: original.on_sale,
+      active: false,
+      material: original.material,
+      care_instructions: original.care_instructions,
+      weight: original.weight,
+    })
+    .select()
+    .single()
+
+  if (insertError || !copy) throw new Error(insertError?.message || 'Impossible de dupliquer le produit.')
+
+  const imageRows = (original.images || []).map((image: any) => ({
+    product_id: copy.id,
+    image_url: image.image_url,
+    display_order: image.display_order,
+  }))
+  const sizeRows = (original.sizes || []).map((size: any) => ({
+    product_id: copy.id,
+    size: size.size,
+    stock: size.stock,
+  }))
+  const colorRows = (original.colors || []).map((color: any) => ({
+    product_id: copy.id,
+    color_name: color.color_name,
+    color_hex: color.color_hex,
+    stock: color.stock,
+  }))
+
+  const copyResults = await Promise.all([
+    imageRows.length ? adminClient.from('product_images').insert(imageRows) : Promise.resolve({ error: null }),
+    sizeRows.length ? adminClient.from('product_sizes').insert(sizeRows) : Promise.resolve({ error: null }),
+    colorRows.length ? adminClient.from('product_colors').insert(colorRows) : Promise.resolve({ error: null }),
+  ])
+
+  const copyError = copyResults.find(result => result.error)?.error
+  if (copyError) throw new Error(copyError.message)
+
+  refreshProductCaches(`/admin/produits/${copy.id}/modifier`)
+  revalidatePath(`/produit/${copy.slug}`)
+  redirect(`/admin/produits/${copy.id}/modifier?success=duplicated`)
 }
 
 export async function deleteProductImage(imageId: string, productId: string): Promise<void> {

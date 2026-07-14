@@ -46,6 +46,19 @@ button{font-family:var(--font-body);cursor:pointer;border:none;background:none;c
 .no-scrollbar{scrollbar-width:none;}
 .no-scrollbar::-webkit-scrollbar{display:none;}
 
+@keyframes favorite-pop{
+  0%{transform:scale(1);}
+  45%{transform:scale(1.18);}
+  100%{transform:scale(1);}
+}
+
+.favorite-button-pop{animation:favorite-pop .26s ease;}
+
+@media(prefers-reduced-motion:reduce){
+  .favorite-button,
+  .favorite-button-pop{transition:none!important;animation:none!important;}
+}
+
 @media(max-width:900px){
   .product-detail-grid{grid-template-columns:1fr!important;}
 }

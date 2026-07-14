@@ -8,7 +8,8 @@ Ce document sert de point de reprise entre les sprints. Il doit rester synchroni
 - Termine - Sprint 2 - Authentification
 - Termine - Sprint 3 - UX
 - Termine - Sprint 4 - Page Produit
-- En validation - Sprint 4.5 - Performance et gestion admin
+- Termine - Sprint 4.5 - Performance et gestion admin
+- En validation - Sprint 4.6 - Variantes, duplication, UX mobile et favoris
 - En attente - Sprint 5 - Panier
 - En attente - Sprint 6 - Checkout
 - En attente - Sprint 7 - Paiement Wave
@@ -58,15 +59,24 @@ Ce document sert de point de reprise entre les sprints. Il doit rester synchroni
 ## Sprint 4.5 - Performance et gestion admin
 
 - Objectif : optimiser l'accueil, finaliser la recherche/categories mobile, corriger la creation/modification produit et rendre la banniere d'accueil administrable.
-- Etat : en validation.
+- Etat : termine pour les corrections applicatives ; migration banniere reportee volontairement.
 - Date : 2026-07-14.
 - Fichiers principaux concernes : `src/app/page.tsx`, `src/components/HomeClient.tsx`, `src/components/admin/forms/ProductForm.tsx`, `src/lib/actions/products.ts`, `src/lib/actions/settings.ts`, `src/app/admin/parametres/page.tsx`, `supabase/migrations/005_home_hero_settings.sql`.
 - Problemes rencontres : les formulaires produit appelaient une Server Action qui redirigeait directement depuis un handler client ; les images etaient aussi presentes deux fois dans le `FormData`. La banniere necessite une migration Supabase non destructive avant edition en production.
-- Prochaines etapes : appliquer la migration Supabase, publier sur `main`, verifier Vercel READY puis valider les tests de creation/modification produit et banniere avant Sprint 5.
+- Prochaines etapes : appliquer plus tard `005_home_hero_settings.sql` manuellement dans Supabase ; ne pas bloquer le Sprint 4.6 dessus.
+
+## Sprint 4.6 - Variantes, duplication, UX mobile et favoris
+
+- Objectif : rendre les tailles/couleurs administrables, ajouter la duplication produit, corriger le scroll categories mobile, ameliorer la recherche mobile et unifier les favoris.
+- Etat : en validation.
+- Date : 2026-07-14.
+- Fichiers principaux concernes : `src/components/admin/forms/ProductForm.tsx`, `src/lib/actions/products.ts`, `src/app/admin/produits/*`, `src/components/HomeClient.tsx`, `src/components/FavoriteButton.tsx`, `src/hooks/useFavorites.ts`, fiche produit et produits similaires.
+- Problemes rencontres : variantes deja presentes en base mais absentes des formulaires admin ; favoris locaux non partages entre les cartes ; scroll categories limite par la structure du header mobile.
+- Prochaines etapes : publier sur `main`, verifier Vercel READY et valider les routes production avant Sprint 5.
 
 ## Sprints suivants
 
-- Sprint 5 - Panier : panier persistant et ergonomique, en attente de validation du Sprint 4.5.
+- Sprint 5 - Panier : panier persistant et ergonomique, en attente de validation du Sprint 4.6.
 - Sprint 6 - Checkout : informations client, livraison, creation commande.
 - Sprint 7 - Paiement Wave : integration paiement.
 - Sprint 8 - Orange Money : integration paiement.

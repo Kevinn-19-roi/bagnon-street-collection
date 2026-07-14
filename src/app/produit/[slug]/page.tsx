@@ -8,6 +8,7 @@ import ProductMediaGallery from '@/components/product/ProductMediaGallery'
 import ProductPurchasePanel from '@/components/product/ProductPurchasePanel'
 import RelatedProductCard from '@/components/product/RelatedProductCard'
 import { toProductDetailViewModel } from '@/components/product/product-view-model'
+import FavoriteButton from '@/components/FavoriteButton'
 import type { Product, SiteSettings } from '@/types/database'
 
 export const dynamic = 'force-dynamic'
@@ -149,9 +150,12 @@ export default async function ProductPage({ params }: ProductPageProps) {
                 {viewModel.discount > 0 && <span style={{ background: 'var(--red)', color: '#fff', borderRadius: 3, padding: '5px 9px', fontFamily: 'var(--font-display)', fontSize: 10, fontWeight: 700, letterSpacing: '.1em', textTransform: 'uppercase' }}>-{viewModel.discount}%</span>}
               </div>
 
-              <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 'clamp(30px,6vw,58px)', fontWeight: 700, lineHeight: .98, letterSpacing: '-.03em' }}>
-                {viewModel.name}
-              </h1>
+              <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}>
+                <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 'clamp(30px,6vw,58px)', fontWeight: 700, lineHeight: .98, letterSpacing: '-.03em', flex: 1 }}>
+                  {viewModel.name}
+                </h1>
+                <FavoriteButton productId={viewModel.id} size={22} style={{ flexShrink: 0 }} />
+              </div>
 
               <div style={{ display: 'flex', alignItems: 'baseline', gap: 10, flexWrap: 'wrap' }}>
                 <span style={{ fontFamily: 'var(--font-display)', fontSize: 'clamp(20px,4vw,30px)', fontWeight: 700 }}>{formatPrice(viewModel.price)}</span>
