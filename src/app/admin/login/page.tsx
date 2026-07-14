@@ -1,6 +1,7 @@
 export const dynamic = 'force-dynamic'
 import { loginAdmin } from '@/lib/actions/auth'
 import Image from 'next/image'
+import PasswordInput from '@/components/auth/PasswordInput'
 
 export const metadata = { title: 'Admin — Bagnon Street' }
 
@@ -46,12 +47,12 @@ export default async function AdminLoginPage({
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
             <label style={{ color: '#94938E', fontSize: 11, fontWeight: 600, letterSpacing: '.1em', textTransform: 'uppercase' }}>Mot de passe</label>
-            <input
-              type="password"
+            <PasswordInput
               name="password"
               required
               placeholder="••••••••"
-              style={{ background: '#0A0A0C', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 4, padding: '12px 14px', color: '#F2F1ED', fontSize: 14, outline: 'none', fontFamily: 'inherit' }}
+              autoComplete="current-password"
+              inputStyle={{ background: '#0A0A0C', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 4, padding: '12px 14px', color: '#F2F1ED', fontSize: 14, outline: 'none', fontFamily: 'inherit' }}
             />
           </div>
 

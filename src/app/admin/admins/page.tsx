@@ -9,6 +9,7 @@ import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { formatDate } from '@/lib/helpers/slugify'
+import PasswordInput from '@/components/auth/PasswordInput'
 
 export const metadata = { title: 'Admins — BSC' }
 
@@ -203,7 +204,7 @@ export default async function AdminsPage() {
             </div>
             <div>
               <label style={labelStyle}>Mot de passe *</label>
-              <input name="password" type="password" required minLength={8} style={inputStyle} placeholder="Min. 8 caractères" />
+              <PasswordInput name="password" required minLength={8} inputStyle={inputStyle} placeholder="Min. 8 caractères" autoComplete="new-password" />
             </div>
             <div>
               <label style={labelStyle}>Rôle *</label>

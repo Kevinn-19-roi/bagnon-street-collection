@@ -2,6 +2,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { loginClient } from '@/lib/actions/auth'
 import AuthSubmitButton from '@/components/auth/AuthSubmitButton'
+import PasswordInput from '@/components/auth/PasswordInput'
 
 export const dynamic = 'force-dynamic'
 export const metadata = { title: 'Connexion — Bagnon Street' }
@@ -54,7 +55,7 @@ export default async function ConnexionPage({
 
           <label style={{ display: 'flex', flexDirection: 'column', gap: 8, fontSize: 12, color: 'var(--text2)', fontWeight: 600 }}>
             Mot de passe
-            <input name="password" type="password" required autoComplete="current-password" style={{ background: 'var(--bg)', border: '1px solid var(--border2)', borderRadius: 4, padding: '12px 14px', color: 'var(--text)', outline: 'none' }} />
+            <PasswordInput name="password" required autoComplete="current-password" inputStyle={{ background: 'var(--bg)', border: '1px solid var(--border2)', borderRadius: 4, padding: '12px 14px', color: 'var(--text)', outline: 'none' }} />
           </label>
 
           <AuthSubmitButton idleLabel="Se connecter" pendingLabel="Connexion..." style={{ background: 'var(--btn)', color: 'var(--btn-t)', borderRadius: 4, padding: '13px 16px', fontFamily: 'var(--font-display)', fontSize: 12, fontWeight: 700, letterSpacing: '.08em', textTransform: 'uppercase' }} />
