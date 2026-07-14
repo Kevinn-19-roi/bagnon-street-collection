@@ -17,14 +17,15 @@
   - `ROADMAP.md`
   - `CHANGELOG.md`
 - Commits importants :
-  - A renseigner apres publication sur `main`.
+  - `d623fd8` - Keep users on product page after add to cart.
 - Validations effectuees :
   - TypeScript local : OK.
   - ESLint local : OK.
   - Build production local : OK.
+  - Publication GitHub `main` : OK.
+  - Production HTTP : `/`, `/panier`, `/produit/hoodie-bsc-kaki`, `/favoris` repondent en 200.
 - Points restant a traiter :
-  - Publication sur `main`.
-  - Verification Vercel READY et test production.
+  - Test manuel final sur mobile/tablette/desktop avec clic reel du bouton `Ajouter au panier`.
 
 ## 2026-07-14 - Sprint 5 Panier complet
 
