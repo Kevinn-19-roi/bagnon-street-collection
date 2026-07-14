@@ -99,3 +99,23 @@ export async function getDashboardStats() {
     return { total_orders: 0, total_revenue: 0, total_customers: 0, active_products: 0 }
   }
 }
+
+export async function getOrderByNumber(orderNumber: string): Promise<Order | null> {
+  const adminClient = createAdminClient()
+
+  const { data, error } = await adminClient
+    .from('orders')
+    .select(`
+      *,
+      customer:customers(*),
+      items:order_items(
+        *,
+        product:products(id, name, slug, images:product_images(image_url))
+      )
+    `)
+    .eq('order_number', orderNumber)
+    .single()
+
+  if (error) return null
+  return data as Order
+}

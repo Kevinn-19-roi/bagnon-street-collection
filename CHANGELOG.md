@@ -1,5 +1,38 @@
 # Changelog Bagnon Street Collection
 
+## 2026-07-14 - Sprint 6 Checkout, commande et preparation paiement
+
+- Developpements :
+  - Creation de la route `/checkout` avec formulaire client, recapitulatif panier et choix de moyen de paiement prepare.
+  - Creation de la Server Action `createCheckoutOrder` qui relit les produits depuis Supabase, recalcule les prix, controle les produits actifs, variantes, quantites et stock.
+  - Creation des lignes `customers`, `orders` et `order_items` avec une commande en statut `pending` et paiement `unpaid`.
+  - Creation de la route de confirmation `/commande/[reference]`.
+  - Liaison du panier vers le checkout.
+  - Affichage des articles, variantes et quantites dans la liste admin `/admin/commandes`.
+- Bugs corriges :
+  - Le bouton checkout du panier etait encore desactive apres le Sprint 5.
+  - L'admin commandes ne montrait pas le detail des produits et variantes commandees.
+- Fichiers modifies :
+  - `src/app/checkout/page.tsx`
+  - `src/components/checkout/CheckoutClient.tsx`
+  - `src/lib/actions/checkout.ts`
+  - `src/app/commande/[reference]/page.tsx`
+  - `src/lib/database/orders.ts`
+  - `src/app/admin/commandes/page.tsx`
+  - `src/components/cart/CartPageClient.tsx`
+  - `src/styles/globals.css`
+  - `ROADMAP.md`
+  - `CHANGELOG.md`
+- Commits importants :
+  - A renseigner apres commit Sprint 6.
+- Validations effectuees :
+  - TypeScript local : OK.
+  - ESLint local : OK.
+  - Build production local : OK.
+  - Migration `005_home_hero_settings.sql` : appliquee et validee en production par Supabase.
+- Points restant a traiter :
+  - Test de creation reelle de commande en production avec panier navigateur.
+  - Sprint 7 : integration Wave / Orange Money, confirmation paiement et decrement du stock apres paiement confirme.
 ## 2026-07-14 - Correctif panier avant Sprint 6
 
 - Developpements :

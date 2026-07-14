@@ -77,11 +77,11 @@ export default async function CommandesPage({
       </div>
 
       {/* Table */}
-      <ResponsiveTable minWidth={900}>
+      <ResponsiveTable minWidth={1080}>
         <table style={{ width: '100%', borderCollapse: 'collapse' }}>
           <thead>
             <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
-              {['N° Commande', 'Client', 'Total', 'Statut', 'Paiement', 'Date', 'Actions'].map(h => (
+              {['N° Commande', 'Client', 'Articles', 'Total', 'Statut', 'Paiement', 'Date', 'Actions'].map(h => (
                 <th key={h} style={{ padding: '11px 16px', textAlign: 'left', fontFamily: 'var(--font-display)', fontSize: 10, fontWeight: 700, letterSpacing: '.2em', textTransform: 'uppercase', color: '#4D4D52' }}>{h}</th>
               ))}
             </tr>
@@ -89,7 +89,7 @@ export default async function CommandesPage({
           <tbody>
             {orders.length === 0 ? (
               <tr>
-                <td colSpan={7} style={{ padding: '48px', textAlign: 'center', color: '#4D4D52', fontFamily: 'var(--font-display)', fontSize: 13 }}>
+                <td colSpan={8} style={{ padding: '48px', textAlign: 'center', color: '#4D4D52', fontFamily: 'var(--font-display)', fontSize: 13 }}>
                   Aucune commande
                 </td>
               </tr>
@@ -104,6 +104,18 @@ export default async function CommandesPage({
                   <div>
                     <p style={{ fontFamily: 'var(--font-display)', fontSize: 13, fontWeight: 600, color: '#F2F1ED' }}>{order.customer?.fullname}</p>
                     <p style={{ fontFamily: 'var(--font-display)', fontSize: 10, color: '#4D4D52', marginTop: 2 }}>{order.customer?.phone}</p>
+                  </div>
+                </td>
+                <td style={{ padding: '12px 16px', minWidth: 220 }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                    {order.items?.slice(0, 3).map((item: any) => (
+                      <p key={item.id} style={{ fontFamily: 'var(--font-display)', fontSize: 10, color: '#94938E', lineHeight: 1.45 }}>
+                        {item.quantity}x {item.product?.name || 'Produit'}
+                        {item.selected_size ? <> - {item.selected_size}</> : null}
+                        {item.selected_color ? <> - {item.selected_color}</> : null}
+                      </p>
+                    ))}
+                    {(order.items?.length || 0) > 3 && <p style={{ fontFamily: 'var(--font-display)', fontSize: 10, color: '#4D4D52' }}>+{(order.items?.length || 0) - 3} autre(s)</p>}
                   </div>
                 </td>
                 <td style={{ padding: '12px 16px' }}>

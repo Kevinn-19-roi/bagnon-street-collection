@@ -87,3 +87,14 @@ button{font-family:var(--font-body);cursor:pointer;border:none;background:none;c
   .related-products-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important;}
   .favorites-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important;}
 }
+
+@media(max-width:900px){
+  .checkout-grid,
+  .order-confirmation-grid{grid-template-columns:1fr!important;}
+  .checkout-grid aside,
+  .order-confirmation-grid aside{position:static!important;}
+}
+
+@media(max-width:640px){
+  .checkout-form-grid{grid-template-columns:1fr!important;}
+}

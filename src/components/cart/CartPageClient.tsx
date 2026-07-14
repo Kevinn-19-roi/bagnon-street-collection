@@ -155,14 +155,9 @@ export default function CartPageClient() {
               <strong style={{ fontFamily: 'var(--font-display)', fontSize: 17 }}>{formatPrice(subtotal)}</strong>
             </div>
           </div>
-          <button
-            type="button"
-            disabled
-            title="Le checkout arrive au sprint suivant"
-            style={{ width: '100%', background: 'var(--bg3)', color: 'var(--text3)', borderRadius: 3, padding: '14px', fontFamily: 'var(--font-display)', fontSize: 12, fontWeight: 700, letterSpacing: '.08em', textTransform: 'uppercase', cursor: 'not-allowed', marginBottom: 10 }}
-          >
+          <Link href="/checkout" style={{ width: '100%', display: 'inline-flex', justifyContent: 'center', background: 'var(--btn)', color: 'var(--btn-t)', borderRadius: 3, padding: '14px', fontFamily: 'var(--font-display)', fontSize: 12, fontWeight: 700, letterSpacing: '.08em', textTransform: 'uppercase', marginBottom: 10 }}>
             Continuer vers le checkout
-          </button>
+          </Link>
           <Link href="/#collection" style={{ width: '100%', display: 'inline-flex', justifyContent: 'center', border: '1px solid var(--border2)', borderRadius: 3, padding: '12px', fontFamily: 'var(--font-display)', fontSize: 11, fontWeight: 700, letterSpacing: '.08em', textTransform: 'uppercase', color: 'var(--text2)' }}>
             Continuer mes achats
           </Link>
@@ -174,3 +169,4 @@ export default function CartPageClient() {
     </section>
   )
 }
+
