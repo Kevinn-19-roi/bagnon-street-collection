@@ -355,6 +355,9 @@ function Navbar({ onMenuOpen, currentUser }: { onMenuOpen: () => void; currentUs
             {theme === 'dark' ? I.moon : I.sun}
           </button>
           {/* Hide user+heart on small screens */}
+          <a href="/favoris" aria-label="Favoris" style={{ width: 38, height: 38, borderRadius: '50%', display: 'none', alignItems: 'center', justifyContent: 'center', color: 'var(--text)' }} className="desktop-only">
+            {I.heart}
+          </a>
           <a href={currentUser ? '/profil' : '/connexion'} style={{ width: 38, height: 38, borderRadius: '50%', display: 'none', alignItems: 'center', justifyContent: 'center', color: 'var(--text)' }} className="desktop-only">
             {I.user}
           </a>
@@ -703,7 +706,7 @@ export default function HomeClient({ featured, newItems, bestsellers, allProduct
 
       {/* BOTTOM NAV — mobile only */}
       <div className="mobile-only" style={{ position: 'fixed', bottom: 0, left: 0, right: 0, background: 'var(--nav-bg)', backdropFilter: 'blur(20px)', borderTop: '1px solid var(--border)', zIndex: 200, display: 'flex', justifyContent: 'space-around', padding: '8px 0 max(8px, env(safe-area-inset-bottom))' }}>
-        {[{ icon: I.home, label: 'Accueil', href: '#' }, { icon: I.search, label: 'Recherche', href: '#' }, { icon: I.grid, label: 'Catalogue', href: '#collection' }, { icon: I.heart, label: 'Favoris', href: '#' }, { icon: I.user, label: currentUser ? 'Mon compte' : 'Compte', href: currentUser ? '/profil' : '/connexion' }].map(n => (
+        {[{ icon: I.home, label: 'Accueil', href: '#' }, { icon: I.search, label: 'Recherche', href: '#' }, { icon: I.grid, label: 'Catalogue', href: '#collection' }, { icon: I.heart, label: 'Favoris', href: '/favoris' }, { icon: I.user, label: currentUser ? 'Mon compte' : 'Compte', href: currentUser ? '/profil' : '/connexion' }].map(n => (
           <a key={n.label} href={n.href} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3, fontFamily: 'var(--font-display)', fontSize: 9, fontWeight: 600, color: 'var(--text2)', letterSpacing: '.03em', padding: '2px 10px', textTransform: 'uppercase' }}>
             {n.icon}{n.label}
           </a>

@@ -13,7 +13,7 @@ export async function getProducts(
     category_id,
     collection_id,
     featured,
-    active = true,
+    active,
     search,
     page = 1,
     per_page = 20,
@@ -32,7 +32,7 @@ export async function getProducts(
     .order('created_at', { ascending: false })
     .range((page - 1) * per_page, page * per_page - 1)
 
-  if (active !== undefined) query = query.eq('active', active)
+  if (active !== null) query = query.eq('active', active ?? true)
   if (category_id) query = query.eq('category_id', category_id)
   if (collection_id) query = query.eq('collection_id', collection_id)
   if (featured !== undefined) query = query.eq('featured', featured)

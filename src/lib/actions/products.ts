@@ -347,9 +347,12 @@ export async function deleteProduct(id: string): Promise<void> {
     .delete()
     .eq('id', id)
 
-  if (error) throw new Error(error.message)
+  if (error) {
+    redirect('/admin/produits?error=delete')
+  }
 
   refreshProductCaches()
+  redirect('/admin/produits?success=deleted')
 }
 
 export async function duplicateProduct(id: string): Promise<void> {
@@ -363,7 +366,9 @@ export async function duplicateProduct(id: string): Promise<void> {
     .eq('id', id)
     .single()
 
-  if (error || !original) throw new Error(error?.message || 'Produit introuvable.')
+  if (error || !original) {
+    redirect('/admin/produits?error=duplicate')
+  }
 
   const slug = await uniqueSlug(`${original.slug}-copie`)
   const sku = await uniqueSku(original.sku)
@@ -392,7 +397,9 @@ export async function duplicateProduct(id: string): Promise<void> {
     .select()
     .single()
 
-  if (insertError || !copy) throw new Error(insertError?.message || 'Impossible de dupliquer le produit.')
+  if (insertError || !copy) {
+    redirect('/admin/produits?error=duplicate')
+  }
 
   const imageRows = (original.images || []).map((image: any) => ({
     product_id: copy.id,
@@ -418,7 +425,9 @@ export async function duplicateProduct(id: string): Promise<void> {
   ])
 
   const copyError = copyResults.find(result => result.error)?.error
-  if (copyError) throw new Error(copyError.message)
+  if (copyError) {
+    redirect('/admin/produits?error=duplicate')
+  }
 
   refreshProductCaches(`/admin/produits/${copy.id}/modifier`)
   revalidatePath(`/produit/${copy.slug}`)

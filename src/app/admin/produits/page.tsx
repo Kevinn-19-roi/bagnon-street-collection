@@ -15,7 +15,7 @@ export const dynamic = 'force-dynamic'
 export default async function ProduitsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ page?: string; search?: string; category?: string; success?: string }>
+  searchParams: Promise<{ page?: string; search?: string; category?: string; success?: string; error?: string }>
 }) {
   const params = await searchParams
   const page = Number(params.page || 1)
@@ -24,11 +24,18 @@ export default async function ProduitsPage({
     ? 'Produit créé avec succès.'
     : params.success === 'updated'
       ? 'Produit modifié avec succès.'
+      : params.success === 'deleted'
+        ? 'Produit supprimé avec succès.'
+      : null
+  const errorMessage = params.error === 'delete'
+    ? 'Impossible de supprimer le produit. Réessayez ou vérifiez les éléments liés.'
+    : params.error === 'duplicate'
+      ? 'Impossible de dupliquer le produit. Réessayez depuis la liste produits.'
       : null
 
   const { data: products, total, total_pages } = await getProducts({
     search: search || undefined,
-    active: undefined,
+    active: null,
     page,
     per_page: 20,
   })
@@ -67,6 +74,24 @@ export default async function ProduitsPage({
           }}
         >
           {successMessage}
+        </div>
+      )}
+
+      {errorMessage && (
+        <div
+          role="alert"
+          style={{
+            background: 'rgba(239,83,80,0.12)',
+            border: '1px solid rgba(239,83,80,0.32)',
+            color: '#EF5350',
+            borderRadius: 3,
+            padding: '10px 14px',
+            marginBottom: 16,
+            fontFamily: 'var(--font-display)',
+            fontSize: 12,
+          }}
+        >
+          {errorMessage}
         </div>
       )}
 
@@ -153,7 +178,7 @@ export default async function ProduitsPage({
                 {/* Status */}
                 <td style={{ padding: '12px 16px' }}>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-                    <Badge label={p.active ? 'Actif' : 'Inactif'} variant={p.active ? 'success' : 'default'} />
+                    <Badge label={p.active ? 'Actif' : 'Brouillon'} variant={p.active ? 'success' : 'default'} />
                     {p.featured && <Badge label="Vedette" variant="info" />}
                     {p.new_arrival && <Badge label="Nouveau" variant="warning" />}
                     {p.on_sale && <Badge label="Promo" variant="error" />}

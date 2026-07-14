@@ -9,7 +9,8 @@ Ce document sert de point de reprise entre les sprints. Il doit rester synchroni
 - Termine - Sprint 3 - UX
 - Termine - Sprint 4 - Page Produit
 - Termine - Sprint 4.5 - Performance et gestion admin
-- En validation - Sprint 4.6 - Variantes, duplication, UX mobile et favoris
+- Termine - Sprint 4.6 - Variantes, duplication, UX mobile et favoris
+- En validation - Sprint 4.7 - Duplication, suppression et page favoris
 - En attente - Sprint 5 - Panier
 - En attente - Sprint 6 - Checkout
 - En attente - Sprint 7 - Paiement Wave
@@ -68,15 +69,24 @@ Ce document sert de point de reprise entre les sprints. Il doit rester synchroni
 ## Sprint 4.6 - Variantes, duplication, UX mobile et favoris
 
 - Objectif : rendre les tailles/couleurs administrables, ajouter la duplication produit, corriger le scroll categories mobile, ameliorer la recherche mobile et unifier les favoris.
-- Etat : en validation.
+- Etat : termine.
 - Date : 2026-07-14.
 - Fichiers principaux concernes : `src/components/admin/forms/ProductForm.tsx`, `src/lib/actions/products.ts`, `src/app/admin/produits/*`, `src/components/HomeClient.tsx`, `src/components/FavoriteButton.tsx`, `src/hooks/useFavorites.ts`, fiche produit et produits similaires.
 - Problemes rencontres : variantes deja presentes en base mais absentes des formulaires admin ; favoris locaux non partages entre les cartes ; scroll categories limite par la structure du header mobile.
-- Prochaines etapes : publier sur `main`, verifier Vercel READY et valider les routes production avant Sprint 5.
+- Prochaines etapes : Sprint 4.7 correctif avant le panier complet.
+
+## Sprint 4.7 - Duplication, suppression et page favoris
+
+- Objectif : corriger la visibilite des duplicatas brouillons, securiser la redirection apres suppression produit et creer une vraie page favoris frontend.
+- Etat : en validation.
+- Date : 2026-07-14.
+- Fichiers principaux concernes : `src/lib/database/products.ts`, `src/lib/actions/products.ts`, `src/app/admin/produits/page.tsx`, `src/app/favoris/page.tsx`, `src/components/favorites/FavoritesClient.tsx`, `src/components/HomeClient.tsx`, `src/hooks/useFavorites.ts`.
+- Problemes rencontres : la liste admin utilisait le filtre actif par defaut meme quand elle devait afficher tous les statuts ; la suppression produit ne redirigeait pas explicitement vers la liste ; les liens Favoris pointaient vers une ancre au lieu d'une route dediee.
+- Prochaines etapes : publier sur `main`, verifier Vercel READY et tester `/favoris` ainsi que les routes produits/admin en production avant Sprint 5.
 
 ## Sprints suivants
 
-- Sprint 5 - Panier : panier persistant et ergonomique, en attente de validation du Sprint 4.6.
+- Sprint 5 - Panier : panier persistant et ergonomique, en attente de validation du Sprint 4.7.
 - Sprint 6 - Checkout : informations client, livraison, creation commande.
 - Sprint 7 - Paiement Wave : integration paiement.
 - Sprint 8 - Orange Money : integration paiement.

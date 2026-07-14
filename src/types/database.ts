@@ -221,7 +221,7 @@ export interface ProductFilters {
   category_id?: string
   collection_id?: string
   featured?: boolean
-  active?: boolean
+  active?: boolean | null
   search?: string
   page?: number
   per_page?: number

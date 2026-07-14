@@ -1,5 +1,40 @@
 # Changelog Bagnon Street Collection
 
+## 2026-07-14 - Sprint 4.7 Duplication, suppression et page favoris
+
+- Developpements :
+  - Creation de la route frontend `/favoris`.
+  - Ajout d'une page favoris responsive basee sur le systeme partage `useFavorites` et `localStorage`.
+  - Liaison des acces Favoris du header desktop et de la navigation mobile vers `/favoris`.
+  - Affichage des produits actifs favoris avec les cartes produit, le coeur rouge rempli et le retrait instantane.
+  - Affichage des produits brouillons dans la liste admin avec badge de statut.
+- Bugs corriges :
+  - Les duplicatas crees en `active: false` n'apparaissaient pas dans la liste admin car `getProducts()` appliquait par defaut le filtre `active = true`.
+  - La suppression produit pouvait laisser l'admin sur la route du produit supprime ; elle redirige maintenant vers `/admin/produits?success=deleted`.
+  - Les liens Favoris pointaient vers `#`, ce qui rechargeait ou ramenait a l'accueil au lieu d'ouvrir une vraie page.
+  - Les erreurs de suppression ou duplication redirigent maintenant vers un message lisible sur la liste admin.
+- Fichiers modifies :
+  - `src/types/database.ts`
+  - `src/lib/database/products.ts`
+  - `src/lib/actions/products.ts`
+  - `src/app/admin/produits/page.tsx`
+  - `src/app/favoris/page.tsx`
+  - `src/components/favorites/FavoritesClient.tsx`
+  - `src/components/HomeClient.tsx`
+  - `src/styles/globals.css`
+  - `ROADMAP.md`
+  - `CHANGELOG.md`
+- Commits importants :
+  - A renseigner apres publication sur `main`.
+- Validations effectuees :
+  - TypeScript local : OK.
+  - ESLint local : OK.
+  - Build production local : OK.
+- Points restant a traiter :
+  - Publication sur `main`.
+  - Verification Vercel READY.
+  - Tests production HTTP et verification manuelle avec session admin reelle.
+
 ## 2026-07-14 - Sprint 4.6 Variantes, duplication, UX mobile et favoris
 
 - Developpements :
