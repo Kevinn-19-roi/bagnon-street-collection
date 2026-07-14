@@ -13,6 +13,7 @@
   - Creation produit et modification produit pouvaient rester bloquees car le formulaire client appelait une Server Action avec `redirect()` interne.
   - Les images selectionnees etaient envoyees deux fois dans le `FormData`.
   - Absence de message de confirmation visible apres creation/modification produit.
+  - Upload produit superieur a 1 MB rejete par la limite par defaut des Server Actions Next.js.
 - Fichiers modifies :
   - `src/app/page.tsx`
   - `src/components/HomeClient.tsx`
@@ -22,6 +23,7 @@
   - `src/app/admin/produits/page.tsx`
   - `src/app/admin/parametres/page.tsx`
   - `src/types/database.ts`
+  - `next.config.js`
   - `supabase/migrations/005_home_hero_settings.sql`
   - `ROADMAP.md`
   - `CHANGELOG.md`
