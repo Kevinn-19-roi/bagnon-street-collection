@@ -1,5 +1,29 @@
 # Changelog Bagnon Street Collection
 
+## 2026-07-15 - Sprint 8 Notifications WhatsApp admin/client
+
+- Developpements :
+  - Audit des elements WhatsApp deja livres pendant le Sprint 7.
+  - Conservation du fonctionnement par liens `wa.me` et clic volontaire, sans API WhatsApp Cloud.
+  - Enrichissement du message client avec moyen de paiement, statut paiement et suivi commande.
+  - Enrichissement du message admin avec une phrase adaptee au statut : paiement en attente, paiement confirme, commande expediee ou livree.
+  - Suppression du risque de salutation vide dans le message admin lorsque le nom client manque.
+- Bugs corriges :
+  - Le message admin etait fonctionnel mais trop generique selon le statut.
+- Fichiers modifies :
+  - `src/lib/whatsapp.ts`
+  - `ROADMAP.md`
+  - `CHANGELOG.md`
+- Commits importants :
+  - `Finalize WhatsApp notifications`
+- Validations effectuees :
+  - TypeScript OK.
+  - ESLint OK.
+  - Build production OK.
+- Points restant a traiter :
+  - WhatsApp Cloud API reste volontairement hors scope jusqu'a reception des acces officiels.
+  - Orange Money reste reporte jusqu'a reception d'un lien marchand, numero marchand ou acces API officiels.
+
 ## 2026-07-15 - Sprint 7 Wave manuel transitoire
 
 - Developpements :

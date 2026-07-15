@@ -14,8 +14,8 @@ Ce document sert de point de reprise entre les sprints. Il doit rester synchroni
 - Publie - Sprint 5 - Panier
 - Termine - Sprint 6 - Checkout
 - Termine - Sprint 7 - Paiement Wave manuel et suivi simplifie
-- En attente - Sprint 8 - Orange Money
-- En attente - Sprint 9 - WhatsApp
+- Termine - Sprint 8 - Notifications WhatsApp admin/client
+- Reporte - Orange Money
 - En attente - Sprint 10 - Optimisation SEO
 - En attente - Sprint 11 - Mise en production finale
 
@@ -123,13 +123,24 @@ Ce document sert de point de reprise entre les sprints. Il doit rester synchroni
 - Transitions autorisees : `pending`/`confirmed` payee -> `shipped`, puis `shipped` -> `delivered`; une commande non payee n'est pas expediee par le parcours normal.
 - WhatsApp : la page confirmation client genere un message pre-rempli vers le numero `site_settings.whatsapp`; l'admin dispose aussi d'un message WhatsApp vers le client.
 - Validation production : confirmation Wave admin OK, `payment_status = paid`, `order_status = confirmed`, decrement stock une seule fois, deuxieme confirmation bloquee, suivi Expediee puis Livree OK, WhatsApp client/admin OK.
-- Prochaines etapes : preparer le Sprint 8 - Orange Money sans modifier l'existant Wave ; remplacer plus tard le lien Wave statique par Wave Checkout API et webhooks officiels quand les acces seront disponibles.
+- Prochaines etapes : finaliser le Sprint 8 - Notifications WhatsApp admin/client sans API officielle ; remplacer plus tard le lien Wave statique par Wave Checkout API et webhooks officiels quand les acces seront disponibles.
+
+## Sprint 8 - Notifications WhatsApp admin/client
+
+- Objectif : auditer et finaliser les notifications WhatsApp par liens pre-remplis, sans API WhatsApp Cloud.
+- Etat : termine.
+- Date : 2026-07-15.
+- Fichiers principaux concernes : `src/lib/whatsapp.ts`, `src/app/commande/[reference]/page.tsx`, `src/app/admin/commandes/page.tsx`, `src/app/admin/commandes/[id]/page.tsx`.
+- Existant reutilise : bouton client sur `/commande/[reference]`, boutons admin liste/detail, helper `buildWhatsappUrl`, numero `site_settings.whatsapp`, nettoyage du numero et encodage `wa.me`.
+- Correctif realise : messages client/admin enrichis avec paiement, suivi et phrases adaptees au statut, sans champs vides inutiles.
+- Securite : aucun secret, aucun numero code en dur, aucun paiement confirme via WhatsApp, envoi uniquement par clic volontaire.
+- Evolution future : remplacer les liens `wa.me` par WhatsApp Cloud API uniquement lorsque les acces officiels seront fournis.
 
 ## Sprints suivants
 
 - Sprint 6 - Checkout : termine, transformation du panier local en commande Supabase.
 - Sprint 7 - Paiement Wave : mode manuel termine et valide, API officielle a venir.
-- Sprint 8 - Orange Money : integration paiement.
-- Sprint 9 - WhatsApp : notifications commande.
+- Sprint 8 - Notifications WhatsApp : liens pre-remplis admin/client, sans API officielle.
+- Orange Money : reporte jusqu'a reception d'un lien marchand, numero marchand ou acces API officiels.
 - Sprint 10 - Optimisation SEO : metadata, performances, structure produit.
 - Sprint 11 - Mise en production finale : verification complete, monitoring, recette finale.

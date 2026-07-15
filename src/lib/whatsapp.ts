@@ -31,6 +31,30 @@ export function paymentLabel(status: string) {
   return 'En attente'
 }
 
+function paymentMethodLabel(method: string) {
+  if (method === 'wave') return 'Wave'
+  if (method === 'orange_money') return 'Orange Money'
+  if (method === 'cash') return 'Paiement \u00e0 la livraison'
+  if (method === 'bank_transfer') return 'Virement bancaire'
+  return method.replace('_', ' ')
+}
+
+function adminStatusMessage(order: Order) {
+  if (order.payment_status !== 'paid') {
+    return 'Votre paiement est en attente de v\u00e9rification. Nous vous confirmerons la commande apr\u00e8s contr\u00f4le.'
+  }
+
+  if (order.order_status === 'shipped') {
+    return 'Votre commande a \u00e9t\u00e9 exp\u00e9di\u00e9e. Nous restons disponibles si vous avez besoin de pr\u00e9cisions.'
+  }
+
+  if (order.order_status === 'delivered') {
+    return 'Votre commande est indiqu\u00e9e comme livr\u00e9e. Merci pour votre confiance.'
+  }
+
+  return 'Votre paiement est confirm\u00e9. Votre commande est bien re\u00e7ue et sera pr\u00e9par\u00e9e.'
+}
+
 export function buildClientOrderWhatsappMessage(order: Order) {
   const lines = [
     'Bonjour Bagnon Street Collection,',
@@ -53,8 +77,9 @@ export function buildClientOrderWhatsappMessage(order: Order) {
     ].filter(Boolean) as string[]),
     '',
     `Total : ${Number(order.total).toLocaleString('fr-FR')} FCFA`,
-    `Paiement : ${order.payment_method === 'wave' ? 'Wave' : order.payment_method.replace('_', ' ')}`,
-    `Statut : ${order.payment_status === 'paid' ? 'Paiement v\u00e9rifi\u00e9' : 'En attente de v\u00e9rification'}`,
+    `Moyen de paiement : ${paymentMethodLabel(order.payment_method)}`,
+    `Paiement : ${paymentLabel(order.payment_status)}`,
+    `Suivi : ${orderTrackingLabel(order.order_status)}`,
     '',
     'Merci.',
   ]
@@ -65,14 +90,19 @@ export function buildClientOrderWhatsappMessage(order: Order) {
 export function buildAdminCustomerWhatsappMessage(order: Order) {
   const status = orderTrackingLabel(order.order_status)
   const payment = paymentLabel(order.payment_status)
+  const greeting = order.customer?.fullname
+    ? `Bonjour ${order.customer.fullname},`
+    : 'Bonjour,'
 
   return [
-    `Bonjour ${order.customer?.fullname || ''},`.trim(),
+    greeting,
     '',
     `Nous vous contactons concernant votre commande ${order.order_number} chez Bagnon Street Collection.`,
     '',
     `Statut actuel : ${status}`,
     `Paiement : ${payment}`,
     `Montant : ${Number(order.total).toLocaleString('fr-FR')} FCFA.`,
+    '',
+    adminStatusMessage(order),
   ].join('\n')
 }
