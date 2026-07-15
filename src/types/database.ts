@@ -126,6 +126,11 @@ export interface Order {
   payment_method: PaymentMethod
   payment_status: PaymentStatus
   order_status: OrderStatus
+  provider_transaction_id: string | null
+  paid_at: string | null
+  payment_confirmed_by: string | null
+  payment_confirmed_at: string | null
+  stock_decremented_at: string | null
   notes: string | null
   created_at: string
   updated_at: string

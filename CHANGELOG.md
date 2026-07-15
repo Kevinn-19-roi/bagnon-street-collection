@@ -1,5 +1,38 @@
 # Changelog Bagnon Street Collection
 
+## 2026-07-15 - Sprint 7 Wave manuel transitoire
+
+- Developpements :
+  - Ajout d'un lien Wave Business temporaire sur la page `/commande/[reference]` pour les commandes Wave non payees.
+  - Ajout d'une migration non destructive `006_payment_tracking_rpc.sql`.
+  - Ajout des champs de tracabilite paiement : `provider_transaction_id`, `paid_at`, `payment_confirmed_by`, `payment_confirmed_at`, `stock_decremented_at`.
+  - Ajout de la RPC PostgreSQL `confirm_manual_wave_payment` pour confirmer paiement et decrementer le stock dans une transaction atomique.
+  - Ajout d'une action admin dediee `confirmManualWavePayment`.
+  - Ajout d'un bloc admin "Confirmation Wave manuelle" sur le detail commande.
+  - Blocage du passage direct a `payment_status = paid` via le formulaire generique de statut.
+- Bugs corriges :
+  - Le statut paiement pouvait etre marque paye sans decrementer le stock si l'admin utilisait le formulaire generique.
+- Fichiers modifies :
+  - `supabase/migrations/006_payment_tracking_rpc.sql`
+  - `src/lib/payments/wave.ts`
+  - `src/lib/actions/orders.ts`
+  - `src/app/commande/[reference]/page.tsx`
+  - `src/app/admin/commandes/[id]/page.tsx`
+  - `src/components/checkout/CheckoutClient.tsx`
+  - `src/types/database.ts`
+  - `ROADMAP.md`
+  - `CHANGELOG.md`
+- Commits importants :
+  - A renseigner apres commit Sprint 7.
+- Validations effectuees :
+  - TypeScript local : OK.
+  - ESLint local : OK.
+  - Build production local : OK.
+- Points restant a traiter :
+  - Appliquer manuellement la migration `006_payment_tracking_rpc.sql` sur Supabase Production avant d'utiliser la confirmation admin en production.
+  - Tester une commande Wave reelle et confirmer le paiement apres verification dans Wave Business.
+  - Remplacer plus tard le lien statique par Wave Checkout API et webhooks officiels.
+
 ## 2026-07-14 - Sprint 6 Checkout, commande et preparation paiement
 
 - Developpements :

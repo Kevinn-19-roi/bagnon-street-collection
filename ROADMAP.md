@@ -13,7 +13,7 @@ Ce document sert de point de reprise entre les sprints. Il doit rester synchroni
 - Termine - Sprint 4.7 - Duplication, suppression et page favoris
 - Publie - Sprint 5 - Panier
 - Termine - Sprint 6 - Checkout
-- En attente - Sprint 7 - Paiement Wave
+- En cours - Sprint 7 - Paiement Wave manuel
 - En attente - Sprint 8 - Orange Money
 - En attente - Sprint 9 - WhatsApp
 - En attente - Sprint 10 - Optimisation SEO
@@ -105,10 +105,23 @@ Ce document sert de point de reprise entre les sprints. Il doit rester synchroni
 - Preparation paiement : la commande stocke `payment_method` et `payment_status = unpaid`, sans appel API Wave ni Orange Money.
 - Problemes rencontres : le schema actuel ne contient pas de colonne `user_id` sur `customers` ou `orders`; les commandes connectees sont donc preparees via pre-remplissage email/profil et snapshot client, sans rattachement auth strict.
 - Prochaines etapes : Sprint 7 - paiement Wave/Orange Money, confirmation paiement, decrement stock et notifications.
+## Sprint 7 - Paiement Wave manuel
+
+- Objectif : ajouter un mode Wave transitoire avec lien Wave Business, confirmation admin securisee et decrement stock atomique.
+- Etat : en cours.
+- Date : 2026-07-15.
+- Fichiers principaux concernes : `supabase/migrations/006_payment_tracking_rpc.sql`, `src/lib/actions/orders.ts`, `src/app/commande/[reference]/page.tsx`, `src/app/admin/commandes/[id]/page.tsx`, `src/lib/payments/wave.ts`.
+- Architecture temporaire : le client ouvre le lien Wave Business existant ; aucun retour navigateur ne marque la commande payee.
+- Confirmation paiement : l'admin confirme apres verification dans Wave Business via une action dediee qui appelle la RPC `confirm_manual_wave_payment`.
+- Atomicite : la RPC valide la commande, le paiement, le stock, decremente les stocks, enregistre la transaction et met a jour les statuts dans une seule transaction PostgreSQL.
+- Securite : la RPC est reservee au role serveur `service_role`; le statut `paid` est bloque dans le formulaire generique pour eviter un paiement sans decrement stock.
+- Stock : decremente uniquement lors de la confirmation admin Wave, avec `stock_decremented_at` comme verrou d'idempotence.
+- Prochaines etapes : appliquer `006_payment_tracking_rpc.sql` en production Supabase, tester une commande Wave reelle, puis remplacer plus tard le lien statique par Wave Checkout API et webhooks.
+
 ## Sprints suivants
 
 - Sprint 6 - Checkout : termine, transformation du panier local en commande Supabase.
-- Sprint 7 - Paiement Wave : integration paiement.
+- Sprint 7 - Paiement Wave : mode manuel en cours, API officielle a venir.
 - Sprint 8 - Orange Money : integration paiement.
 - Sprint 9 - WhatsApp : notifications commande.
 - Sprint 10 - Optimisation SEO : metadata, performances, structure produit.

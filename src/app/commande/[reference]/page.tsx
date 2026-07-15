@@ -3,6 +3,7 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { getOrderByNumber } from '@/lib/database/orders'
 import { formatPrice, formatDate } from '@/lib/helpers/slugify'
+import { getWaveManualPaymentUrl } from '@/lib/payments/wave'
 
 export const dynamic = 'force-dynamic'
 export const metadata = {
@@ -33,6 +34,7 @@ export default async function OrderConfirmationPage({ params }: ConfirmationPage
   const { reference } = await params
   const order = await getOrderByNumber(reference)
   if (!order) notFound()
+  const showWaveManualPayment = order.payment_method === 'wave' && order.payment_status !== 'paid'
 
   return (
     <main style={{ minHeight: '100vh', background: 'var(--bg)', color: 'var(--text)' }}>
@@ -106,7 +108,22 @@ export default async function OrderConfirmationPage({ params }: ConfirmationPage
               <p>Paiement : {paymentStatusLabels[order.payment_status] || order.payment_status}</p>
               <p>Date : {formatDate(order.created_at)}</p>
             </div>
-            <p style={{ color: 'var(--text3)', fontSize: 12, lineHeight: 1.7 }}>La commande est en attente. Le paiement sera confirme dans la prochaine etape d integration Wave / Orange Money.</p>
+            {showWaveManualPayment && (
+              <div style={{ display: 'grid', gap: 10, marginBottom: 16 }}>
+                <a
+                  href={getWaveManualPaymentUrl()}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{ width: '100%', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', background: '#1EC6FF', color: '#041018', borderRadius: 3, padding: '13px', fontFamily: 'var(--font-display)', fontSize: 12, fontWeight: 800, letterSpacing: '.08em', textTransform: 'uppercase' }}
+                >
+                  Payer avec Wave
+                </a>
+                <p style={{ color: 'var(--text3)', fontSize: 12, lineHeight: 1.7 }}>
+                  Note ta reference {order.order_number}. Le paiement sera verifie manuellement dans Wave Business avant confirmation de la commande.
+                </p>
+              </div>
+            )}
+            <p style={{ color: 'var(--text3)', fontSize: 12, lineHeight: 1.7 }}>La commande reste en attente tant que le paiement n est pas verifie par l equipe Bagnon Street Collection.</p>
           </aside>
         </div>
       </section>

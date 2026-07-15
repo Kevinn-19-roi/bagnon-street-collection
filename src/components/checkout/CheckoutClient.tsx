@@ -150,7 +150,7 @@ export default function CheckoutClient({ prefill, shippingCost, freeShippingFrom
                 </label>
               ))}
             </div>
-            <p style={{ color: 'var(--text3)', fontSize: 11, lineHeight: 1.6, marginTop: 10 }}>Aucun paiement n est debite maintenant. L integration Wave / Orange Money arrive au sprint suivant.</p>
+            <p style={{ color: 'var(--text3)', fontSize: 11, lineHeight: 1.6, marginTop: 10 }}>Wave ouvre un lien Business apres creation de commande. Orange Money reste en preparation et ne confirme aucun paiement automatiquement.</p>
           </div>
 
           <Link href="/panier" style={{ width: 'fit-content', color: 'var(--text2)', fontFamily: 'var(--font-display)', fontSize: 11, fontWeight: 700, letterSpacing: '.08em', textTransform: 'uppercase' }}>Retour au panier</Link>
