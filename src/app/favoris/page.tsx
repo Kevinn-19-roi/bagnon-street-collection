@@ -5,6 +5,7 @@ import { getProducts } from '@/lib/database/products'
 export const metadata = {
   title: 'Favoris — Bagnon Street Collection',
   description: 'Retrouvez les pièces Bagnon Street Collection que vous avez sauvegardées.',
+  robots: { index: false, follow: false },
 }
 
 export const dynamic = 'force-dynamic'

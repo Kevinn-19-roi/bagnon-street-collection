@@ -120,6 +120,54 @@ export default async function ProductPage({ params }: ProductPageProps) {
   const viewModel = toProductDetailViewModel(product)
   const whatsappText = encodeURIComponent(`${viewModel.name} - ${formatPrice(viewModel.price)} ${SITE_URL}/produit/${viewModel.slug}`)
   const whatsappShareUrl = `https://wa.me/?text=${whatsappText}`
+  const productUrl = `${SITE_URL}/produit/${viewModel.slug}`
+  const structuredData = [
+    {
+      '@context': 'https://schema.org',
+      '@type': 'Product',
+      name: viewModel.name,
+      description: viewModel.shortDescription || viewModel.description || viewModel.name,
+      image: viewModel.images,
+      sku: product.sku || undefined,
+      brand: {
+        '@type': 'Brand',
+        name: 'Bagnon Street Collection',
+      },
+      category: viewModel.category || undefined,
+      offers: {
+        '@type': 'Offer',
+        url: productUrl,
+        priceCurrency: 'XOF',
+        price: viewModel.price,
+        availability: viewModel.stock > 0 ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',
+        itemCondition: 'https://schema.org/NewCondition',
+      },
+    },
+    {
+      '@context': 'https://schema.org',
+      '@type': 'BreadcrumbList',
+      itemListElement: [
+        {
+          '@type': 'ListItem',
+          position: 1,
+          name: 'Accueil',
+          item: SITE_URL,
+        },
+        viewModel.category && product.category?.slug ? {
+          '@type': 'ListItem',
+          position: 2,
+          name: viewModel.category,
+          item: `${SITE_URL}/categorie/${product.category?.slug}`,
+        } : null,
+        {
+          '@type': 'ListItem',
+          position: viewModel.category ? 3 : 2,
+          name: viewModel.name,
+          item: productUrl,
+        },
+      ].filter(Boolean),
+    },
+  ]
   const stockLabel = viewModel.stock <= 0
     ? 'Rupture de stock'
     : viewModel.stock <= 3
@@ -128,6 +176,10 @@ export default async function ProductPage({ params }: ProductPageProps) {
 
   return (
     <main style={{ minHeight: '100vh', background: 'var(--bg)', color: 'var(--text)' }}>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
+      />
       <header style={{ borderBottom: '1px solid var(--border)', padding: '14px var(--px)', background: 'var(--bg)' }}>
         <div style={{ maxWidth: 1440, margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16 }}>
           <Link href="/" style={{ fontFamily: 'var(--font-display)', fontSize: 12, fontWeight: 700, letterSpacing: '.08em', textTransform: 'uppercase', color: 'var(--text2)' }}>

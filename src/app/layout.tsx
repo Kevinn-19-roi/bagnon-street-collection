@@ -1,14 +1,37 @@
 import type { Metadata } from 'next'
 import '@/styles/globals.css'
 
+const siteUrl = 'https://bagnon-street-collection-ci.vercel.app'
+const defaultDescription = 'Streetwear ne a Abidjan. Identite, mouvement et pieces Bagnon Street Collection disponibles en Cote d Ivoire.'
+
 export const metadata: Metadata = {
+  metadataBase: new URL(siteUrl),
+  applicationName: 'Bagnon Street Collection',
   title: { default: 'Bagnon Street Collection', template: '%s | BSC' },
-  description: 'Streetwear né à Abidjan. Identité. Mouvement.',
+  description: defaultDescription,
+  alternates: { canonical: '/' },
+  icons: {
+    icon: '/brand/logo-round.jpg',
+    apple: '/brand/logo-round.jpg',
+  },
   openGraph: {
     title: 'Bagnon Street Collection',
-    description: 'Streetwear né à Abidjan. Identité. Mouvement.',
+    description: defaultDescription,
+    url: siteUrl,
+    siteName: 'Bagnon Street Collection',
     locale: 'fr_CI',
     type: 'website',
+    images: [{ url: '/brand/hero-model.jpg', alt: 'Bagnon Street Collection' }],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Bagnon Street Collection',
+    description: defaultDescription,
+    images: ['/brand/hero-model.jpg'],
+  },
+  robots: {
+    index: true,
+    follow: true,
   },
 }
 

@@ -5,7 +5,10 @@ import AuthSubmitButton from '@/components/auth/AuthSubmitButton'
 import PasswordInput from '@/components/auth/PasswordInput'
 
 export const dynamic = 'force-dynamic'
-export const metadata = { title: 'Inscription — Bagnon Street' }
+export const metadata = {
+  title: "Inscription - Bagnon Street",
+  robots: { index: false, follow: false },
+}
 
 export default async function InscriptionPage({
   searchParams,

@@ -6,7 +6,10 @@ import { createClient } from '@/lib/supabase/server'
 import { logoutUser } from '@/lib/actions/auth'
 
 export const dynamic = 'force-dynamic'
-export const metadata = { title: 'Profil — Bagnon Street' }
+export const metadata = {
+  title: "Profil - Bagnon Street",
+  robots: { index: false, follow: false },
+}
 
 export default async function ProfilPage() {
   const supabase = await createClient()

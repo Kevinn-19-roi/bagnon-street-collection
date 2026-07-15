@@ -15,8 +15,9 @@ Ce document sert de point de reprise entre les sprints. Il doit rester synchroni
 - Termine - Sprint 6 - Checkout
 - Termine - Sprint 7 - Paiement Wave manuel et suivi simplifie
 - Termine - Sprint 8 - Notifications WhatsApp admin/client
+- Termine - Sprint 9 - SEO, performance finale et preparation production
 - Reporte - Orange Money
-- En attente - Sprint 10 - Optimisation SEO
+- En attente - Sprint 10 - Validation finale production
 - En attente - Sprint 11 - Mise en production finale
 
 ## Sprint 1 - Stabilisation
@@ -141,6 +142,16 @@ Ce document sert de point de reprise entre les sprints. Il doit rester synchroni
 - Sprint 6 - Checkout : termine, transformation du panier local en commande Supabase.
 - Sprint 7 - Paiement Wave : mode manuel termine et valide, API officielle a venir.
 - Sprint 8 - Notifications WhatsApp : liens pre-remplis admin/client, sans API officielle.
+- Sprint 9 - SEO, performance finale et preparation production : sitemap, robots, metadata, headers, pages legales structurelles et checklist production.
 - Orange Money : reporte jusqu'a reception d'un lien marchand, numero marchand ou acces API officiels.
-- Sprint 10 - Optimisation SEO : metadata, performances, structure produit.
-- Sprint 11 - Mise en production finale : verification complete, monitoring, recette finale.
+- Sprint 10 - Validation finale production : verification complete, monitoring, recette finale.
+
+## Sprint 9 - SEO, performance finale et preparation production
+
+- Objectif : auditer et renforcer SEO, performance, accessibilite, securite et robustesse production sans refonte.
+- Etat : termine.
+- Date : 2026-07-15.
+- Fichiers principaux concernes : `next.config.js`, `src/app/layout.tsx`, `src/app/sitemap.ts`, `src/app/robots.ts`, `src/app/produit/[slug]/page.tsx`, `src/app/categorie/[slug]/page.tsx`, `src/app/collection/[slug]/page.tsx`, pages legales, `SEO_AUDIT.md`, `SECURITY.md`, `PRODUCTION_CHECKLIST.md`.
+- Corrections realisees : metadata globales enrichies, sitemap/robots, donnees structurees produit, pages categorie/collection, pages legales structurelles, noindex des pages privees, optimisation Next Image et headers de securite.
+- Problemes rencontres : contenu legal officiel manquant ; pages legales creees en structure uniquement et marquees `noindex`.
+- Prochaines etapes : fournir les contenus legaux, valider les parcours avec vraies sessions client/admin, puis preparer la recette publique finale.

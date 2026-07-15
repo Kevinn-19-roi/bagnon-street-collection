@@ -437,12 +437,14 @@ export default function HomeClient({ featured, newItems, bestsellers, allProduct
     {
       title: 'Légal',
       links: [
-        { label: 'Conditions', href: '#' },
-        { label: 'Confidentialité', href: '#' },
-        { label: 'Cookies', href: '#' },
+        { label: 'Conditions', href: '/conditions-generales' },
+        { label: 'Confidentialite', href: '/confidentialite' },
+        { label: 'Retours', href: '/retours' },
+        { label: 'Livraison', href: '/livraison' },
+        { label: 'Mentions', href: '/mentions-legales' },
       ],
     },
-  ].filter(col => col.links.length)
+  ].map(col => ({ ...col, links: col.links.filter(link => link.href !== '#') })).filter(col => col.links.length)
 
   useEffect(() => {
     let end = parseInt(localStorage.getItem('bsc-end') || '0')
@@ -714,7 +716,7 @@ export default function HomeClient({ featured, newItems, bestsellers, allProduct
 
       {/* BOTTOM NAV — mobile only */}
       <div className="mobile-only" style={{ position: 'fixed', bottom: 0, left: 0, right: 0, background: 'var(--nav-bg)', backdropFilter: 'blur(20px)', borderTop: '1px solid var(--border)', zIndex: 200, display: 'flex', justifyContent: 'space-around', padding: '8px 0 max(8px, env(safe-area-inset-bottom))' }}>
-        {[{ icon: I.home, label: 'Accueil', href: '#' }, { icon: I.search, label: 'Recherche', href: '#' }, { icon: I.grid, label: 'Catalogue', href: '#collection' }, { icon: I.heart, label: 'Favoris', href: '/favoris' }, { icon: I.user, label: currentUser ? 'Mon compte' : 'Compte', href: currentUser ? '/profil' : '/connexion' }].map(n => (
+        {[{ icon: I.home, label: 'Accueil', href: '/' }, { icon: I.search, label: 'Recherche', href: '/#collection' }, { icon: I.grid, label: 'Catalogue', href: '#collection' }, { icon: I.heart, label: 'Favoris', href: '/favoris' }, { icon: I.user, label: currentUser ? 'Mon compte' : 'Compte', href: currentUser ? '/profil' : '/connexion' }].map(n => (
           <a key={n.label} href={n.href} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3, fontFamily: 'var(--font-display)', fontSize: 9, fontWeight: 600, color: 'var(--text2)', letterSpacing: '.03em', padding: '2px 10px', textTransform: 'uppercase' }}>
             {n.icon}{n.label}
           </a>

@@ -1,5 +1,44 @@
 # Changelog Bagnon Street Collection
 
+## 2026-07-15 - Sprint 9 SEO, performance finale et preparation production
+
+- Developpements :
+  - Ajout de `/sitemap.xml` et `/robots.txt`.
+  - Ajout de pages publiques `/categorie/[slug]` et `/collection/[slug]`.
+  - Ajout de pages legales structurelles : conditions, confidentialite, retours, livraison, mentions legales.
+  - Enrichissement des metadonnees globales, Open Graph, Twitter Cards, canonical et icones.
+  - Ajout de donnees structurees Product et BreadcrumbList sur les fiches produit.
+  - Activation de l'optimisation `next/image` pour Supabase Storage.
+  - Ajout de headers de securite dans `next.config.js`.
+- Bugs corriges :
+  - Liens footer legaux qui pointaient vers `#`.
+  - Pages transactionnelles et privees non marquees explicitement `noindex`.
+- Fichiers modifies :
+  - `next.config.js`
+  - `src/app/layout.tsx`
+  - `src/app/sitemap.ts`
+  - `src/app/robots.ts`
+  - `src/app/produit/[slug]/page.tsx`
+  - `src/app/categorie/[slug]/page.tsx`
+  - `src/app/collection/[slug]/page.tsx`
+  - `src/components/HomeClient.tsx`
+  - `src/components/product/PublicProductListing.tsx`
+  - `src/components/LegalPlaceholderPage.tsx`
+  - pages legales
+  - `SEO_AUDIT.md`
+  - `SECURITY.md`
+  - `PRODUCTION_CHECKLIST.md`
+  - `ROADMAP.md`
+- Commits importants :
+  - `Finalize SEO and production readiness`
+- Validations effectuees :
+  - TypeScript OK.
+  - ESLint OK.
+  - Build production OK.
+- Points restant a traiter :
+  - Fournir les textes legaux officiels avant de retirer `noindex` des pages legales.
+  - Valider les parcours connectes avec de vraies sessions client/admin.
+
 ## 2026-07-15 - Sprint 8 Notifications WhatsApp admin/client
 
 - Developpements :

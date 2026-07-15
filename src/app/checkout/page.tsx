@@ -7,6 +7,7 @@ export const dynamic = 'force-dynamic'
 export const metadata = {
   title: 'Checkout — Bagnon Street Collection',
   description: 'Finalisez votre commande Bagnon Street Collection.',
+  robots: { index: false, follow: false },
 }
 
 function splitName(fullname?: string | null, fallbackEmail?: string | null) {

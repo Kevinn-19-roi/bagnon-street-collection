@@ -10,6 +10,7 @@ import { buildClientOrderWhatsappMessage, buildWhatsappUrl, ORDER_TRACKING_STEPS
 export const dynamic = 'force-dynamic'
 export const metadata = {
   title: 'Commande confirmee - Bagnon Street Collection',
+  robots: { index: false, follow: false },
 }
 
 type ConfirmationPageProps = {

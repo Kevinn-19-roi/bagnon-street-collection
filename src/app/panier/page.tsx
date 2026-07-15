@@ -4,6 +4,7 @@ import CartPageClient from '@/components/cart/CartPageClient'
 export const metadata = {
   title: 'Panier — Bagnon Street Collection',
   description: 'Consultez les articles sauvegardes dans votre panier Bagnon Street Collection.',
+  robots: { index: false, follow: false },
 }
 
 export default function CartPage() {
