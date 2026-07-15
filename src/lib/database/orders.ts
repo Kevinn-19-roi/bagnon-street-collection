@@ -20,7 +20,11 @@ export async function getOrders(
     .order('created_at', { ascending: false })
     .range((page - 1) * per_page, page * per_page - 1)
 
-  if (status) query = query.eq('order_status', status)
+  if (status === 'received') {
+    query = query.in('order_status', ['pending', 'confirmed'])
+  } else if (status) {
+    query = query.eq('order_status', status)
+  }
   if (payment_status) query = query.eq('payment_status', payment_status)
   if (search) query = query.ilike('order_number', `%${search}%`)
 

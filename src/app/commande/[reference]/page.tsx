@@ -5,7 +5,7 @@ import { getOrderByNumber } from '@/lib/database/orders'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { formatPrice, formatDate } from '@/lib/helpers/slugify'
 import { getWaveManualPaymentUrl } from '@/lib/payments/wave'
-import { buildClientOrderWhatsappMessage, buildWhatsappUrl, orderTrackingLabel, paymentLabel } from '@/lib/whatsapp'
+import { buildClientOrderWhatsappMessage, buildWhatsappUrl, ORDER_TRACKING_STEPS, orderTrackingLabel, paymentLabel, TRACKING_DONE_MARK } from '@/lib/whatsapp'
 
 export const dynamic = 'force-dynamic'
 export const metadata = {
@@ -51,7 +51,7 @@ export default async function OrderConfirmationPage({ params }: ConfirmationPage
       <header style={{ padding: '18px var(--px)', borderBottom: '1px solid var(--border)', background: 'var(--nav-bg)', backdropFilter: 'blur(18px)', position: 'sticky', top: 0, zIndex: 20 }}>
         <div style={{ maxWidth: 1120, margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 14 }}>
           <Link href="/" style={{ fontFamily: 'var(--font-display)', fontSize: 12, fontWeight: 700, letterSpacing: '.08em', textTransform: 'uppercase', color: 'var(--text2)' }}>
-            ← Retour a la boutique
+            Retour a la boutique
           </Link>
           <Link href="/profil" style={{ fontFamily: 'var(--font-display)', fontSize: 12, fontWeight: 700, letterSpacing: '.08em', textTransform: 'uppercase', color: 'var(--red)' }}>
             Mon compte
@@ -73,7 +73,7 @@ export default async function OrderConfirmationPage({ params }: ConfirmationPage
             <div>
               <p style={{ fontFamily: 'var(--font-display)', fontSize: 10, fontWeight: 700, letterSpacing: '.28em', textTransform: 'uppercase', color: '#4CAF50', marginBottom: 10 }}>Commande creee</p>
               <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 'clamp(30px,6vw,58px)', lineHeight: 1, letterSpacing: '-.03em', marginBottom: 12 }}>Merci pour ta commande</h1>
-              <p style={{ color: 'var(--text2)', fontSize: 14, lineHeight: 1.8 }}>Reference : <strong style={{ color: 'var(--text)' }}>{order.order_number}</strong></p>
+              <p style={{ color: 'var(--text2)', fontSize: 14, lineHeight: 1.8 }}>R\u00e9f\u00e9rence : <strong style={{ color: 'var(--text)' }}>{order.order_number}</strong></p>
             </div>
 
             <div style={{ background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: 6, padding: 16 }}>
@@ -81,13 +81,13 @@ export default async function OrderConfirmationPage({ params }: ConfirmationPage
               <div style={{ position: 'relative' }}>
                 <div className="client-tracking-line" style={{ position: 'absolute', top: 18, left: '16%', right: '16%', height: 1, background: 'var(--border)' }} />
                 <div className="client-tracking-steps" style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 12, position: 'relative' }}>
-                  {['Commande recue', 'Expediee', 'Livree'].map((label, index) => {
+                  {ORDER_TRACKING_STEPS.map((label, index) => {
                     const done = index < stepIndex
                     const active = index === stepIndex
                     return (
                       <div key={label} style={{ display: 'grid', justifyItems: 'center', gap: 8, textAlign: 'center', color: done || active ? 'var(--text)' : 'var(--text3)' }}>
                         <span style={{ width: 36, height: 36, borderRadius: '50%', display: 'grid', placeItems: 'center', background: done ? '#4CAF50' : active ? 'var(--red)' : 'var(--bg3)', fontFamily: 'var(--font-display)', fontSize: 13, fontWeight: 800 }}>
-                          {done ? '✓' : index + 1}
+                          {done ? TRACKING_DONE_MARK : index + 1}
                         </span>
                         <span style={{ fontFamily: 'var(--font-display)', fontSize: 11, fontWeight: 700, letterSpacing: '.08em', textTransform: 'uppercase' }}>{label}</span>
                       </div>
@@ -108,7 +108,7 @@ export default async function OrderConfirmationPage({ params }: ConfirmationPage
                     <div style={{ minWidth: 0 }}>
                       <p style={{ fontFamily: 'var(--font-display)', fontSize: 13, fontWeight: 700 }}>{item.product?.name}</p>
                       {[item.selected_size ? `Taille ${item.selected_size}` : null, item.selected_color].filter(Boolean).length > 0 && (
-                        <p style={{ color: 'var(--text3)', fontSize: 11, marginTop: 3 }}>{[item.selected_size ? `Taille ${item.selected_size}` : null, item.selected_color].filter(Boolean).join(' · ')}</p>
+                        <p style={{ color: 'var(--text3)', fontSize: 11, marginTop: 3 }}>{[item.selected_size ? `Taille ${item.selected_size}` : null, item.selected_color].filter(Boolean).join(' \u00b7 ')}</p>
                       )}
                       <p style={{ color: 'var(--text2)', fontSize: 12, marginTop: 5 }}>{item.quantity} x {formatPrice(item.price)}</p>
                     </div>
@@ -122,14 +122,14 @@ export default async function OrderConfirmationPage({ params }: ConfirmationPage
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(180px,1fr))', gap: 12 }}>
                 {[
                   ['Nom', order.customer?.fullname],
-                  ['Telephone', order.customer?.phone],
-                  ['Email', order.customer?.email || 'Non renseigne'],
+                  ['T\u00e9l\u00e9phone', order.customer?.phone],
+                  ['Email', order.customer?.email || 'Non renseign\u00e9'],
                   ['Ville', order.customer?.city],
                   ['Adresse', order.customer?.address],
                 ].map(([label, value]) => (
                   <div key={label || ''}>
                     <p style={{ fontFamily: 'var(--font-display)', fontSize: 10, color: 'var(--text3)', letterSpacing: '.12em', textTransform: 'uppercase', marginBottom: 5 }}>{label}</p>
-                    <p style={{ fontSize: 13, color: 'var(--text)' }}>{value || 'Non renseigne'}</p>
+                    <p style={{ fontSize: 13, color: 'var(--text)' }}>{value || 'Non renseign\u00e9'}</p>
                   </div>
                 ))}
               </div>
@@ -160,11 +160,11 @@ export default async function OrderConfirmationPage({ params }: ConfirmationPage
                   Payer avec Wave
                 </a>
                 <p style={{ color: 'var(--text3)', fontSize: 12, lineHeight: 1.7 }}>
-                  Note ta reference {order.order_number}. Le paiement sera verifie manuellement dans Wave Business avant confirmation de la commande.
+                  Note ta r\u00e9f\u00e9rence {order.order_number}. Le paiement sera v\u00e9rifi\u00e9 manuellement dans Wave Business avant confirmation de la commande.
                 </p>
               </div>
             )}
-            <p style={{ color: 'var(--text3)', fontSize: 12, lineHeight: 1.7 }}>La commande reste en attente tant que le paiement n est pas verifie par l equipe Bagnon Street Collection.</p>
+            <p style={{ color: 'var(--text3)', fontSize: 12, lineHeight: 1.7 }}>La commande reste en attente tant que le paiement n'est pas v\u00e9rifi\u00e9 par l'\u00e9quipe Bagnon Street Collection.</p>
           </aside>
         </div>
       </section>

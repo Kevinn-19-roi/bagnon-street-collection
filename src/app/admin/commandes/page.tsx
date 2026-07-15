@@ -8,7 +8,7 @@ import { confirmManualWavePayment, markOrderAsDelivered, markOrderAsShipped } fr
 import { formatPrice, formatDate } from '@/lib/helpers/slugify'
 import { buildAdminCustomerWhatsappMessage, buildWhatsappUrl, orderTrackingLabel, paymentLabel } from '@/lib/whatsapp'
 import Link from 'next/link'
-import { OrderStatus, PaymentStatus } from '@/types/database'
+import { OrderStatusFilter, PaymentStatus } from '@/types/database'
 
 export const metadata = { title: 'Commandes - Admin BSC' }
 export const dynamic = 'force-dynamic'
@@ -36,7 +36,7 @@ export default async function CommandesPage({
 }) {
   const params = await searchParams
   const page = Number(params.page || 1)
-  const status = params.status as OrderStatus | undefined
+  const status = params.status as OrderStatusFilter | undefined
   const search = params.search
 
   const { data: orders, total, total_pages } = await getOrders({
@@ -57,10 +57,10 @@ export default async function CommandesPage({
       <div style={{ display: 'flex', gap: 8, marginBottom: 20, flexWrap: 'wrap' }}>
         {[
           { label: 'Toutes', value: '' },
-          { label: 'Commande recue', value: 'pending' },
-          { label: 'Expediees', value: 'shipped' },
-          { label: 'Livrees', value: 'delivered' },
-          { label: 'Annulees', value: 'cancelled' },
+          { label: 'Commande re\u00e7ue', value: 'received' },
+          { label: 'Exp\u00e9di\u00e9es', value: 'shipped' },
+          { label: 'Livr\u00e9es', value: 'delivered' },
+          { label: 'Annul\u00e9es', value: 'cancelled' },
         ].map(f => (
           <Link key={f.value} href={`?status=${f.value}`} style={{
             fontFamily: 'var(--font-display)', fontSize: 11, fontWeight: 600,
@@ -80,7 +80,7 @@ export default async function CommandesPage({
         <table style={{ width: '100%', borderCollapse: 'collapse' }}>
           <thead>
             <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
-              {['Reference', 'Client', 'Montant', 'Commande', 'Paiement', 'Date', 'WhatsApp', 'Actions'].map(h => (
+              {['R\u00e9f\u00e9rence', 'Client', 'Montant', 'Commande', 'Paiement', 'Date', 'WhatsApp', 'Actions'].map(h => (
                 <th key={h} style={{ padding: '11px 16px', textAlign: 'left', fontFamily: 'var(--font-display)', fontSize: 10, fontWeight: 700, letterSpacing: '.2em', textTransform: 'uppercase', color: '#4D4D52' }}>{h}</th>
               ))}
             </tr>
@@ -140,21 +140,21 @@ export default async function CommandesPage({
                         </ConfirmSubmitForm>
                       )}
                       {canShip && (
-                        <ConfirmSubmitForm action={markOrderAsShipped.bind(null, order.id)} message="Marquer cette commande comme expediee ?">
+                        <ConfirmSubmitForm action={markOrderAsShipped.bind(null, order.id)} message="Marquer cette commande comme exp\u00e9di\u00e9e ?">
                           <button type="submit" style={{ fontFamily: 'var(--font-display)', fontSize: 10, fontWeight: 700, letterSpacing: '.08em', textTransform: 'uppercase', background: '#1A2A6C', color: '#fff', border: 'none', borderRadius: 3, padding: '6px 10px', cursor: 'pointer' }}>
-                            Expedier
+                            Exp\u00e9dier
                           </button>
                         </ConfirmSubmitForm>
                       )}
                       {canDeliver && (
-                        <ConfirmSubmitForm action={markOrderAsDelivered.bind(null, order.id)} message="Marquer cette commande comme livree ?">
+                        <ConfirmSubmitForm action={markOrderAsDelivered.bind(null, order.id)} message="Marquer cette commande comme livr\u00e9e ?">
                           <button type="submit" style={{ fontFamily: 'var(--font-display)', fontSize: 10, fontWeight: 700, letterSpacing: '.08em', textTransform: 'uppercase', background: '#4CAF50', color: '#08110A', border: 'none', borderRadius: 3, padding: '6px 10px', cursor: 'pointer' }}>
                             Livrer
                           </button>
                         </ConfirmSubmitForm>
                       )}
                       <Link href={`/admin/commandes/${order.id}`} style={{ fontFamily: 'var(--font-display)', fontSize: 10, fontWeight: 700, letterSpacing: '.08em', textTransform: 'uppercase', background: 'rgba(26,42,108,0.2)', color: '#5C7CFA', border: '1px solid rgba(26,42,108,0.4)', borderRadius: 3, padding: '5px 10px', textDecoration: 'none' }}>
-                        Details
+                        D\u00e9tails
                       </Link>
                     </div>
                   </td>

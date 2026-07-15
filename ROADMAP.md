@@ -108,7 +108,7 @@ Ce document sert de point de reprise entre les sprints. Il doit rester synchroni
 ## Sprint 7 - Paiement Wave manuel et suivi simplifie
 
 - Objectif : ajouter un mode Wave transitoire avec lien Wave Business, confirmation admin securisee, decrement stock atomique, suivi logistique simple et alerte WhatsApp.
-- Etat : correctif publie, validation finale de la RPC en production a faire apres application manuelle de la migration.
+- Etat : migration 006 appliquee en production ; correctif final de suivi et WhatsApp en cours de publication.
 - Date : 2026-07-15.
 - Fichiers principaux concernes : `supabase/migrations/006_payment_tracking_rpc.sql`, `src/lib/actions/orders.ts`, `src/app/commande/[reference]/page.tsx`, `src/app/admin/commandes/page.tsx`, `src/app/admin/commandes/[id]/page.tsx`, `src/lib/payments/wave.ts`, `src/lib/whatsapp.ts`.
 - Architecture temporaire : le client ouvre le lien Wave Business existant ; aucun retour navigateur ne marque la commande payee.
@@ -117,10 +117,12 @@ Ce document sert de point de reprise entre les sprints. Il doit rester synchroni
 - Securite : la RPC est reservee au role serveur `service_role`; le statut `paid` est bloque dans le formulaire generique pour eviter un paiement sans decrement stock.
 - Stock : decremente uniquement lors de la confirmation admin Wave, avec `stock_decremented_at` comme verrou d'idempotence.
 - Correctif migration : si la RPC manque en production, l'admin voit un message clair demandant d'appliquer `006_payment_tracking_rpc.sql` au lieu d'une erreur serveur brute.
+- Migration production : `006_payment_tracking_rpc.sql` appliquee avec succes le 2026-07-15.
 - Suivi commande : l'interface principale affiche seulement `Commande recue`, `Expediee`, `Livree`; `payment_status` reste affiche separement.
+- Filtre admin : `Commande recue` regroupe maintenant `pending` et `confirmed`, pour garder les commandes payees confirmees dans la premiere etape logistique.
 - Transitions autorisees : `pending`/`confirmed` payee -> `shipped`, puis `shipped` -> `delivered`; une commande non payee n'est pas expediee par le parcours normal.
 - WhatsApp : la page confirmation client genere un message pre-rempli vers le numero `site_settings.whatsapp`; l'admin dispose aussi d'un message WhatsApp vers le client.
-- Prochaines etapes : appliquer `006_payment_tracking_rpc.sql` en production Supabase si elle n'est pas encore installee, tester une commande Wave reelle, confirmer le paiement admin, verifier le decrement stock unique, puis remplacer plus tard le lien statique par Wave Checkout API et webhooks.
+- Prochaines etapes : tester une commande Wave reelle, confirmer le paiement admin, verifier le decrement stock unique et le refus de seconde confirmation, puis remplacer plus tard le lien statique par Wave Checkout API et webhooks.
 
 ## Sprints suivants
 

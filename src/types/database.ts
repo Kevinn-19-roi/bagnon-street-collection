@@ -212,8 +212,10 @@ export interface ProductFormData {
   care_instructions: string
 }
 
+export type OrderStatusFilter = OrderStatus | 'received'
+
 export interface OrderFilters {
-  status?: OrderStatus
+  status?: OrderStatusFilter
   payment_status?: PaymentStatus
   from_date?: string
   to_date?: string

@@ -1,5 +1,13 @@
 import type { Order } from '@/types/database'
 
+export const ORDER_TRACKING_STEPS = [
+  'Commande re\u00e7ue',
+  'Exp\u00e9di\u00e9e',
+  'Livr\u00e9e',
+] as const
+
+export const TRACKING_DONE_MARK = '\u2713'
+
 export function cleanWhatsappNumber(value?: string | null) {
   return value?.replace(/[\s+\-()]/g, '') || ''
 }
@@ -11,15 +19,15 @@ export function buildWhatsappUrl(phone: string | null | undefined, message: stri
 }
 
 export function orderTrackingLabel(status: string) {
-  if (status === 'shipped') return 'Expediee'
-  if (status === 'delivered') return 'Livree'
-  return 'Commande recue'
+  if (status === 'shipped') return ORDER_TRACKING_STEPS[1]
+  if (status === 'delivered') return ORDER_TRACKING_STEPS[2]
+  return ORDER_TRACKING_STEPS[0]
 }
 
 export function paymentLabel(status: string) {
-  if (status === 'paid') return 'Paye'
-  if (status === 'failed') return 'Echoue'
-  if (status === 'refunded') return 'Rembourse'
+  if (status === 'paid') return 'Pay\u00e9'
+  if (status === 'failed') return '\u00c9chou\u00e9'
+  if (status === 'refunded') return 'Rembours\u00e9'
   return 'En attente'
 }
 
@@ -29,9 +37,9 @@ export function buildClientOrderWhatsappMessage(order: Order) {
     '',
     'Je viens de passer une commande.',
     '',
-    `Reference : ${order.order_number}`,
+    `R\u00e9f\u00e9rence : ${order.order_number}`,
     order.customer?.fullname ? `Nom : ${order.customer.fullname}` : null,
-    order.customer?.phone ? `Telephone : ${order.customer.phone}` : null,
+    order.customer?.phone ? `T\u00e9l\u00e9phone : ${order.customer.phone}` : null,
     order.customer?.address ? `Adresse : ${order.customer.address}` : null,
     order.customer?.city ? `Commune / Ville : ${order.customer.city}` : null,
     '',
@@ -40,13 +48,13 @@ export function buildClientOrderWhatsappMessage(order: Order) {
       `- ${item.product?.name || 'Produit'}`,
       item.selected_size ? `  Taille : ${item.selected_size}` : null,
       item.selected_color ? `  Couleur : ${item.selected_color}` : null,
-      `  Quantite : ${item.quantity}`,
+      `  Quantit\u00e9 : ${item.quantity}`,
       `  Prix : ${Number(item.price).toLocaleString('fr-FR')} FCFA`,
     ].filter(Boolean) as string[]),
     '',
     `Total : ${Number(order.total).toLocaleString('fr-FR')} FCFA`,
     `Paiement : ${order.payment_method === 'wave' ? 'Wave' : order.payment_method.replace('_', ' ')}`,
-    `Statut : ${order.payment_status === 'paid' ? 'Paiement verifie' : 'En attente de verification'}`,
+    `Statut : ${order.payment_status === 'paid' ? 'Paiement v\u00e9rifi\u00e9' : 'En attente de v\u00e9rification'}`,
     '',
     'Merci.',
   ]

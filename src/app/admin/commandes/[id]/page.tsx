@@ -4,7 +4,7 @@ import ConfirmSubmitForm from '@/components/admin/forms/ConfirmSubmitForm'
 import { getOrderById } from '@/lib/database/orders'
 import { confirmManualWavePayment, markOrderAsDelivered, markOrderAsShipped } from '@/lib/actions/orders'
 import { formatPrice, formatDate } from '@/lib/helpers/slugify'
-import { buildAdminCustomerWhatsappMessage, buildWhatsappUrl, orderTrackingLabel, paymentLabel } from '@/lib/whatsapp'
+import { buildAdminCustomerWhatsappMessage, buildWhatsappUrl, ORDER_TRACKING_STEPS, orderTrackingLabel, paymentLabel, TRACKING_DONE_MARK } from '@/lib/whatsapp'
 import { notFound } from 'next/navigation'
 import Image from 'next/image'
 import Link from 'next/link'
@@ -17,19 +17,19 @@ type Query = {
 }
 
 const successMessages: Record<string, string> = {
-  'payment-confirmed': 'Paiement Wave confirme. Le stock a ete decremente une seule fois.',
-  shipped: 'Commande marquee comme expediee.',
-  delivered: 'Commande marquee comme livree.',
-  'status-updated': 'Statut mis a jour.',
+  'payment-confirmed': 'Paiement Wave confirm\u00e9. Le stock a \u00e9t\u00e9 d\u00e9cr\u00e9ment\u00e9 une seule fois.',
+  shipped: 'Commande marqu\u00e9e comme exp\u00e9di\u00e9e.',
+  delivered: 'Commande marqu\u00e9e comme livr\u00e9e.',
+  'status-updated': 'Statut mis \u00e0 jour.',
 }
 
 const errorMessages: Record<string, string> = {
-  'wave-rpc-missing': "La fonction de confirmation Wave n'est pas encore installee dans Supabase. Veuillez appliquer la migration 006_payment_tracking_rpc.sql.",
-  'wave-confirm-failed': 'La confirmation Wave a echoue. Verifie la migration 006, le stock et la reference de transaction.',
-  'payment-required': "Cette commande n'est pas encore payee. Confirme d'abord le paiement Wave avant expedition.",
-  'invalid-transition': 'Transition impossible. Le suivi doit passer par Commande recue, puis Expediee, puis Livree.',
+  'wave-rpc-missing': "La fonction de confirmation Wave n'est pas encore install\u00e9e dans Supabase. Veuillez appliquer la migration 006_payment_tracking_rpc.sql.",
+  'wave-confirm-failed': 'La confirmation Wave a \u00e9chou\u00e9. V\u00e9rifie la migration 006, le stock et la r\u00e9f\u00e9rence de transaction.',
+  'payment-required': "Cette commande n'est pas encore pay\u00e9e. Confirme d'abord le paiement Wave avant exp\u00e9dition.",
+  'invalid-transition': `Transition impossible. Le suivi doit passer par ${ORDER_TRACKING_STEPS.join(', puis ')}.`,
   'order-not-found': 'Commande introuvable.',
-  'status-update-failed': 'Impossible de mettre a jour le statut de commande.',
+  'status-update-failed': 'Impossible de mettre \u00e0 jour le statut de commande.',
 }
 
 function trackingStepIndex(status: string) {
@@ -78,14 +78,14 @@ export default async function OrderDetailPage({
     <AdminShell>
       <div style={{ marginBottom: 20 }}>
         <Link href="/admin/commandes" style={{ fontFamily: 'var(--font-display)', fontSize: 11, color: '#94938E', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: 4 }}>
-          ← Retour aux commandes
+          Retour aux commandes
         </Link>
       </div>
 
       <PageHeader
         eyebrow="Commande"
         title={order.order_number}
-        subtitle={`Creee le ${formatDate(order.created_at)}`}
+        subtitle={`Cr\u00e9\u00e9e le ${formatDate(order.created_at)}`}
       />
 
       {query.success && successMessages[query.success] && (
@@ -125,13 +125,13 @@ export default async function OrderDetailPage({
             <div style={{ position: 'relative' }}>
               <div className="tracking-line" style={{ position: 'absolute', top: 18, left: '16%', right: '16%', height: 1, background: 'rgba(255,255,255,0.09)' }} />
               <div className="tracking-steps" style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 12, position: 'relative' }}>
-                {['Commande recue', 'Expediee', 'Livree'].map((label, index) => {
+                {ORDER_TRACKING_STEPS.map((label, index) => {
                   const done = index < stepIndex
                   const active = index === stepIndex
                   return (
                     <div key={label} style={{ display: 'grid', justifyItems: 'center', gap: 8, textAlign: 'center', color: done || active ? '#F2F1ED' : '#4D4D52' }}>
                       <span style={{ width: 36, height: 36, borderRadius: '50%', display: 'grid', placeItems: 'center', background: done ? '#4CAF50' : active ? '#7A1620' : '#0A0A0C', border: `1px solid ${done || active ? 'transparent' : 'rgba(255,255,255,0.09)'}`, fontFamily: 'var(--font-display)', fontSize: 13, fontWeight: 800 }}>
-                        {done ? '✓' : index + 1}
+                        {done ? TRACKING_DONE_MARK : index + 1}
                       </span>
                       <span style={{ fontFamily: 'var(--font-display)', fontSize: 11, fontWeight: 700, letterSpacing: '.08em', textTransform: 'uppercase' }}>{label}</span>
                     </div>
@@ -158,14 +158,14 @@ export default async function OrderDetailPage({
                     <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
                       {item.selected_size && <span style={{ fontFamily: 'var(--font-display)', fontSize: 10, color: '#94938E' }}>Taille: {item.selected_size}</span>}
                       {item.selected_color && <span style={{ fontFamily: 'var(--font-display)', fontSize: 10, color: '#94938E' }}>Couleur: {item.selected_color}</span>}
-                      <span style={{ fontFamily: 'var(--font-display)', fontSize: 10, color: '#94938E' }}>Qte: {item.quantity}</span>
+                      <span style={{ fontFamily: 'var(--font-display)', fontSize: 10, color: '#94938E' }}>Qt\u00e9: {item.quantity}</span>
                     </div>
                   </div>
                   <div className="order-item-price" style={{ textAlign: 'right', flexShrink: 0 }}>
                     <p style={{ fontFamily: 'var(--font-display)', fontSize: 14, fontWeight: 700, color: '#F2F1ED' }}>
                       {formatPrice(item.price * item.quantity)}
                     </p>
-                    <p style={{ fontFamily: 'var(--font-display)', fontSize: 10, color: '#4D4D52' }}>{formatPrice(item.price)} / unite</p>
+                    <p style={{ fontFamily: 'var(--font-display)', fontSize: 10, color: '#4D4D52' }}>{formatPrice(item.price)} / unit\u00e9</p>
                   </div>
                 </div>
               ))}
@@ -179,7 +179,7 @@ export default async function OrderDetailPage({
             <div className="order-customer-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
               {[
                 { label: 'Nom complet', value: order.customer?.fullname },
-                { label: 'Telephone', value: order.customer?.phone },
+                { label: 'T\u00e9l\u00e9phone', value: order.customer?.phone },
                 { label: 'Email', value: order.customer?.email || '-' },
                 { label: 'Ville', value: order.customer?.city || '-' },
                 { label: 'Adresse', value: order.customer?.address || '-' },
@@ -209,12 +209,12 @@ export default async function OrderDetailPage({
               {canConfirmWavePayment && (
                 <ConfirmSubmitForm
                   action={confirmManualWavePayment.bind(null, id)}
-                  message="Confirmer ce paiement Wave apres verification dans le dashboard Wave ? Cette action decremente le stock."
+                  message="Confirmer ce paiement Wave apr\u00e8s v\u00e9rification dans le dashboard Wave ? Cette action d\u00e9cr\u00e9mente le stock."
                   style={{ display: 'flex', flexDirection: 'column', gap: 10 }}
                 >
                   <label style={{ display: 'grid', gap: 6 }}>
-                    <span style={labelStyle}>Reference transaction Wave</span>
-                    <input name="provider_transaction_id" placeholder="Optionnel mais recommande" style={{ width: '100%', background: '#0A0A0C', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 3, padding: '9px 12px', color: '#F2F1ED', fontSize: 13, outline: 'none', fontFamily: 'var(--font-display)' }} />
+                    <span style={labelStyle}>R\u00e9f\u00e9rence transaction Wave</span>
+                    <input name="provider_transaction_id" placeholder="Optionnel mais recommand\u00e9" style={{ width: '100%', background: '#0A0A0C', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 3, padding: '9px 12px', color: '#F2F1ED', fontSize: 13, outline: 'none', fontFamily: 'var(--font-display)' }} />
                   </label>
                   <button type="submit" style={{ background: '#4CAF50', color: '#08110A', border: 'none', borderRadius: 3, padding: '11px', fontFamily: 'var(--font-display)', fontSize: 12, fontWeight: 700, letterSpacing: '.06em', textTransform: 'uppercase', cursor: 'pointer' }}>
                     Confirmer paiement Wave
@@ -222,16 +222,16 @@ export default async function OrderDetailPage({
                 </ConfirmSubmitForm>
               )}
               {canShip && (
-                <ConfirmSubmitForm action={markOrderAsShipped.bind(null, id)} message="Marquer cette commande comme expediee ?" style={{ display: 'grid' }}>
+                <ConfirmSubmitForm action={markOrderAsShipped.bind(null, id)} message="Marquer cette commande comme exp\u00e9di\u00e9e ?" style={{ display: 'grid' }}>
                   <button type="submit" style={{ background: '#1A2A6C', color: '#fff', border: 'none', borderRadius: 3, padding: '11px', fontFamily: 'var(--font-display)', fontSize: 12, fontWeight: 700, letterSpacing: '.06em', textTransform: 'uppercase', cursor: 'pointer' }}>
-                    Marquer comme expediee
+                    Marquer comme exp\u00e9di\u00e9e
                   </button>
                 </ConfirmSubmitForm>
               )}
               {canDeliver && (
-                <ConfirmSubmitForm action={markOrderAsDelivered.bind(null, id)} message="Marquer cette commande comme livree ?" style={{ display: 'grid' }}>
+                <ConfirmSubmitForm action={markOrderAsDelivered.bind(null, id)} message="Marquer cette commande comme livr\u00e9e ?" style={{ display: 'grid' }}>
                   <button type="submit" style={{ background: '#4CAF50', color: '#08110A', border: 'none', borderRadius: 3, padding: '11px', fontFamily: 'var(--font-display)', fontSize: 12, fontWeight: 700, letterSpacing: '.06em', textTransform: 'uppercase', cursor: 'pointer' }}>
-                    Marquer comme livree
+                    Marquer comme livr\u00e9e
                   </button>
                 </ConfirmSubmitForm>
               )}
@@ -256,12 +256,12 @@ export default async function OrderDetailPage({
               {[
                 { label: 'Suivi', value: orderTrackingLabel(order.order_status) },
                 { label: 'Paiement', value: paymentLabel(order.payment_status) },
-                { label: 'Methode', value: order.payment_method?.replace('_', ' ').toUpperCase() },
+                { label: 'M\u00e9thode', value: order.payment_method?.replace('_', ' ').toUpperCase() },
                 { label: 'Transaction', value: order.provider_transaction_id || '-' },
-                { label: 'Payee le', value: order.paid_at ? formatDate(order.paid_at) : '-' },
-                { label: 'Stock decremente', value: order.stock_decremented_at ? formatDate(order.stock_decremented_at) : '-' },
+                { label: 'Pay\u00e9e le', value: order.paid_at ? formatDate(order.paid_at) : '-' },
+                { label: 'Stock d\u00e9cr\u00e9ment\u00e9', value: order.stock_decremented_at ? formatDate(order.stock_decremented_at) : '-' },
                 { label: 'Articles', value: `${order.items?.length || 0} article${(order.items?.length || 0) > 1 ? 's' : ''}` },
-                { label: 'Creee le', value: formatDate(order.created_at) },
+                { label: 'Cr\u00e9\u00e9e le', value: formatDate(order.created_at) },
                 { label: 'Total', value: formatPrice(order.total) },
               ].map(f => (
                 <div key={f.label} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12 }}>
