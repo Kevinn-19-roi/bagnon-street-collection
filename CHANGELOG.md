@@ -38,17 +38,21 @@
   - `ROADMAP.md`
   - `CHANGELOG.md`
 - Commits importants :
-  - A renseigner apres commit Sprint 7.
+  - `dee5baf` - Add manual Wave payment confirmation.
+  - `c988fce` - Simplify Wave order tracking.
+  - `db403dd` - Finalize Wave tracking UX.
 - Validations effectuees :
   - TypeScript local : OK.
   - ESLint local : OK.
   - Build production local : OK.
   - Erreur Vercel diagnostiquee : fonction `public.confirm_manual_wave_payment(p_admin_id, p_order_id, p_provider_transaction_id)` absente du schema cache Supabase.
   - Migration `006_payment_tracking_rpc.sql` : appliquee en production par Supabase le 2026-07-15.
+  - Validation production reelle : confirmation Wave admin OK, `payment_status = paid`, `order_status = confirmed`, decrement stock unique OK, deuxieme confirmation bloquee OK.
+  - Validation suivi : passage a Expediee OK, passage a Livree OK.
+  - Validation WhatsApp : bouton client OK, bouton admin OK.
 - Points restant a traiter :
-  - Tester une commande Wave reelle et confirmer le paiement apres verification dans Wave Business.
-  - Verifier que la seconde confirmation est refusee et que le stock est decremente une seule fois.
   - Remplacer plus tard le lien statique par Wave Checkout API et webhooks officiels.
+  - Ne pas commencer Orange Money sans validation du plan Sprint 8.
 
 ## 2026-07-14 - Sprint 6 Checkout, commande et preparation paiement
 

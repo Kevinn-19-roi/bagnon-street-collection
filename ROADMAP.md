@@ -13,7 +13,7 @@ Ce document sert de point de reprise entre les sprints. Il doit rester synchroni
 - Termine - Sprint 4.7 - Duplication, suppression et page favoris
 - Publie - Sprint 5 - Panier
 - Termine - Sprint 6 - Checkout
-- En cours - Sprint 7 - Paiement Wave manuel et suivi simplifie
+- Termine - Sprint 7 - Paiement Wave manuel et suivi simplifie
 - En attente - Sprint 8 - Orange Money
 - En attente - Sprint 9 - WhatsApp
 - En attente - Sprint 10 - Optimisation SEO
@@ -108,7 +108,7 @@ Ce document sert de point de reprise entre les sprints. Il doit rester synchroni
 ## Sprint 7 - Paiement Wave manuel et suivi simplifie
 
 - Objectif : ajouter un mode Wave transitoire avec lien Wave Business, confirmation admin securisee, decrement stock atomique, suivi logistique simple et alerte WhatsApp.
-- Etat : migration 006 appliquee en production ; correctif final de suivi et WhatsApp en cours de publication.
+- Etat : termine et valide en production.
 - Date : 2026-07-15.
 - Fichiers principaux concernes : `supabase/migrations/006_payment_tracking_rpc.sql`, `src/lib/actions/orders.ts`, `src/app/commande/[reference]/page.tsx`, `src/app/admin/commandes/page.tsx`, `src/app/admin/commandes/[id]/page.tsx`, `src/lib/payments/wave.ts`, `src/lib/whatsapp.ts`.
 - Architecture temporaire : le client ouvre le lien Wave Business existant ; aucun retour navigateur ne marque la commande payee.
@@ -122,12 +122,13 @@ Ce document sert de point de reprise entre les sprints. Il doit rester synchroni
 - Filtre admin : `Commande recue` regroupe maintenant `pending` et `confirmed`, pour garder les commandes payees confirmees dans la premiere etape logistique.
 - Transitions autorisees : `pending`/`confirmed` payee -> `shipped`, puis `shipped` -> `delivered`; une commande non payee n'est pas expediee par le parcours normal.
 - WhatsApp : la page confirmation client genere un message pre-rempli vers le numero `site_settings.whatsapp`; l'admin dispose aussi d'un message WhatsApp vers le client.
-- Prochaines etapes : tester une commande Wave reelle, confirmer le paiement admin, verifier le decrement stock unique et le refus de seconde confirmation, puis remplacer plus tard le lien statique par Wave Checkout API et webhooks.
+- Validation production : confirmation Wave admin OK, `payment_status = paid`, `order_status = confirmed`, decrement stock une seule fois, deuxieme confirmation bloquee, suivi Expediee puis Livree OK, WhatsApp client/admin OK.
+- Prochaines etapes : preparer le Sprint 8 - Orange Money sans modifier l'existant Wave ; remplacer plus tard le lien Wave statique par Wave Checkout API et webhooks officiels quand les acces seront disponibles.
 
 ## Sprints suivants
 
 - Sprint 6 - Checkout : termine, transformation du panier local en commande Supabase.
-- Sprint 7 - Paiement Wave : mode manuel en cours, API officielle a venir.
+- Sprint 7 - Paiement Wave : mode manuel termine et valide, API officielle a venir.
 - Sprint 8 - Orange Money : integration paiement.
 - Sprint 9 - WhatsApp : notifications commande.
 - Sprint 10 - Optimisation SEO : metadata, performances, structure produit.
