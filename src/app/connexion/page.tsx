@@ -13,9 +13,12 @@ export const metadata = {
 export default async function ConnexionPage({
   searchParams,
 }: {
-  searchParams: Promise<{ error?: string; message?: string }>
+  searchParams: Promise<{ error?: string; message?: string; redirect?: string }>
 }) {
   const params = await searchParams
+  const redirectTo = params.redirect?.startsWith('/') && !params.redirect.startsWith('//') && !params.redirect.startsWith('/admin')
+    ? params.redirect
+    : ''
 
   return (
     <main style={{ minHeight: '100vh', background: 'var(--bg)', color: 'var(--text)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '32px var(--px)' }}>
@@ -34,6 +37,7 @@ export default async function ConnexionPage({
         </Link>
 
         <form action={loginClient} style={{ background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: 8, padding: 28, display: 'flex', flexDirection: 'column', gap: 18 }}>
+          {redirectTo && <input type="hidden" name="redirect" value={redirectTo} />}
           <div>
             <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 22, fontWeight: 700, marginBottom: 6 }}>Connexion</h1>
             <p style={{ color: 'var(--text2)', fontSize: 13 }}>Accède à ton profil Bagnon Street.</p>

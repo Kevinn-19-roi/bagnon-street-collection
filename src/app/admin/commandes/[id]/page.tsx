@@ -2,7 +2,7 @@ import AdminShell from '@/components/admin/layout/AdminShell'
 import PageHeader from '@/components/admin/ui/PageHeader'
 import ConfirmSubmitForm from '@/components/admin/forms/ConfirmSubmitForm'
 import { getOrderById } from '@/lib/database/orders'
-import { confirmManualWavePayment, markOrderAsDelivered, markOrderAsShipped } from '@/lib/actions/orders'
+import { cancelOrder, confirmManualWavePayment, deleteOrder, markOrderAsDelivered, markOrderAsShipped } from '@/lib/actions/orders'
 import { formatPrice, formatDate } from '@/lib/helpers/slugify'
 import { buildAdminCustomerWhatsappMessage, buildWhatsappUrl, ORDER_TRACKING_STEPS, orderTrackingLabel, paymentLabel, TRACKING_DONE_MARK } from '@/lib/whatsapp'
 import { notFound } from 'next/navigation'
@@ -21,6 +21,7 @@ const successMessages: Record<string, string> = {
   shipped: 'Commande marqu\u00e9e comme exp\u00e9di\u00e9e.',
   delivered: 'Commande marqu\u00e9e comme livr\u00e9e.',
   'status-updated': 'Statut mis \u00e0 jour.',
+  cancelled: 'Commande annulee. Le stock a ete restaure si cette commande l avait deja decremente.',
 }
 
 const errorMessages: Record<string, string> = {
@@ -30,6 +31,12 @@ const errorMessages: Record<string, string> = {
   'invalid-transition': `Transition impossible. Le suivi doit passer par ${ORDER_TRACKING_STEPS.join(', puis ')}.`,
   'order-not-found': 'Commande introuvable.',
   'status-update-failed': 'Impossible de mettre \u00e0 jour le statut de commande.',
+  'cancel-rpc-missing': "La fonction d'annulation securisee n'est pas encore installee dans Supabase. Veuillez appliquer la migration 007_order_cancel_restore.sql.",
+  'cancel-failed': "Impossible d'annuler cette commande. Verifie le statut et la migration 007.",
+  'delivered-cancel-refused': 'Une commande livree ne peut pas etre annulee automatiquement.',
+  'delete-refused': 'Suppression refusee : seules les commandes annulees, de test ou non payees non expediees peuvent etre supprimees.',
+  'restore-required': 'Le stock doit etre restaure avant suppression.',
+  'delete-failed': 'Impossible de supprimer cette commande.',
 }
 
 function trackingStepIndex(status: string) {
@@ -54,6 +61,8 @@ export default async function OrderDetailPage({
   const canConfirmWavePayment = order.payment_method === 'wave' && order.payment_status !== 'paid'
   const canShip = order.payment_status === 'paid' && ['pending', 'confirmed'].includes(order.order_status)
   const canDeliver = order.order_status === 'shipped'
+  const canCancel = order.order_status !== 'cancelled' && order.order_status !== 'delivered'
+  const canDelete = order.order_status === 'cancelled' || (order.payment_status !== 'paid' && !['shipped', 'delivered'].includes(order.order_status))
   const adminWhatsappUrl = buildWhatsappUrl(order.customer?.phone, buildAdminCustomerWhatsappMessage(order))
 
   const sectionStyle = {
@@ -240,6 +249,20 @@ export default async function OrderDetailPage({
                   Aucune action principale disponible pour le moment.
                 </p>
               )}
+              {canCancel && (
+                <ConfirmSubmitForm action={cancelOrder.bind(null, id)} message="Annuler cette commande ? Si le stock a deja ete decremente, il sera restaure une seule fois." style={{ display: 'grid' }}>
+                  <button type="submit" style={{ background: 'rgba(245,158,11,.14)', color: '#F6C177', border: '1px solid rgba(245,158,11,.35)', borderRadius: 3, padding: '11px', fontFamily: 'var(--font-display)', fontSize: 12, fontWeight: 700, letterSpacing: '.06em', textTransform: 'uppercase', cursor: 'pointer' }}>
+                    Annuler la commande
+                  </button>
+                </ConfirmSubmitForm>
+              )}
+              {canDelete && (
+                <ConfirmSubmitForm action={deleteOrder.bind(null, id)} message="Supprimer definitivement cette commande ? Action reservee aux commandes de test, erreurs ou commandes annulees." style={{ display: 'grid' }}>
+                  <button type="submit" style={{ background: 'rgba(122,22,32,.18)', color: '#F2B8BE', border: '1px solid rgba(122,22,32,.45)', borderRadius: 3, padding: '11px', fontFamily: 'var(--font-display)', fontSize: 12, fontWeight: 700, letterSpacing: '.06em', textTransform: 'uppercase', cursor: 'pointer' }}>
+                    Supprimer la commande
+                  </button>
+                </ConfirmSubmitForm>
+              )}
               {adminWhatsappUrl && (
                 <a href={adminWhatsappUrl} target="_blank" rel="noopener noreferrer" style={{ display: 'inline-flex', justifyContent: 'center', background: 'rgba(37,211,102,.12)', color: '#5BE28A', border: '1px solid rgba(37,211,102,.28)', borderRadius: 3, padding: '10px', fontFamily: 'var(--font-display)', fontSize: 11, fontWeight: 700, letterSpacing: '.06em', textTransform: 'uppercase' }}>
                   WhatsApp client
@@ -260,6 +283,7 @@ export default async function OrderDetailPage({
                 { label: 'Transaction', value: order.provider_transaction_id || '-' },
                 { label: 'Pay\u00e9e le', value: order.paid_at ? formatDate(order.paid_at) : '-' },
                 { label: 'Stock d\u00e9cr\u00e9ment\u00e9', value: order.stock_decremented_at ? formatDate(order.stock_decremented_at) : '-' },
+                { label: 'Stock restaure', value: order.stock_restored_at ? formatDate(order.stock_restored_at) : '-' },
                 { label: 'Articles', value: `${order.items?.length || 0} article${(order.items?.length || 0) > 1 ? 's' : ''}` },
                 { label: 'Cr\u00e9\u00e9e le', value: formatDate(order.created_at) },
                 { label: 'Total', value: formatPrice(order.total) },

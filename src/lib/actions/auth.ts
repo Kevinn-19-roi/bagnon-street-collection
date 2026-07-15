@@ -21,6 +21,13 @@ const RegisterClientSchema = z.object({
   city: z.string().trim().optional(),
 })
 
+function safeInternalRedirect(value: FormDataEntryValue | null, fallback: string) {
+  const path = typeof value === 'string' ? value.trim() : ''
+  if (!path.startsWith('/') || path.startsWith('//')) return fallback
+  if (path.startsWith('/admin')) return fallback
+  return path
+}
+
 function translateAuthError(message?: string) {
   if (!message) return 'Opération impossible pour le moment'
 
@@ -121,6 +128,7 @@ export async function loginClient(formData: FormData): Promise<void> {
     email: formData.get('email') as string,
     password: formData.get('password') as string,
   }
+  const redirectTo = safeInternalRedirect(formData.get('redirect'), '/profil')
 
   const parsed = LoginSchema.safeParse(raw)
   if (!parsed.success) {
@@ -138,7 +146,7 @@ export async function loginClient(formData: FormData): Promise<void> {
   }
 
   const admin = await getAdminByUserId(data.user.id)
-  redirect(admin ? '/admin/dashboard' : '/profil')
+  redirect(admin ? '/admin/dashboard' : redirectTo)
 }
 
 export async function registerClient(formData: FormData): Promise<void> {

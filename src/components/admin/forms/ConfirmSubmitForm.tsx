@@ -1,6 +1,7 @@
 'use client'
 
 import { ReactNode } from 'react'
+import { useFormStatus } from 'react-dom'
 
 interface Props {
   action: (formData: FormData) => void | Promise<void>
@@ -18,7 +19,17 @@ export default function ConfirmSubmitForm({ action, message, children, style }: 
         if (!confirm(message)) event.preventDefault()
       }}
     >
-      {children}
+      <PendingFieldset>{children}</PendingFieldset>
     </form>
+  )
+}
+
+function PendingFieldset({ children }: { children: ReactNode }) {
+  const { pending } = useFormStatus()
+
+  return (
+    <fieldset disabled={pending} style={{ border: 0, padding: 0, margin: 0, opacity: pending ? .65 : 1, pointerEvents: pending ? 'none' : 'auto' }}>
+      {children}
+    </fieldset>
   )
 }

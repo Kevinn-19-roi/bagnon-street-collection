@@ -17,6 +17,7 @@ Ce document sert de point de reprise entre les sprints. Il doit rester synchroni
 - Termine - Sprint 8 - Notifications WhatsApp admin/client
 - Termine - Sprint 9 - SEO, performance finale et preparation production
 - Termine - Sprint 9.5 - UX, performance et finalisation avant lancement
+- Termine - Sprint 9.6 - Mes commandes, admin commandes, recherche et performance
 - Reporte - Orange Money
 - En attente - Sprint 10 - Validation finale production
 - En attente - Sprint 11 - Mise en production finale
@@ -167,3 +168,16 @@ Ce document sert de point de reprise entre les sprints. Il doit rester synchroni
 - Performance : les pages categorie, collection et recherche chargent 6 produits par page au lieu de charger une longue liste ; les requetes restent cote serveur et reutilisent les composants existants.
 - Problemes rencontres : les anciens paniers locaux peuvent contenir des produits sans details de variantes si l'article a ete ajoute avant ce sprint ; les nouvelles additions depuis la fiche produit et l'accueil embarquent les options disponibles.
 - Prochaines etapes : recette mobile reelle, validation du partage WhatsApp/Facebook via cache des plateformes, puis Sprint 10 - validation finale production.
+
+## Sprint 9.6 - Mes commandes, admin commandes, recherche et performance
+
+- Objectif : ajouter une vraie page client Mes commandes, securiser les actions admin Annuler/Supprimer, refaire la recherche mobile via page dediee et optimiser les listes paginees.
+- Etat : termine cote code, migration 007 a appliquer manuellement pour activer l'annulation atomique avec restauration stock.
+- Date : 2026-07-15.
+- Fichiers principaux concernes : `src/app/commandes/*`, `src/app/api/recherche/route.ts`, `src/components/search/SearchClient.tsx`, `src/lib/database/orders.ts`, `src/lib/actions/orders.ts`, `src/app/admin/commandes/*`, `src/components/HomeClient.tsx`, `supabase/migrations/007_order_cancel_restore.sql`.
+- Mes commandes : route `/commandes` et detail `/commandes/[reference]`, filtres, pagination par 6 commandes, timeline client, protection par session.
+- Limite schema actuel : les commandes existantes sont retrouvees via l'email du client connecte, car `orders` ne contient pas encore de `user_id`; la migration 007 prepare `customers.auth_user_id` pour un rattachement plus strict.
+- Admin commandes : actions Annuler/Supprimer ajoutees, suppression reservee aux commandes annulees ou non payees non expediees/livrees.
+- Stock : annulation fiable preparee via RPC `cancel_order_with_stock_restore`, avec `stock_restored_at` comme verrou d'idempotence.
+- Recherche : le header mobile ouvre `/recherche`; la page effectue une recherche instantanee debouncee via `/api/recherche`, 6 produits par page et URL partageable.
+- Prochaines etapes : appliquer `007_order_cancel_restore.sql` dans Supabase Production, puis tester annulation/restauration stock sur une commande test.

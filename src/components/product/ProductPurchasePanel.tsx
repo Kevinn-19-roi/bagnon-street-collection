@@ -11,6 +11,13 @@ type ProductPurchasePanelProps = {
   product: ProductDetailViewModel
 }
 
+const cartIcon = (
+  <svg aria-hidden="true" viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M6 8h12l-1 12H7L6 8z" />
+    <path d="M9 8V6a3 3 0 0 1 6 0v2" />
+  </svg>
+)
+
 function toCartProduct(product: ProductDetailViewModel): Product {
   return {
     id: product.id,
@@ -139,8 +146,13 @@ export default function ProductPurchasePanel({ product }: ProductPurchasePanelPr
           letterSpacing: '.08em',
           textTransform: 'uppercase',
           cursor: product.inStock ? 'pointer' : 'not-allowed',
+          display: 'inline-flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: 9,
         }}
       >
+        {product.inStock && cartIcon}
         {product.inStock ? 'Ajouter au panier' : 'Rupture de stock'}
       </button>
 

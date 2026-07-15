@@ -335,7 +335,7 @@ function Navbar({ onMenuOpen, currentUser }: { onMenuOpen: () => void; currentUs
         </a>
 
         {/* Search bar */}
-        <form action="/recherche" className={searchFocused ? 'nav-search nav-search-open' : 'nav-search'} onFocus={() => setSearchFocused(true)} onBlur={() => setSearchFocused(false)} style={{ flex: searchFocused ? '1 1 620px' : '1 1 280px', maxWidth: searchFocused ? 620 : 460, margin: '0 auto', position: 'relative', transition: 'max-width .22s ease, flex-basis .22s ease, transform .22s ease' }}>
+        <form action="/recherche" className={searchFocused ? 'nav-search nav-search-open desktop-search' : 'nav-search desktop-search'} onFocus={() => setSearchFocused(true)} onBlur={() => setSearchFocused(false)} style={{ flex: searchFocused ? '1 1 620px' : '1 1 280px', maxWidth: searchFocused ? 620 : 460, margin: '0 auto', position: 'relative', transition: 'max-width .22s ease, flex-basis .22s ease, transform .22s ease' }}>
           <span style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: 'var(--text3)' }}>{I.search}</span>
           <input name="q" type="search" placeholder="Rechercher..." aria-label="Rechercher un produit" style={{ width: '100%', background: 'var(--search)', border: '1px solid var(--border2)', borderRadius: 3, padding: '10px 42px 10px 36px', fontSize: 13, color: 'var(--text)', outline: 'none', fontFamily: 'var(--font-body)' }} />
           <button type="submit" aria-label="Lancer la recherche" style={{ position: 'absolute', right: 4, top: '50%', transform: 'translateY(-50%)', background: 'var(--btn)', color: 'var(--btn-t)', borderRadius: 3, width: 32, height: 32, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{I.arrow}</button>
@@ -367,6 +367,9 @@ function Navbar({ onMenuOpen, currentUser }: { onMenuOpen: () => void; currentUs
 
         {/* Icons */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 2, marginLeft: 'auto' }}>
+          <a href="/recherche" aria-label="Rechercher" className="mobile-only" style={{ width: 38, height: 38, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text)' }}>
+            {I.search}
+          </a>
           <button onClick={toggleTheme} style={{ width: 38, height: 38, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text)' }}>
             {theme === 'dark' ? I.moon : I.sun}
           </button>
@@ -471,6 +474,7 @@ export default function HomeClient({ featured, newItems, bestsellers, allProduct
       <style>{`
         @media(min-width:768px){
           .mobile-only{display:none!important;}
+          .desktop-search{display:block!important;}
           .desktop-only{display:flex!important;}
           .nav-search-desktop{display:block!important;}
           .hero-grid{grid-template-columns:55% 45%!important; min-height:88vh!important;}
@@ -482,6 +486,7 @@ export default function HomeClient({ featured, newItems, bestsellers, allProduct
           .mobile-search{display:none!important;}
         }
         @media(max-width:767px){
+          .desktop-search{display:none!important;}
           .nav-search{flex:0 1 132px!important; max-width:132px!important; min-width:96px!important; margin-left:auto!important;}
           .nav-search input{border-radius:999px!important;}
           .nav-search-open{position:absolute!important; left:var(--px)!important; right:var(--px)!important; top:8px!important; z-index:5!important; flex:1 1 auto!important; max-width:none!important; min-width:0!important; transform:translateY(0)!important;}
@@ -728,7 +733,7 @@ export default function HomeClient({ featured, newItems, bestsellers, allProduct
         {[
           { icon: I.home, label: 'Accueil', href: '/' },
           { icon: I.bag, label: 'Panier', href: '/panier', badge: cartCount() },
-          { icon: I.package, label: 'Commandes', href: currentUser ? '/profil' : '/connexion' },
+          { icon: I.package, label: 'Commandes', href: currentUser ? '/commandes' : '/connexion?redirect=/commandes' },
           { icon: I.heart, label: 'Favoris', href: '/favoris', badge: favorites.size },
           { icon: I.user, label: 'Compte', href: currentUser ? '/profil' : '/connexion' },
         ].map(n => (

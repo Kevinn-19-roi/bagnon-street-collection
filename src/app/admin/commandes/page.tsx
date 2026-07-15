@@ -4,7 +4,7 @@ import Badge from '@/components/admin/ui/Badge'
 import ResponsiveTable from '@/components/admin/ui/ResponsiveTable'
 import ConfirmSubmitForm from '@/components/admin/forms/ConfirmSubmitForm'
 import { getOrders } from '@/lib/database/orders'
-import { confirmManualWavePayment, markOrderAsDelivered, markOrderAsShipped } from '@/lib/actions/orders'
+import { cancelOrder, confirmManualWavePayment, deleteOrder, markOrderAsDelivered, markOrderAsShipped } from '@/lib/actions/orders'
 import { formatPrice, formatDate } from '@/lib/helpers/slugify'
 import { buildAdminCustomerWhatsappMessage, buildWhatsappUrl, orderTrackingLabel, paymentLabel } from '@/lib/whatsapp'
 import Link from 'next/link'
@@ -32,12 +32,18 @@ const paymentStatusVariants: Record<PaymentStatus, any> = {
 export default async function CommandesPage({
   searchParams,
 }: {
-  searchParams: Promise<{ page?: string; status?: string; search?: string }>
+  searchParams: Promise<{ page?: string; status?: string; search?: string; success?: string; error?: string }>
 }) {
   const params = await searchParams
   const page = Number(params.page || 1)
   const status = params.status as OrderStatusFilter | undefined
   const search = params.search
+  const successMessage = params.success === 'deleted'
+    ? 'Commande supprimee.'
+    : null
+  const errorMessage = params.error === 'order-not-found'
+    ? 'Commande introuvable.'
+    : null
 
   const { data: orders, total, total_pages } = await getOrders({
     status,
@@ -76,6 +82,17 @@ export default async function CommandesPage({
         ))}
       </div>
 
+      {successMessage && (
+        <p style={{ background: 'rgba(76,175,80,.12)', border: '1px solid rgba(76,175,80,.28)', color: '#4CAF50', borderRadius: 6, padding: 12, fontFamily: 'var(--font-display)', fontSize: 12, marginBottom: 16 }}>
+          {successMessage}
+        </p>
+      )}
+      {errorMessage && (
+        <p role="alert" style={{ background: 'rgba(122,22,32,.14)', border: '1px solid rgba(122,22,32,.34)', color: '#F2B8BE', borderRadius: 6, padding: 12, fontFamily: 'var(--font-display)', fontSize: 12, marginBottom: 16 }}>
+          {errorMessage}
+        </p>
+      )}
+
       <ResponsiveTable minWidth={1180}>
         <table style={{ width: '100%', borderCollapse: 'collapse' }}>
           <thead>
@@ -96,6 +113,8 @@ export default async function CommandesPage({
               const canConfirmWavePayment = order.payment_method === 'wave' && order.payment_status !== 'paid'
               const canShip = order.payment_status === 'paid' && ['pending', 'confirmed'].includes(order.order_status)
               const canDeliver = order.order_status === 'shipped'
+              const canCancel = order.order_status !== 'cancelled' && order.order_status !== 'delivered'
+              const canDelete = order.order_status === 'cancelled' || (order.payment_status !== 'paid' && !['shipped', 'delivered'].includes(order.order_status))
               const whatsappUrl = buildWhatsappUrl(order.customer?.phone, buildAdminCustomerWhatsappMessage(order))
 
               return (
@@ -156,6 +175,20 @@ export default async function CommandesPage({
                       <Link href={`/admin/commandes/${order.id}`} style={{ fontFamily: 'var(--font-display)', fontSize: 10, fontWeight: 700, letterSpacing: '.08em', textTransform: 'uppercase', background: 'rgba(26,42,108,0.2)', color: '#5C7CFA', border: '1px solid rgba(26,42,108,0.4)', borderRadius: 3, padding: '5px 10px', textDecoration: 'none' }}>
                         D\u00e9tails
                       </Link>
+                      {canCancel && (
+                        <ConfirmSubmitForm action={cancelOrder.bind(null, order.id)} message="Annuler cette commande ? Si le stock a deja ete decremente, il sera restaure une seule fois.">
+                          <button type="submit" style={{ fontFamily: 'var(--font-display)', fontSize: 10, fontWeight: 700, letterSpacing: '.08em', textTransform: 'uppercase', background: 'rgba(245,158,11,.14)', color: '#F6C177', border: '1px solid rgba(245,158,11,.35)', borderRadius: 3, padding: '6px 10px', cursor: 'pointer' }}>
+                            Annuler
+                          </button>
+                        </ConfirmSubmitForm>
+                      )}
+                      {canDelete && (
+                        <ConfirmSubmitForm action={deleteOrder.bind(null, order.id)} message="Supprimer definitivement cette commande ? Action reservee aux commandes de test, erreurs ou commandes annulees.">
+                          <button type="submit" style={{ fontFamily: 'var(--font-display)', fontSize: 10, fontWeight: 700, letterSpacing: '.08em', textTransform: 'uppercase', background: 'rgba(122,22,32,.18)', color: '#F2B8BE', border: '1px solid rgba(122,22,32,.45)', borderRadius: 3, padding: '6px 10px', cursor: 'pointer' }}>
+                            Supprimer
+                          </button>
+                        </ConfirmSubmitForm>
+                      )}
                     </div>
                   </td>
                 </tr>

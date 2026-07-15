@@ -1,5 +1,5 @@
 import { createAdminClient } from '@/lib/supabase/admin'
-import type { Order, OrderFilters, PaginatedResponse } from '@/types/database'
+import type { Order, OrderFilters, OrderStatusFilter, PaginatedResponse } from '@/types/database'
 
 export async function getOrders(
   filters: OrderFilters = {}
@@ -118,6 +118,71 @@ export async function getOrderByNumber(orderNumber: string): Promise<Order | nul
       )
     `)
     .eq('order_number', orderNumber)
+    .single()
+
+  if (error) return null
+  return data as Order
+}
+
+export async function getCustomerOrdersByEmail({
+  email,
+  status,
+  page = 1,
+  per_page = 6,
+}: {
+  email: string
+  status?: OrderStatusFilter | 'paid' | 'cancelled'
+  page?: number
+  per_page?: number
+}): Promise<PaginatedResponse<Order>> {
+  const adminClient = createAdminClient()
+
+  let query = adminClient
+    .from('orders')
+    .select(`
+      *,
+      customer:customers!inner(id, fullname, phone, email),
+      items:order_items(id, quantity)
+    `, { count: 'exact' })
+    .eq('customer.email', email)
+    .order('created_at', { ascending: false })
+    .range((page - 1) * per_page, page * per_page - 1)
+
+  if (status === 'received') {
+    query = query.in('order_status', ['pending', 'confirmed'])
+  } else if (status === 'paid') {
+    query = query.eq('payment_status', 'paid')
+  } else if (status) {
+    query = query.eq('order_status', status)
+  }
+
+  const { data, error, count } = await query
+  if (error) throw new Error(error.message)
+
+  return {
+    data: (data as Order[]) || [],
+    total: count || 0,
+    page,
+    per_page,
+    total_pages: Math.ceil((count || 0) / per_page),
+  }
+}
+
+export async function getCustomerOrderByNumberAndEmail(orderNumber: string, email: string): Promise<Order | null> {
+  const adminClient = createAdminClient()
+
+  const { data, error } = await adminClient
+    .from('orders')
+    .select(`
+      *,
+      customer:customers!inner(*),
+      items:order_items(
+        *,
+        product:products(id, name, slug, images:product_images(image_url))
+      )
+    `)
+    .eq('order_number', orderNumber)
+    .eq('customer.email', email)
     .single()
 
   if (error) return null

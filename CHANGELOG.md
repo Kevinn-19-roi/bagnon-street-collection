@@ -1,5 +1,52 @@
 # Changelog Bagnon Street Collection
 
+## 2026-07-15 - Sprint 9.6 Mes commandes, admin commandes, recherche et performance
+
+- Developpements :
+  - Creation de `/commandes` pour les commandes du client connecte.
+  - Creation de `/commandes/[reference]` pour le detail et le suivi client.
+  - Ajout de filtres client : toutes, en attente, payees, expediees, livrees, annulees.
+  - Pagination client par 6 commandes.
+  - Ajout de l'API `/api/recherche` pour la recherche instantanee.
+  - Ajout du composant `SearchClient` avec debounce, annulation des anciennes requetes et URL partageable.
+  - Remplacement de la recherche mobile compacte par une icone menant vers `/recherche`.
+  - Ajout des actions admin `Annuler` et `Supprimer` sur liste et detail commandes.
+  - Ajout de la migration non destructive `007_order_cancel_restore.sql`.
+  - Ajout d'une icone panier dans le bouton `Ajouter au panier` de la fiche produit.
+- Bugs corriges :
+  - La navigation mobile Commandes pointait vers `/profil` au lieu d'une vraie page dediee.
+  - La recherche mobile pouvait se refermer avant de lancer correctement la recherche.
+  - Les actions admin sensibles n'avaient pas encore de parcours Annuler/Supprimer clair.
+- Fichiers modifies :
+  - `supabase/migrations/007_order_cancel_restore.sql`
+  - `src/app/commandes/page.tsx`
+  - `src/app/commandes/[reference]/page.tsx`
+  - `src/app/api/recherche/route.ts`
+  - `src/app/recherche/page.tsx`
+  - `src/components/search/SearchClient.tsx`
+  - `src/components/HomeClient.tsx`
+  - `src/components/product/ProductPurchasePanel.tsx`
+  - `src/components/admin/forms/ConfirmSubmitForm.tsx`
+  - `src/app/admin/commandes/page.tsx`
+  - `src/app/admin/commandes/[id]/page.tsx`
+  - `src/lib/actions/orders.ts`
+  - `src/lib/database/orders.ts`
+  - `src/lib/actions/auth.ts`
+  - `src/app/connexion/page.tsx`
+  - `src/types/database.ts`
+  - `ROADMAP.md`
+  - `CHANGELOG.md`
+- Commits importants :
+  - `Add customer orders and admin order controls`
+- Validations effectuees :
+  - TypeScript local : OK.
+  - ESLint local : OK.
+  - Build production local : OK.
+  - Audit npm production : 0 vulnerabilite.
+- Points restant a traiter :
+  - Appliquer `supabase/migrations/007_order_cancel_restore.sql` en production avant de tester l'annulation avec restauration stock.
+  - Valider les commandes client avec une vraie session connectee.
+
 ## 2026-07-15 - Sprint 9.5 UX, performance et finalisation avant lancement
 
 - Developpements :

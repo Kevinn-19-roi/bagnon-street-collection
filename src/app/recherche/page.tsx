@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 import { getProducts } from '@/lib/database/products'
-import PublicProductListing from '@/components/product/PublicProductListing'
+import SearchClient from '@/components/search/SearchClient'
 
 const SITE_URL = 'https://bagnon-street-collection-ci.vercel.app'
 
@@ -45,17 +45,5 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
     ? await getProducts({ search: query, page, per_page: 6 })
     : { data: [], page: 1, total_pages: 1, total: 0, per_page: 6 }
 
-  return (
-    <PublicProductListing
-      eyebrow="Recherche"
-      title={query ? `Resultats pour "${query}"` : 'Recherche'}
-      description={query ? `${products.total} produit${products.total > 1 ? 's' : ''} trouve${products.total > 1 ? 's' : ''}.` : 'Tape un mot-cle depuis la barre de recherche pour trouver une piece.'}
-      products={products.data}
-      currentPage={products.page}
-      totalPages={products.total_pages}
-      basePath={`/recherche?q=${encodeURIComponent(query)}`}
-      emptyTitle={query ? 'Aucun produit trouve' : 'Aucune recherche lancee'}
-      emptyCtaLabel="Retour a la boutique"
-    />
-  )
+  return <SearchClient initialQuery={query} initialPage={page} initialProducts={products.data} initialTotal={products.total} initialTotalPages={products.total_pages} />
 }

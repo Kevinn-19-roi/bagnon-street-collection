@@ -107,6 +107,7 @@ export interface ProductColor {
 
 export interface Customer {
   id: string
+  auth_user_id?: string | null
   fullname: string
   phone: string
   email: string | null
@@ -131,6 +132,9 @@ export interface Order {
   payment_confirmed_by: string | null
   payment_confirmed_at: string | null
   stock_decremented_at: string | null
+  stock_restored_at?: string | null
+  cancelled_at?: string | null
+  cancelled_by?: string | null
   notes: string | null
   created_at: string
   updated_at: string
