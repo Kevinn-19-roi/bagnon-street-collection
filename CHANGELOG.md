@@ -10,14 +10,24 @@
   - Ajout d'une action admin dediee `confirmManualWavePayment`.
   - Ajout d'un bloc admin "Confirmation Wave manuelle" sur le detail commande.
   - Blocage du passage direct a `payment_status = paid` via le formulaire generique de statut.
+  - Simplification du suivi admin en trois etapes principales : Commande recue, Expediee, Livree.
+  - Ajout des actions serveur dediees `markOrderAsShipped` et `markOrderAsDelivered` avec controle de transition.
+  - Ajout d'une timeline simple sur le detail commande admin et la page de confirmation client.
+  - Ajout du helper WhatsApp partage pour nettoyer les numeros et generer les messages client/admin.
+  - Ajout du bouton client `Informer Bagnon Street sur WhatsApp` sur `/commande/[reference]`.
+  - Ajout d'un message WhatsApp admin pre-rempli vers le client depuis la liste et le detail commande.
 - Bugs corriges :
   - Le statut paiement pouvait etre marque paye sans decrementer le stock si l'admin utilisait le formulaire generique.
+  - L'absence de la RPC `confirm_manual_wave_payment` en production provoquait une erreur serveur brute au clic sur `Confirmer paiement Wave`.
+  - Le parcours admin de suivi etait trop generique pour le besoin reel ; il expose maintenant uniquement la prochaine action possible.
 - Fichiers modifies :
   - `supabase/migrations/006_payment_tracking_rpc.sql`
   - `src/lib/payments/wave.ts`
   - `src/lib/actions/orders.ts`
   - `src/app/commande/[reference]/page.tsx`
+  - `src/app/admin/commandes/page.tsx`
   - `src/app/admin/commandes/[id]/page.tsx`
+  - `src/lib/whatsapp.ts`
   - `src/components/checkout/CheckoutClient.tsx`
   - `src/types/database.ts`
   - `ROADMAP.md`
@@ -28,9 +38,11 @@
   - TypeScript local : OK.
   - ESLint local : OK.
   - Build production local : OK.
+  - Erreur Vercel diagnostiquee : fonction `public.confirm_manual_wave_payment(p_admin_id, p_order_id, p_provider_transaction_id)` absente du schema cache Supabase.
 - Points restant a traiter :
   - Appliquer manuellement la migration `006_payment_tracking_rpc.sql` sur Supabase Production avant d'utiliser la confirmation admin en production.
   - Tester une commande Wave reelle et confirmer le paiement apres verification dans Wave Business.
+  - Verifier que la seconde confirmation est refusee et que le stock est decremente une seule fois.
   - Remplacer plus tard le lien statique par Wave Checkout API et webhooks officiels.
 
 ## 2026-07-14 - Sprint 6 Checkout, commande et preparation paiement

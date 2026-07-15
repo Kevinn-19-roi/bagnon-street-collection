@@ -2,28 +2,31 @@ import AdminShell from '@/components/admin/layout/AdminShell'
 import PageHeader from '@/components/admin/ui/PageHeader'
 import Badge from '@/components/admin/ui/Badge'
 import ResponsiveTable from '@/components/admin/ui/ResponsiveTable'
+import ConfirmSubmitForm from '@/components/admin/forms/ConfirmSubmitForm'
 import { getOrders } from '@/lib/database/orders'
+import { confirmManualWavePayment, markOrderAsDelivered, markOrderAsShipped } from '@/lib/actions/orders'
 import { formatPrice, formatDate } from '@/lib/helpers/slugify'
+import { buildAdminCustomerWhatsappMessage, buildWhatsappUrl, orderTrackingLabel, paymentLabel } from '@/lib/whatsapp'
 import Link from 'next/link'
 import { OrderStatus, PaymentStatus } from '@/types/database'
 
-export const metadata = { title: 'Commandes — Admin BSC' }
+export const metadata = { title: 'Commandes - Admin BSC' }
 export const dynamic = 'force-dynamic'
 
-const orderStatusLabels: Record<OrderStatus, { label: string; variant: any }> = {
-  pending:    { label: 'En attente',  variant: 'warning' },
-  confirmed:  { label: 'Confirmée',   variant: 'info' },
-  preparing:  { label: 'Préparation', variant: 'info' },
-  shipped:    { label: 'Expédiée',    variant: 'success' },
-  delivered:  { label: 'Livrée',      variant: 'success' },
-  cancelled:  { label: 'Annulée',     variant: 'error' },
+const orderStatusVariants: Record<string, any> = {
+  pending: 'warning',
+  confirmed: 'info',
+  preparing: 'info',
+  shipped: 'success',
+  delivered: 'success',
+  cancelled: 'error',
 }
 
-const paymentStatusLabels: Record<PaymentStatus, { label: string; variant: any }> = {
-  unpaid:   { label: 'Non payé',  variant: 'error' },
-  paid:     { label: 'Payé',      variant: 'success' },
-  failed:   { label: 'Échoué',    variant: 'error' },
-  refunded: { label: 'Remboursé', variant: 'warning' },
+const paymentStatusVariants: Record<PaymentStatus, any> = {
+  unpaid: 'error',
+  paid: 'success',
+  failed: 'error',
+  refunded: 'warning',
 }
 
 export default async function CommandesPage({
@@ -51,16 +54,13 @@ export default async function CommandesPage({
         subtitle={`${total} commande${total > 1 ? 's' : ''} au total`}
       />
 
-      {/* Filters */}
       <div style={{ display: 'flex', gap: 8, marginBottom: 20, flexWrap: 'wrap' }}>
         {[
           { label: 'Toutes', value: '' },
-          { label: 'En attente', value: 'pending' },
-          { label: 'Confirmées', value: 'confirmed' },
-          { label: 'Préparation', value: 'preparing' },
-          { label: 'Expédiées', value: 'shipped' },
-          { label: 'Livrées', value: 'delivered' },
-          { label: 'Annulées', value: 'cancelled' },
+          { label: 'Commande recue', value: 'pending' },
+          { label: 'Expediees', value: 'shipped' },
+          { label: 'Livrees', value: 'delivered' },
+          { label: 'Annulees', value: 'cancelled' },
         ].map(f => (
           <Link key={f.value} href={`?status=${f.value}`} style={{
             fontFamily: 'var(--font-display)', fontSize: 11, fontWeight: 600,
@@ -76,12 +76,11 @@ export default async function CommandesPage({
         ))}
       </div>
 
-      {/* Table */}
-      <ResponsiveTable minWidth={1080}>
+      <ResponsiveTable minWidth={1180}>
         <table style={{ width: '100%', borderCollapse: 'collapse' }}>
           <thead>
             <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
-              {['N° Commande', 'Client', 'Articles', 'Total', 'Statut', 'Paiement', 'Date', 'Actions'].map(h => (
+              {['Reference', 'Client', 'Montant', 'Commande', 'Paiement', 'Date', 'WhatsApp', 'Actions'].map(h => (
                 <th key={h} style={{ padding: '11px 16px', textAlign: 'left', fontFamily: 'var(--font-display)', fontSize: 10, fontWeight: 700, letterSpacing: '.2em', textTransform: 'uppercase', color: '#4D4D52' }}>{h}</th>
               ))}
             </tr>
@@ -93,67 +92,79 @@ export default async function CommandesPage({
                   Aucune commande
                 </td>
               </tr>
-            ) : orders.map((order, i) => (
-              <tr key={order.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.04)', background: i % 2 === 0 ? 'transparent' : 'rgba(255,255,255,0.01)' }}>
-                <td style={{ padding: '12px 16px' }}>
-                  <span style={{ fontFamily: 'var(--font-display)', fontSize: 12, fontWeight: 700, color: '#F2F1ED', letterSpacing: '.05em' }}>
-                    {order.order_number}
-                  </span>
-                </td>
-                <td style={{ padding: '12px 16px' }}>
-                  <div>
+            ) : orders.map((order, i) => {
+              const canConfirmWavePayment = order.payment_method === 'wave' && order.payment_status !== 'paid'
+              const canShip = order.payment_status === 'paid' && ['pending', 'confirmed'].includes(order.order_status)
+              const canDeliver = order.order_status === 'shipped'
+              const whatsappUrl = buildWhatsappUrl(order.customer?.phone, buildAdminCustomerWhatsappMessage(order))
+
+              return (
+                <tr key={order.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.04)', background: i % 2 === 0 ? 'transparent' : 'rgba(255,255,255,0.01)' }}>
+                  <td style={{ padding: '12px 16px' }}>
+                    <span style={{ fontFamily: 'var(--font-display)', fontSize: 12, fontWeight: 700, color: '#F2F1ED', letterSpacing: '.05em' }}>
+                      {order.order_number}
+                    </span>
+                  </td>
+                  <td style={{ padding: '12px 16px', minWidth: 170 }}>
                     <p style={{ fontFamily: 'var(--font-display)', fontSize: 13, fontWeight: 600, color: '#F2F1ED' }}>{order.customer?.fullname}</p>
                     <p style={{ fontFamily: 'var(--font-display)', fontSize: 10, color: '#4D4D52', marginTop: 2 }}>{order.customer?.phone}</p>
-                  </div>
-                </td>
-                <td style={{ padding: '12px 16px', minWidth: 220 }}>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-                    {order.items?.slice(0, 3).map((item: any) => (
-                      <p key={item.id} style={{ fontFamily: 'var(--font-display)', fontSize: 10, color: '#94938E', lineHeight: 1.45 }}>
-                        {item.quantity}x {item.product?.name || 'Produit'}
-                        {item.selected_size ? <> - {item.selected_size}</> : null}
-                        {item.selected_color ? <> - {item.selected_color}</> : null}
-                      </p>
-                    ))}
-                    {(order.items?.length || 0) > 3 && <p style={{ fontFamily: 'var(--font-display)', fontSize: 10, color: '#4D4D52' }}>+{(order.items?.length || 0) - 3} autre(s)</p>}
-                  </div>
-                </td>
-                <td style={{ padding: '12px 16px' }}>
-                  <span style={{ fontFamily: 'var(--font-display)', fontSize: 13, fontWeight: 700, color: '#F2F1ED' }}>{formatPrice(order.total)}</span>
-                </td>
-                <td style={{ padding: '12px 16px' }}>
-                  <Badge
-                    label={orderStatusLabels[order.order_status]?.label || order.order_status}
-                    variant={orderStatusLabels[order.order_status]?.variant || 'default'}
-                  />
-                </td>
-                <td style={{ padding: '12px 16px' }}>
-                  <Badge
-                    label={paymentStatusLabels[order.payment_status]?.label || order.payment_status}
-                    variant={paymentStatusLabels[order.payment_status]?.variant || 'default'}
-                  />
-                </td>
-                <td style={{ padding: '12px 16px' }}>
-                  <span style={{ fontFamily: 'var(--font-display)', fontSize: 11, color: '#4D4D52' }}>{formatDate(order.created_at)}</span>
-                </td>
-                <td style={{ padding: '12px 16px' }}>
-                  <Link href={`/admin/commandes/${order.id}`} style={{
-                    fontFamily: 'var(--font-display)', fontSize: 10, fontWeight: 700,
-                    letterSpacing: '.08em', textTransform: 'uppercase',
-                    background: 'rgba(26,42,108,0.2)', color: '#5C7CFA',
-                    border: '1px solid rgba(26,42,108,0.4)', borderRadius: 3,
-                    padding: '5px 10px', textDecoration: 'none',
-                  }}>
-                    Détails
-                  </Link>
-                </td>
-              </tr>
-            ))}
+                  </td>
+                  <td style={{ padding: '12px 16px' }}>
+                    <span style={{ fontFamily: 'var(--font-display)', fontSize: 13, fontWeight: 700, color: '#F2F1ED' }}>{formatPrice(order.total)}</span>
+                  </td>
+                  <td style={{ padding: '12px 16px' }}>
+                    <Badge label={orderTrackingLabel(order.order_status)} variant={orderStatusVariants[order.order_status] || 'default'} />
+                  </td>
+                  <td style={{ padding: '12px 16px' }}>
+                    <Badge label={paymentLabel(order.payment_status)} variant={paymentStatusVariants[order.payment_status] || 'default'} />
+                  </td>
+                  <td style={{ padding: '12px 16px' }}>
+                    <span style={{ fontFamily: 'var(--font-display)', fontSize: 11, color: '#4D4D52' }}>{formatDate(order.created_at)}</span>
+                  </td>
+                  <td style={{ padding: '12px 16px' }}>
+                    {whatsappUrl ? (
+                      <a href={whatsappUrl} target="_blank" rel="noopener noreferrer" style={{ fontFamily: 'var(--font-display)', fontSize: 10, fontWeight: 700, letterSpacing: '.08em', textTransform: 'uppercase', color: '#5BE28A', textDecoration: 'none' }}>
+                        WhatsApp
+                      </a>
+                    ) : (
+                      <span style={{ fontFamily: 'var(--font-display)', fontSize: 10, color: '#4D4D52' }}>-</span>
+                    )}
+                  </td>
+                  <td style={{ padding: '12px 16px', minWidth: 260 }}>
+                    <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
+                      {canConfirmWavePayment && (
+                        <ConfirmSubmitForm action={confirmManualWavePayment.bind(null, order.id)} message="Confirmer ce paiement Wave apres verification dans le dashboard Wave ?">
+                          <button type="submit" style={{ fontFamily: 'var(--font-display)', fontSize: 10, fontWeight: 700, letterSpacing: '.08em', textTransform: 'uppercase', background: '#4CAF50', color: '#08110A', border: 'none', borderRadius: 3, padding: '6px 10px', cursor: 'pointer' }}>
+                            Confirmer Wave
+                          </button>
+                        </ConfirmSubmitForm>
+                      )}
+                      {canShip && (
+                        <ConfirmSubmitForm action={markOrderAsShipped.bind(null, order.id)} message="Marquer cette commande comme expediee ?">
+                          <button type="submit" style={{ fontFamily: 'var(--font-display)', fontSize: 10, fontWeight: 700, letterSpacing: '.08em', textTransform: 'uppercase', background: '#1A2A6C', color: '#fff', border: 'none', borderRadius: 3, padding: '6px 10px', cursor: 'pointer' }}>
+                            Expedier
+                          </button>
+                        </ConfirmSubmitForm>
+                      )}
+                      {canDeliver && (
+                        <ConfirmSubmitForm action={markOrderAsDelivered.bind(null, order.id)} message="Marquer cette commande comme livree ?">
+                          <button type="submit" style={{ fontFamily: 'var(--font-display)', fontSize: 10, fontWeight: 700, letterSpacing: '.08em', textTransform: 'uppercase', background: '#4CAF50', color: '#08110A', border: 'none', borderRadius: 3, padding: '6px 10px', cursor: 'pointer' }}>
+                            Livrer
+                          </button>
+                        </ConfirmSubmitForm>
+                      )}
+                      <Link href={`/admin/commandes/${order.id}`} style={{ fontFamily: 'var(--font-display)', fontSize: 10, fontWeight: 700, letterSpacing: '.08em', textTransform: 'uppercase', background: 'rgba(26,42,108,0.2)', color: '#5C7CFA', border: '1px solid rgba(26,42,108,0.4)', borderRadius: 3, padding: '5px 10px', textDecoration: 'none' }}>
+                        Details
+                      </Link>
+                    </div>
+                  </td>
+                </tr>
+              )
+            })}
           </tbody>
         </table>
       </ResponsiveTable>
 
-      {/* Pagination */}
       {total_pages > 1 && (
         <div style={{ display: 'flex', justifyContent: 'center', gap: 8, marginTop: 20 }}>
           {Array.from({ length: total_pages }, (_, i) => i + 1).map(p => (
