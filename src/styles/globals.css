@@ -67,13 +67,21 @@ button{font-family:var(--font-body);cursor:pointer;border:none;background:none;c
 
 .cart-confirmation{animation:cart-confirm-in .22s ease;}
 .cart-add-button-pop,.cart-badge-pop{animation:cart-badge-pop .28s ease;}
+.checkout-error-pulse{animation:checkout-error-pulse .5s ease;}
+
+@keyframes checkout-error-pulse{
+  0%{transform:translateY(-3px);box-shadow:0 0 0 0 rgba(122,22,32,.22);}
+  60%{transform:translateY(0);box-shadow:0 0 0 7px rgba(122,22,32,0);}
+  100%{transform:translateY(0);box-shadow:none;}
+}
 
 @media(prefers-reduced-motion:reduce){
   .favorite-button,
   .favorite-button-pop,
   .cart-confirmation,
   .cart-add-button-pop,
-  .cart-badge-pop{transition:none!important;animation:none!important;}
+  .cart-badge-pop,
+  .checkout-error-pulse{transition:none!important;animation:none!important;}
 }
 
 @media(max-width:900px){

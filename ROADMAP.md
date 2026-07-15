@@ -16,6 +16,7 @@ Ce document sert de point de reprise entre les sprints. Il doit rester synchroni
 - Termine - Sprint 7 - Paiement Wave manuel et suivi simplifie
 - Termine - Sprint 8 - Notifications WhatsApp admin/client
 - Termine - Sprint 9 - SEO, performance finale et preparation production
+- Termine - Sprint 9.5 - UX, performance et finalisation avant lancement
 - Reporte - Orange Money
 - En attente - Sprint 10 - Validation finale production
 - En attente - Sprint 11 - Mise en production finale
@@ -155,3 +156,14 @@ Ce document sert de point de reprise entre les sprints. Il doit rester synchroni
 - Corrections realisees : metadata globales enrichies, sitemap/robots, donnees structurees produit, pages categorie/collection, pages legales structurelles, noindex des pages privees, optimisation Next Image et headers de securite.
 - Problemes rencontres : contenu legal officiel manquant ; pages legales creees en structure uniquement et marquees `noindex`.
 - Prochaines etapes : fournir les contenus legaux, valider les parcours avec vraies sessions client/admin, puis preparer la recette publique finale.
+
+## Sprint 9.5 - UX, performance et finalisation avant lancement
+
+- Objectif : finaliser l'experience utilisateur publique avant lancement, sans modifier Wave, Orange Money, commandes, checkout serveur ou SEO deja valides.
+- Etat : termine.
+- Date : 2026-07-15.
+- Fichiers principaux concernes : `src/components/HomeClient.tsx`, `src/app/recherche/page.tsx`, `src/app/categorie/[slug]/page.tsx`, `src/app/collection/[slug]/page.tsx`, `src/components/product/PublicProductListing.tsx`, `src/hooks/useCart.ts`, `src/components/cart/CartPageClient.tsx`, `src/components/checkout/CheckoutClient.tsx`, `src/lib/database/products.ts`, `src/app/layout.tsx`.
+- Corrections realisees : categories transformees en vraies pages paginees, recherche publique `/recherche?q=...`, navigation mobile basse Accueil/Panier/Commandes/Favoris/Compte, badges panier/favoris, Open Graph renforce, selection des variantes manquantes depuis panier/checkout, remontee automatique vers les erreurs checkout.
+- Performance : les pages categorie, collection et recherche chargent 6 produits par page au lieu de charger une longue liste ; les requetes restent cote serveur et reutilisent les composants existants.
+- Problemes rencontres : les anciens paniers locaux peuvent contenir des produits sans details de variantes si l'article a ete ajoute avant ce sprint ; les nouvelles additions depuis la fiche produit et l'accueil embarquent les options disponibles.
+- Prochaines etapes : recette mobile reelle, validation du partage WhatsApp/Facebook via cache des plateformes, puis Sprint 10 - validation finale production.

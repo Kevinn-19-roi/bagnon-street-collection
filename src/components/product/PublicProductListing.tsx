@@ -7,9 +7,32 @@ type PublicProductListingProps = {
   title: string
   description?: string | null
   products: Product[]
+  currentPage?: number
+  totalPages?: number
+  basePath?: string
+  emptyTitle?: string
+  emptyCtaLabel?: string
 }
 
-export default function PublicProductListing({ eyebrow, title, description, products }: PublicProductListingProps) {
+export default function PublicProductListing({
+  eyebrow,
+  title,
+  description,
+  products,
+  currentPage = 1,
+  totalPages = 1,
+  basePath,
+  emptyTitle = 'Aucun produit actif dans cette selection pour le moment.',
+  emptyCtaLabel = 'Decouvrir la boutique',
+}: PublicProductListingProps) {
+  const hasPrevious = currentPage > 1
+  const hasNext = currentPage < totalPages
+  const pageHref = (page: number) => {
+    if (!basePath) return '#'
+    const separator = basePath.includes('?') ? '&' : '?'
+    return page <= 1 ? basePath : `${basePath}${separator}page=${page}`
+  }
+
   return (
     <main style={{ minHeight: '100vh', background: 'var(--bg)', color: 'var(--text)' }}>
       <header style={{ padding: '18px var(--px)', borderBottom: '1px solid var(--border)', background: 'var(--nav-bg)', position: 'sticky', top: 0, zIndex: 20 }}>
@@ -47,16 +70,39 @@ export default function PublicProductListing({ eyebrow, title, description, prod
           )}
 
           {products.length > 0 ? (
-            <div className="public-product-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(4,minmax(0,1fr))', gap: 12 }}>
-              {products.map(product => <RelatedProductCard key={product.id} product={product} />)}
-            </div>
+            <>
+              <div className="public-product-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(4,minmax(0,1fr))', gap: 12 }}>
+                {products.map(product => <RelatedProductCard key={product.id} product={product} />)}
+              </div>
+              {basePath && totalPages > 1 && (
+                <nav aria-label="Pagination" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 10, marginTop: 28, flexWrap: 'wrap' }}>
+                  <Link
+                    href={hasPrevious ? pageHref(currentPage - 1) : pageHref(1)}
+                    aria-disabled={!hasPrevious}
+                    style={{ pointerEvents: hasPrevious ? 'auto' : 'none', opacity: hasPrevious ? 1 : .45, border: '1px solid var(--border2)', borderRadius: 3, padding: '10px 14px', fontFamily: 'var(--font-display)', fontSize: 11, fontWeight: 700, letterSpacing: '.08em', textTransform: 'uppercase', color: 'var(--text2)' }}
+                  >
+                    Precedent
+                  </Link>
+                  <span style={{ fontFamily: 'var(--font-display)', fontSize: 11, color: 'var(--text3)', letterSpacing: '.08em', textTransform: 'uppercase' }}>
+                    Page {currentPage} / {totalPages}
+                  </span>
+                  <Link
+                    href={hasNext ? pageHref(currentPage + 1) : pageHref(totalPages)}
+                    aria-disabled={!hasNext}
+                    style={{ pointerEvents: hasNext ? 'auto' : 'none', opacity: hasNext ? 1 : .45, background: 'var(--btn)', color: 'var(--btn-t)', borderRadius: 3, padding: '10px 14px', fontFamily: 'var(--font-display)', fontSize: 11, fontWeight: 700, letterSpacing: '.08em', textTransform: 'uppercase' }}
+                  >
+                    Suivant
+                  </Link>
+                </nav>
+              )}
+            </>
           ) : (
             <div style={{ border: '1px solid var(--border)', borderRadius: 6, padding: 24, background: 'var(--bg2)' }}>
               <p style={{ color: 'var(--text2)', fontSize: 14, lineHeight: 1.7, marginBottom: 16 }}>
-                Aucun produit actif dans cette selection pour le moment.
+                {emptyTitle}
               </p>
               <Link href="/#collection" style={{ display: 'inline-flex', background: 'var(--btn)', color: 'var(--btn-t)', borderRadius: 3, padding: '12px 16px', fontFamily: 'var(--font-display)', fontSize: 12, fontWeight: 700, letterSpacing: '.08em', textTransform: 'uppercase' }}>
-                Decouvrir la boutique
+                {emptyCtaLabel}
               </Link>
             </div>
           )}

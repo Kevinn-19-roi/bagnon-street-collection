@@ -23,6 +23,7 @@ interface CartStore {
   addItem: (product: Product, quantity?: number, size?: string, color?: string, maxStock?: number) => CartActionResult
   removeItem: (id: string) => void
   updateQuantity: (id: string, quantity: number) => CartActionResult
+  updateOptions: (id: string, options: { size?: string; color?: string }) => CartActionResult
   clearCart: () => void
   toggleCart: () => void
   openCart: () => void
@@ -95,6 +96,48 @@ export const useCart = create<CartStore>()(
 
         set({ items: get().items.map(i => i.id === id ? { ...i, quantity } : i) })
         return { success: true, message: 'Quantite mise a jour.' }
+      },
+      updateOptions: (id, options) => {
+        const items = get().items
+        const item = items.find(i => i.id === id)
+        if (!item) return { success: false, message: 'Article introuvable dans le panier.' }
+
+        const nextSize = options.size ?? item.size
+        const nextColor = options.color ?? item.color
+        const nextId = cartItemKey(item.product.id, nextSize, nextColor)
+        const duplicate = items.find(i => i.id === nextId && i.id !== id)
+        const sizeStock = item.product.sizes?.find(size => size.size === nextSize)?.stock
+        const colorStock = item.product.colors?.find(color => color.color_name === nextColor)?.stock
+        const stockCandidates = [
+          item.product.stock,
+          item.maxStock,
+          ...(sizeStock !== undefined ? [sizeStock] : []),
+          ...(colorStock !== undefined ? [colorStock] : []),
+        ].filter((value): value is number => typeof value === 'number' && Number.isFinite(value))
+        const limit = stockCandidates.length ? Math.max(0, Math.min(...stockCandidates)) : undefined
+
+        if (limit !== undefined && item.quantity > limit) {
+          return { success: false, message: `Stock limite a ${limit} article${limit > 1 ? 's' : ''} pour cette option.` }
+        }
+
+        if (duplicate) {
+          const nextQuantity = duplicate.quantity + item.quantity
+          if (limit !== undefined && nextQuantity > limit) {
+            return { success: false, message: `Stock limite a ${limit} article${limit > 1 ? 's' : ''} pour cette option.` }
+          }
+
+          set({
+            items: items
+              .filter(i => i.id !== id)
+              .map(i => i.id === nextId ? { ...i, quantity: nextQuantity, maxStock: limit ?? i.maxStock } : i),
+          })
+        } else {
+          set({
+            items: items.map(i => i.id === id ? { ...i, id: nextId, size: nextSize, color: nextColor, maxStock: limit ?? i.maxStock } : i),
+          })
+        }
+
+        return { success: true, message: 'Option mise a jour.' }
       },
       clearCart: () => set({ items: [] }),
       toggleCart: () => set({ isOpen: !get().isOpen }),

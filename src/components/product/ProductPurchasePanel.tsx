@@ -28,6 +28,8 @@ function toCartProduct(product: ProductDetailViewModel): Product {
     featured: false,
     inStock: product.inStock,
     isNew: false,
+    sizes: product.sizes.map(size => ({ size: size.value, stock: size.stock })),
+    colors: product.colors.map(color => ({ color_name: color.value, color_hex: color.colorHex, stock: color.stock })),
     tags: [],
   }
 }

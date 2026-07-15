@@ -9,14 +9,16 @@ const SITE_URL = 'https://bagnon-street-collection-ci.vercel.app'
 
 type CategoryPageProps = {
   params: Promise<{ slug: string }>
+  searchParams?: Promise<{ page?: string }>
 }
 
 async function getCategory(slug: string): Promise<Category | null> {
+  const normalizedSlug = slug === 'bas' ? 'pantalons' : slug
   const adminClient = createAdminClient()
   const { data } = await adminClient
     .from('categories')
     .select('*')
-    .eq('slug', slug)
+    .eq('slug', normalizedSlug)
     .eq('active', true)
     .maybeSingle()
 
@@ -45,24 +47,28 @@ export async function generateMetadata({ params }: CategoryPageProps): Promise<M
       description,
       url: `${SITE_URL}/categorie/${category.slug}`,
       type: 'website',
-      images: category.image ? [{ url: category.image, alt: category.name }] : undefined,
+      images: category.image
+        ? [{ url: category.image, width: 1200, height: 630, alt: category.name }]
+        : [{ url: '/brand/hero-model.jpg', width: 1200, height: 630, alt: category.name }],
     },
     twitter: {
-      card: category.image ? 'summary_large_image' : 'summary',
+      card: 'summary_large_image',
       title: `${category.name} - Bagnon Street Collection`,
       description,
-      images: category.image ? [category.image] : undefined,
+      images: category.image ? [category.image] : ['/brand/hero-model.jpg'],
     },
   }
 }
 
-export default async function CategoryPage({ params }: CategoryPageProps) {
+export default async function CategoryPage({ params, searchParams }: CategoryPageProps) {
   const { slug } = await params
+  const query = searchParams ? await searchParams : {}
+  const page = Math.max(1, Number(query.page || 1) || 1)
   const category = await getCategory(slug)
 
   if (!category) notFound()
 
-  const products = await getProducts({ category_id: category.id, per_page: 48 })
+  const products = await getProducts({ category_id: category.id, page, per_page: 6 })
 
   return (
     <PublicProductListing
@@ -70,6 +76,9 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
       title={category.name}
       description={category.description}
       products={products.data}
+      currentPage={products.page}
+      totalPages={products.total_pages}
+      basePath={`/categorie/${category.slug}`}
     />
   )
 }

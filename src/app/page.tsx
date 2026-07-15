@@ -10,7 +10,7 @@ const getHomeProducts = unstable_cache(async () => {
 
   const { data } = await adminClient
     .from('products')
-    .select('*, images:product_images(image_url, display_order), category:categories(name, slug)')
+    .select('*, images:product_images(image_url, display_order), category:categories(name, slug), sizes:product_sizes(size, stock), colors:product_colors(color_name, color_hex, stock)')
     .eq('active', true)
     .order('created_at', { ascending: false })
     .limit(24)

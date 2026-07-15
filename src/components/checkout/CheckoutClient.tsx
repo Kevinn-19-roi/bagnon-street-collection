@@ -3,7 +3,7 @@
 import Image from 'next/image'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { createCheckoutOrder } from '@/lib/actions/checkout'
 import { useCart } from '@/hooks/useCart'
 import type { PaymentMethod } from '@/types/database'
@@ -33,10 +33,12 @@ function splitVariant(size?: string, color?: string) {
 
 export default function CheckoutClient({ prefill, shippingCost, freeShippingFrom }: CheckoutClientProps) {
   const router = useRouter()
-  const { items, total, clearCart } = useCart()
+  const { items, total, clearCart, updateOptions } = useCart()
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState('')
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('wave')
+  const formRef = useRef<HTMLFormElement>(null)
+  const errorRef = useRef<HTMLParagraphElement>(null)
   const subtotal = total()
   const effectiveShipping = freeShippingFrom > 0 && subtotal >= freeShippingFrom ? 0 : shippingCost
   const grandTotal = subtotal + effectiveShipping
@@ -48,12 +50,35 @@ export default function CheckoutClient({ prefill, shippingCost, freeShippingFrom
     color: item.color || null,
   })), [items])
 
+  const missingVariantItem = items.find(item => {
+    const needsSize = (item.product.sizes || []).length > 0 && !item.size
+    const needsColor = (item.product.colors || []).length > 1 && !item.color
+    return needsSize || needsColor
+  })
+
+  useEffect(() => {
+    if (!error) return
+
+    window.requestAnimationFrame(() => {
+      errorRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+      const target = formRef.current?.querySelector<HTMLElement>('[data-checkout-error="true"], input:invalid, select:invalid, textarea:invalid')
+      target?.focus()
+    })
+  }, [error])
+
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault()
     if (submitting) return
 
     if (items.length === 0) {
       router.push('/panier')
+      return
+    }
+
+    if (missingVariantItem) {
+      const needsSize = (missingVariantItem.product.sizes || []).length > 0 && !missingVariantItem.size
+      const needsColor = (missingVariantItem.product.colors || []).length > 1 && !missingVariantItem.color
+      setError(`${missingVariantItem.product.name} : ${[needsSize ? 'choisis une taille' : null, needsColor ? 'choisis une couleur' : null].filter(Boolean).join(' et ')}.`)
       return
     }
 
@@ -98,7 +123,7 @@ export default function CheckoutClient({ prefill, shippingCost, freeShippingFrom
   }
 
   return (
-    <form onSubmit={handleSubmit} style={{ padding: 'clamp(28px,6vw,64px) var(--px) clamp(80px,10vw,110px)' }}>
+    <form ref={formRef} onSubmit={handleSubmit} style={{ padding: 'clamp(28px,6vw,64px) var(--px) clamp(80px,10vw,110px)' }}>
       <div className="checkout-grid" style={{ maxWidth: 1240, margin: '0 auto', display: 'grid', gridTemplateColumns: 'minmax(0,1fr) minmax(300px,390px)', gap: 'clamp(22px,4vw,42px)', alignItems: 'start' }}>
         <div style={{ display: 'grid', gap: 18 }}>
           <div>
@@ -107,7 +132,7 @@ export default function CheckoutClient({ prefill, shippingCost, freeShippingFrom
           </div>
 
           {error && (
-            <p role="alert" style={{ background: 'rgba(122,22,32,.12)', border: '1px solid rgba(122,22,32,.28)', color: 'var(--red)', borderRadius: 6, padding: 12, fontSize: 13, lineHeight: 1.6 }}>{error}</p>
+            <p ref={errorRef} role="alert" className="checkout-error-pulse" style={{ background: 'rgba(122,22,32,.12)', border: '1px solid rgba(122,22,32,.28)', color: 'var(--red)', borderRadius: 6, padding: 12, fontSize: 13, lineHeight: 1.6 }}>{error}</p>
           )}
 
           <div className="checkout-form-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
@@ -159,19 +184,61 @@ export default function CheckoutClient({ prefill, shippingCost, freeShippingFrom
         <aside style={{ background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: 6, padding: 18, position: 'sticky', top: 82 }}>
           <p style={{ fontFamily: 'var(--font-display)', fontSize: 11, fontWeight: 700, letterSpacing: '.18em', textTransform: 'uppercase', color: 'var(--text2)', marginBottom: 16 }}>Resume commande</p>
           <div style={{ display: 'grid', gap: 12, marginBottom: 16 }}>
-            {items.map(item => (
-              <div key={item.id} style={{ display: 'grid', gridTemplateColumns: '58px 1fr', gap: 10, paddingBottom: 12, borderBottom: '1px solid var(--border)' }}>
+            {items.map(item => {
+              const sizeOptions = item.product.sizes || []
+              const colorOptions = item.product.colors || []
+              const needsSize = sizeOptions.length > 0 && !item.size
+              const needsColor = colorOptions.length > 1 && !item.color
+
+              return (
+              <div key={item.id} data-checkout-error={needsSize || needsColor ? 'true' : undefined} tabIndex={needsSize || needsColor ? -1 : undefined} style={{ display: 'grid', gridTemplateColumns: '58px 1fr', gap: 10, paddingBottom: 12, borderBottom: '1px solid var(--border)' }}>
                 <div style={{ position: 'relative', width: 58, height: 72, background: 'var(--bg3)', borderRadius: 4, overflow: 'hidden' }}>
                   {item.product.images[0] && <Image src={item.product.images[0]} alt={item.product.name} fill sizes="58px" style={{ objectFit: 'cover' }} />}
                 </div>
                 <div style={{ minWidth: 0 }}>
                   <p style={{ fontFamily: 'var(--font-display)', fontSize: 12, fontWeight: 700, lineHeight: 1.35 }}>{item.product.name}</p>
                   {splitVariant(item.size, item.color) && <p style={{ color: 'var(--text3)', fontSize: 11, marginTop: 3 }}>{splitVariant(item.size, item.color)}</p>}
+                  {(needsSize || needsColor) && (
+                    <div style={{ display: 'grid', gap: 7, marginTop: 8 }}>
+                      {needsSize && (
+                        <label style={{ display: 'grid', gap: 5, color: 'var(--red)', fontSize: 11 }}>
+                          <span>Ce produit necessite une taille.</span>
+                          <select
+                            value=""
+                            onChange={event => {
+                              updateOptions(item.id, { size: event.target.value })
+                              setError('')
+                            }}
+                            style={{ width: '100%', background: 'var(--bg)', border: '1px solid rgba(122,22,32,.35)', borderRadius: 4, padding: '8px 9px', color: 'var(--text)' }}
+                          >
+                            <option value="">Choisir</option>
+                            {sizeOptions.map(size => <option key={size.size} value={size.size}>{size.size}</option>)}
+                          </select>
+                        </label>
+                      )}
+                      {needsColor && (
+                        <label style={{ display: 'grid', gap: 5, color: 'var(--red)', fontSize: 11 }}>
+                          <span>Ce produit necessite une couleur.</span>
+                          <select
+                            value=""
+                            onChange={event => {
+                              updateOptions(item.id, { color: event.target.value })
+                              setError('')
+                            }}
+                            style={{ width: '100%', background: 'var(--bg)', border: '1px solid rgba(122,22,32,.35)', borderRadius: 4, padding: '8px 9px', color: 'var(--text)' }}
+                          >
+                            <option value="">Choisir</option>
+                            {colorOptions.map(color => <option key={color.color_name} value={color.color_name}>{color.color_name}</option>)}
+                          </select>
+                        </label>
+                      )}
+                    </div>
+                  )}
                   <p style={{ color: 'var(--text2)', fontSize: 12, marginTop: 5 }}>{item.quantity} x {formatPrice(item.product.price)}</p>
                   <p style={{ fontFamily: 'var(--font-display)', fontSize: 12, fontWeight: 700, marginTop: 4 }}>{formatPrice(item.product.price * item.quantity)}</p>
                 </div>
               </div>
-            ))}
+            )})}
           </div>
 
           <div style={{ display: 'grid', gap: 10, marginBottom: 16 }}>

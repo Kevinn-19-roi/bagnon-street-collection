@@ -95,13 +95,13 @@ export async function generateMetadata({ params }: ProductPageProps): Promise<Me
       description,
       url,
       type: 'website',
-      images: image ? [{ url: image, alt: viewModel.name }] : undefined,
+      images: image ? [{ url: image, width: 1200, height: 630, alt: viewModel.name }] : [{ url: '/brand/hero-model.jpg', width: 1200, height: 630, alt: viewModel.name }],
     },
     twitter: {
-      card: image ? 'summary_large_image' : 'summary',
+      card: 'summary_large_image',
       title: viewModel.name,
       description,
-      images: image ? [image] : undefined,
+      images: image ? [image] : ['/brand/hero-model.jpg'],
     },
   }
 }

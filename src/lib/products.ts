@@ -30,5 +30,7 @@ export interface Product {
   new_arrival?: boolean
   on_sale?: boolean
   active?: boolean
+  sizes?: Array<{ size: string; stock: number }>
+  colors?: Array<{ color_name: string; color_hex?: string | null; stock: number }>
   tags: string[]
 }

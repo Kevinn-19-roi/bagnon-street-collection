@@ -9,6 +9,7 @@ const SITE_URL = 'https://bagnon-street-collection-ci.vercel.app'
 
 type CollectionPageProps = {
   params: Promise<{ slug: string }>
+  searchParams?: Promise<{ page?: string }>
 }
 
 async function getCollection(slug: string): Promise<Collection | null> {
@@ -45,24 +46,28 @@ export async function generateMetadata({ params }: CollectionPageProps): Promise
       description,
       url: `${SITE_URL}/collection/${collection.slug}`,
       type: 'website',
-      images: collection.image ? [{ url: collection.image, alt: collection.name }] : undefined,
+      images: collection.image
+        ? [{ url: collection.image, width: 1200, height: 630, alt: collection.name }]
+        : [{ url: '/brand/hero-model.jpg', width: 1200, height: 630, alt: collection.name }],
     },
     twitter: {
-      card: collection.image ? 'summary_large_image' : 'summary',
+      card: 'summary_large_image',
       title: `${collection.name} - Bagnon Street Collection`,
       description,
-      images: collection.image ? [collection.image] : undefined,
+      images: collection.image ? [collection.image] : ['/brand/hero-model.jpg'],
     },
   }
 }
 
-export default async function CollectionPage({ params }: CollectionPageProps) {
+export default async function CollectionPage({ params, searchParams }: CollectionPageProps) {
   const { slug } = await params
+  const query = searchParams ? await searchParams : {}
+  const page = Math.max(1, Number(query.page || 1) || 1)
   const collection = await getCollection(slug)
 
   if (!collection) notFound()
 
-  const products = await getProducts({ collection_id: collection.id, per_page: 48 })
+  const products = await getProducts({ collection_id: collection.id, page, per_page: 6 })
 
   return (
     <PublicProductListing
@@ -70,6 +75,9 @@ export default async function CollectionPage({ params }: CollectionPageProps) {
       title={collection.name}
       description={collection.description}
       products={products.data}
+      currentPage={products.page}
+      totalPages={products.total_pages}
+      basePath={`/collection/${collection.slug}`}
     />
   )
 }

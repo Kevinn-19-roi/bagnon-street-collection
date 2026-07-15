@@ -14,7 +14,7 @@ function firstImage(images?: string[]) {
 }
 
 export default function CartPageClient() {
-  const { items, removeItem, updateQuantity, clearCart, total, count } = useCart()
+  const { items, removeItem, updateQuantity, updateOptions, clearCart, total, count } = useCart()
   const [message, setMessage] = useState('')
   const subtotal = total()
   const itemCount = count()
@@ -80,6 +80,10 @@ export default function CartPageClient() {
             {items.map(item => {
               const image = firstImage(item.product.images)
               const maxStock = item.maxStock ?? item.product.stock
+              const sizeOptions = item.product.sizes || []
+              const colorOptions = item.product.colors || []
+              const needsSize = sizeOptions.length > 0 && !item.size
+              const needsColor = colorOptions.length > 1 && !item.color
 
               return (
                 <article key={item.id} style={{ display: 'grid', gridTemplateColumns: '88px minmax(0,1fr)', gap: 14, background: 'var(--card)', border: '1px solid var(--border)', borderRadius: 6, padding: 12 }}>
@@ -97,10 +101,49 @@ export default function CartPageClient() {
                         <Link href={`/produit/${item.product.slug}`} prefetch={false}>
                           <h2 style={{ fontFamily: 'var(--font-display)', fontSize: 15, fontWeight: 700, lineHeight: 1.3, marginBottom: 4 }}>{item.product.name}</h2>
                         </Link>
-                        {(item.size || item.color) && (
+                        {(item.size || item.color) && !needsSize && !needsColor && (
                           <p style={{ fontSize: 12, color: 'var(--text2)', lineHeight: 1.5 }}>
                             {[item.size ? `Taille ${item.size}` : null, item.color || null].filter(Boolean).join(' · ')}
                           </p>
+                        )}
+                        {(needsSize || needsColor) && (
+                          <div style={{ display: 'grid', gap: 7, marginTop: 4 }}>
+                            <p style={{ fontSize: 12, color: 'var(--red)', lineHeight: 1.5 }}>
+                              {[needsSize ? 'Taille a selectionner' : null, needsColor ? 'Couleur a selectionner' : null].filter(Boolean).join(' · ')}
+                            </p>
+                            {needsSize && (
+                              <label style={{ display: 'grid', gap: 5, fontSize: 11, color: 'var(--red)' }}>
+                                <span style={{ fontFamily: 'var(--font-display)', fontWeight: 700, letterSpacing: '.08em', textTransform: 'uppercase' }}>Taille</span>
+                                <select
+                                  value=""
+                                  onChange={event => {
+                                    const result = updateOptions(item.id, { size: event.target.value })
+                                    setMessage(result.message)
+                                  }}
+                                  style={{ width: 'min(100%, 220px)', background: 'var(--bg2)', border: '1px solid rgba(122,22,32,.35)', borderRadius: 4, padding: '9px 10px', color: 'var(--text)' }}
+                                >
+                                  <option value="">Choisir une taille</option>
+                                  {sizeOptions.map(size => <option key={size.size} value={size.size}>{size.size}</option>)}
+                                </select>
+                              </label>
+                            )}
+                            {needsColor && (
+                              <label style={{ display: 'grid', gap: 5, fontSize: 11, color: 'var(--red)' }}>
+                                <span style={{ fontFamily: 'var(--font-display)', fontWeight: 700, letterSpacing: '.08em', textTransform: 'uppercase' }}>Couleur</span>
+                                <select
+                                  value=""
+                                  onChange={event => {
+                                    const result = updateOptions(item.id, { color: event.target.value })
+                                    setMessage(result.message)
+                                  }}
+                                  style={{ width: 'min(100%, 220px)', background: 'var(--bg2)', border: '1px solid rgba(122,22,32,.35)', borderRadius: 4, padding: '9px 10px', color: 'var(--text)' }}
+                                >
+                                  <option value="">Choisir une couleur</option>
+                                  {colorOptions.map(color => <option key={color.color_name} value={color.color_name}>{color.color_name}</option>)}
+                                </select>
+                              </label>
+                            )}
+                          </div>
                         )}
                         {typeof maxStock === 'number' && (
                           <p style={{ fontSize: 11, color: maxStock <= 3 ? 'var(--red)' : 'var(--text3)', marginTop: 3 }}>

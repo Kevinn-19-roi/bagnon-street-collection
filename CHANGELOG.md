@@ -1,5 +1,51 @@
 # Changelog Bagnon Street Collection
 
+## 2026-07-15 - Sprint 9.5 UX, performance et finalisation avant lancement
+
+- Developpements :
+  - Creation de la route `/recherche` avec resultats pagines par 6 produits.
+  - Passage des pages `/categorie/[slug]` et `/collection/[slug]` en pagination serveur par 6 produits.
+  - Transformation de la barre categories de l'accueil en vrais liens vers les pages categorie.
+  - Ajout de la compatibilite `/categorie/bas` vers la categorie existante des pantalons.
+  - Remplacement de la navigation basse mobile par Accueil, Panier, Commandes, Favoris et Compte.
+  - Ajout des badges panier et favoris sur la navigation mobile.
+  - Renforcement Open Graph avec dimensions d'image pour accueil, produit, categorie et collection.
+  - Enregistrement des tailles/couleurs disponibles dans les produits ajoutes au panier depuis la fiche produit et l'accueil.
+  - Ajout de la modification de taille/couleur directement depuis le panier et le checkout lorsque l'information manque.
+  - Ajout d'une remontee automatique vers les erreurs checkout avec focus sur le premier champ ou produit a corriger.
+- Bugs corriges :
+  - La recherche du header ne menait pas a une vraie page de resultats.
+  - Les pages categorie/collection chargeaient trop de produits d'un coup.
+  - Les categories d'accueil fonctionnaient comme un filtre local incomplet au lieu d'ouvrir des URLs partageables.
+  - Un client pouvait arriver au checkout avec une variante manquante sans correction directe possible.
+- Fichiers modifies :
+  - `src/app/recherche/page.tsx`
+  - `src/app/categorie/[slug]/page.tsx`
+  - `src/app/collection/[slug]/page.tsx`
+  - `src/app/layout.tsx`
+  - `src/app/page.tsx`
+  - `src/app/produit/[slug]/page.tsx`
+  - `src/components/HomeClient.tsx`
+  - `src/components/product/PublicProductListing.tsx`
+  - `src/components/product/ProductPurchasePanel.tsx`
+  - `src/components/cart/CartPageClient.tsx`
+  - `src/components/checkout/CheckoutClient.tsx`
+  - `src/hooks/useCart.ts`
+  - `src/lib/database/products.ts`
+  - `src/lib/products.ts`
+  - `src/styles/globals.css`
+  - `ROADMAP.md`
+  - `CHANGELOG.md`
+- Commits importants :
+  - `Finalize launch UX and search`
+- Validations effectuees :
+  - TypeScript local : OK.
+  - ESLint local : OK.
+  - Build production local : OK.
+- Points restant a traiter :
+  - Valider les apercus WhatsApp/Facebook apres purge naturelle du cache des plateformes.
+  - Tester les parcours connectes avec une vraie session client/admin sur production.
+
 ## 2026-07-15 - Sprint 9 SEO, performance finale et preparation production
 
 - Developpements :

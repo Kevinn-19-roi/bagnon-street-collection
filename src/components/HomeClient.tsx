@@ -4,6 +4,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { Product, CATEGORIES } from '@/lib/products'
 import { useCart } from '@/hooks/useCart'
+import { useFavorites } from '@/hooks/useFavorites'
 import LogoutButton from '@/components/LogoutButton'
 import type { SiteSettings } from '@/types/database'
 import FavoriteButton from '@/components/FavoriteButton'
@@ -15,6 +16,7 @@ const I = {
   user: <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="1.6"><circle cx="12" cy="8" r="3.6"/><path d="M5 20c0-4 3-6.5 7-6.5s7 2.5 7 6.5" strokeLinecap="round"/></svg>,
   heart: <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="1.6"><path d="M12 21s-7-4.6-9.7-9C.5 8.4 1.8 4.8 5 4.1c2-.4 3.7.6 5 2.4 1.3-1.8 3-2.8 5-2.4 3.2.7 4.5 4.3 2.7 7.9C19 16.4 12 21 12 21z"/></svg>,
   bag: <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="1.6"><path d="M6 8h12l-1 12H7L6 8z" strokeLinejoin="round"/><path d="M9 8V6a3 3 0 016 0v2"/></svg>,
+  package: <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round"><path d="M21 8l-9-5-9 5 9 5 9-5z"/><path d="M3 8v8l9 5 9-5V8"/><path d="M12 13v8"/></svg>,
   menu: <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round"><line x1="4" y1="7" x2="20" y2="7"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="17" x2="20" y2="17"/></svg>,
   plus: <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>,
   x: <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>,
@@ -89,6 +91,12 @@ function cleanPhone(value?: string | null) {
 function whatsappUrl(value?: string | null) {
   const cleaned = cleanPhone(value)
   return cleaned ? `https://wa.me/${cleaned}` : null
+}
+
+function categoryHref(id: string) {
+  if (id === 'all') return '/#collection'
+  if (id === 'bas') return '/categorie/bas'
+  return `/categorie/${id}`
 }
 
 // ─── PRODUCT CARD ─────────────────────────────────
@@ -327,11 +335,11 @@ function Navbar({ onMenuOpen, currentUser }: { onMenuOpen: () => void; currentUs
         </a>
 
         {/* Search bar */}
-        <div className={searchFocused ? 'nav-search nav-search-open' : 'nav-search'} onFocus={() => setSearchFocused(true)} onBlur={() => setSearchFocused(false)} style={{ flex: searchFocused ? '1 1 620px' : '1 1 280px', maxWidth: searchFocused ? 620 : 460, margin: '0 auto', position: 'relative', transition: 'max-width .22s ease, flex-basis .22s ease, transform .22s ease' }}>
+        <form action="/recherche" className={searchFocused ? 'nav-search nav-search-open' : 'nav-search'} onFocus={() => setSearchFocused(true)} onBlur={() => setSearchFocused(false)} style={{ flex: searchFocused ? '1 1 620px' : '1 1 280px', maxWidth: searchFocused ? 620 : 460, margin: '0 auto', position: 'relative', transition: 'max-width .22s ease, flex-basis .22s ease, transform .22s ease' }}>
           <span style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: 'var(--text3)' }}>{I.search}</span>
-          <input type="text" placeholder="Rechercher…" style={{ width: '100%', background: 'var(--search)', border: '1px solid var(--border2)', borderRadius: 3, padding: '10px 42px 10px 36px', fontSize: 13, color: 'var(--text)', outline: 'none', fontFamily: 'var(--font-body)' }} />
-          <button style={{ position: 'absolute', right: 4, top: '50%', transform: 'translateY(-50%)', background: 'var(--btn)', color: 'var(--btn-t)', borderRadius: 3, width: 32, height: 32, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{I.arrow}</button>
-        </div>
+          <input name="q" type="search" placeholder="Rechercher..." aria-label="Rechercher un produit" style={{ width: '100%', background: 'var(--search)', border: '1px solid var(--border2)', borderRadius: 3, padding: '10px 42px 10px 36px', fontSize: 13, color: 'var(--text)', outline: 'none', fontFamily: 'var(--font-body)' }} />
+          <button type="submit" aria-label="Lancer la recherche" style={{ position: 'absolute', right: 4, top: '50%', transform: 'translateY(-50%)', background: 'var(--btn)', color: 'var(--btn-t)', borderRadius: 3, width: 32, height: 32, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{I.arrow}</button>
+        </form>
 
         <div className="desktop-only" style={{ display: 'none', alignItems: 'center', gap: 2 }}>
           <a href="/" style={navLinkStyle}>Accueil</a>
@@ -393,10 +401,11 @@ interface Props {
 }
 
 export default function HomeClient({ featured, newItems, bestsellers, allProducts, currentUser, siteSettings }: Props) {
-  const [activeCat, setActiveCat] = useState('all')
   const [countdown, setCountdown] = useState('07:23:59')
   const [nlSuccess, setNlSuccess] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
+  const cartCount = useCart(s => s.count)
+  const { favorites } = useFavorites()
   const heroImage = siteSettings?.hero_image_url?.trim() || '/brand/hero-model.jpg'
   const heroEyebrow = siteSettings?.hero_eyebrow?.trim() || 'Collection 2025 — Abidjan'
   const heroTitle = siteSettings?.hero_title?.trim() || 'Wear Your'
@@ -426,10 +435,10 @@ export default function HomeClient({ featured, newItems, bestsellers, allProduct
       title: 'Collection',
       links: [
         { label: 'Tous les produits', href: '#collection' },
-        { label: 'Hoodies', href: '#collection' },
-        { label: 'T-shirts', href: '#collection' },
-        { label: 'Sacs', href: '#collection' },
-        { label: 'Joggers', href: '#collection' },
+        { label: 'Hoodies', href: '/categorie/hoodies' },
+        { label: 'T-shirts', href: '/categorie/tshirts' },
+        { label: 'Bas', href: '/categorie/bas' },
+        { label: 'Sacs', href: '/categorie/sacs' },
       ],
     },
     { title: 'Service Client', links: contactLinks },
@@ -500,9 +509,9 @@ export default function HomeClient({ featured, newItems, bestsellers, allProduct
       <div style={{ position: 'relative', borderBottom: '1px solid var(--border)', background: 'var(--bg)' }}>
         <div className="no-scrollbar category-scroll-row" style={{ display: 'flex', gap: 8, padding: `10px var(--px)`, overflowX: 'auto', overflowY: 'hidden', WebkitOverflowScrolling: 'touch', scrollSnapType: 'x proximity', touchAction: 'pan-x pan-y', whiteSpace: 'nowrap' }}>
         {CATEGORIES.map(c => (
-          <button key={c.id} onClick={() => setActiveCat(c.id)} style={{ fontFamily: 'var(--font-display)', fontSize: 11, fontWeight: 600, letterSpacing: '.04em', textTransform: 'uppercase', color: activeCat === c.id ? 'var(--btn-t)' : 'var(--text2)', background: activeCat === c.id ? 'var(--btn)' : 'var(--pill)', border: '1px solid', borderColor: activeCat === c.id ? 'transparent' : 'var(--border)', borderRadius: 3, padding: '7px 14px', whiteSpace: 'nowrap', transition: 'all .2s', flexShrink: 0, scrollSnapAlign: 'start' }}>
+          <a key={c.id} href={categoryHref(c.id)} style={{ fontFamily: 'var(--font-display)', fontSize: 11, fontWeight: 600, letterSpacing: '.04em', textTransform: 'uppercase', color: c.id === 'all' ? 'var(--btn-t)' : 'var(--text2)', background: c.id === 'all' ? 'var(--btn)' : 'var(--pill)', border: '1px solid', borderColor: c.id === 'all' ? 'transparent' : 'var(--border)', borderRadius: 3, padding: '7px 14px', whiteSpace: 'nowrap', transition: 'all .2s', flexShrink: 0, scrollSnapAlign: 'start' }}>
             {c.label}
-          </button>
+          </a>
         ))}
         </div>
         <div aria-hidden="true" style={{ position: 'absolute', right: 0, top: 0, bottom: 0, width: 42, pointerEvents: 'none', background: 'linear-gradient(to left, var(--bg), transparent)' }} />
@@ -716,9 +725,23 @@ export default function HomeClient({ featured, newItems, bestsellers, allProduct
 
       {/* BOTTOM NAV — mobile only */}
       <div className="mobile-only" style={{ position: 'fixed', bottom: 0, left: 0, right: 0, background: 'var(--nav-bg)', backdropFilter: 'blur(20px)', borderTop: '1px solid var(--border)', zIndex: 200, display: 'flex', justifyContent: 'space-around', padding: '8px 0 max(8px, env(safe-area-inset-bottom))' }}>
-        {[{ icon: I.home, label: 'Accueil', href: '/' }, { icon: I.search, label: 'Recherche', href: '/#collection' }, { icon: I.grid, label: 'Catalogue', href: '#collection' }, { icon: I.heart, label: 'Favoris', href: '/favoris' }, { icon: I.user, label: currentUser ? 'Mon compte' : 'Compte', href: currentUser ? '/profil' : '/connexion' }].map(n => (
-          <a key={n.label} href={n.href} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3, fontFamily: 'var(--font-display)', fontSize: 9, fontWeight: 600, color: 'var(--text2)', letterSpacing: '.03em', padding: '2px 10px', textTransform: 'uppercase' }}>
-            {n.icon}{n.label}
+        {[
+          { icon: I.home, label: 'Accueil', href: '/' },
+          { icon: I.bag, label: 'Panier', href: '/panier', badge: cartCount() },
+          { icon: I.package, label: 'Commandes', href: currentUser ? '/profil' : '/connexion' },
+          { icon: I.heart, label: 'Favoris', href: '/favoris', badge: favorites.size },
+          { icon: I.user, label: 'Compte', href: currentUser ? '/profil' : '/connexion' },
+        ].map(n => (
+          <a key={n.label} href={n.href} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3, fontFamily: 'var(--font-display)', fontSize: 9, fontWeight: 600, color: 'var(--text2)', letterSpacing: '.03em', padding: '2px 7px', textTransform: 'uppercase', minWidth: 54 }}>
+            <span style={{ position: 'relative', display: 'inline-flex' }}>
+              {n.icon}
+              {Boolean(n.badge) && (
+                <span style={{ position: 'absolute', top: -6, right: -8, background: 'var(--red)', color: '#fff', fontFamily: 'var(--font-display)', fontSize: 9, fontWeight: 700, minWidth: 16, height: 16, borderRadius: 999, display: 'flex', alignItems: 'center', justifyContent: 'center', border: '2px solid var(--bg)' }}>
+                  {n.badge}
+                </span>
+              )}
+            </span>
+            {n.label}
           </a>
         ))}
       </div>

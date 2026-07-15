@@ -19,6 +19,20 @@ export async function getProducts(
     per_page = 20,
   } = filters
 
+  let matchingCategoryIds: string[] = []
+  let matchingCollectionIds: string[] = []
+  const searchTerm = search?.trim()
+
+  if (searchTerm) {
+    const [categories, collections] = await Promise.all([
+      supabase.from('categories').select('id').eq('active', true).ilike('name', `%${searchTerm}%`),
+      supabase.from('collections').select('id').eq('active', true).ilike('name', `%${searchTerm}%`),
+    ])
+
+    matchingCategoryIds = (categories.data || []).map(item => item.id)
+    matchingCollectionIds = (collections.data || []).map(item => item.id)
+  }
+
   let query = supabase
     .from('products')
     .select(`
@@ -36,7 +50,17 @@ export async function getProducts(
   if (category_id) query = query.eq('category_id', category_id)
   if (collection_id) query = query.eq('collection_id', collection_id)
   if (featured !== undefined) query = query.eq('featured', featured)
-  if (search) query = query.ilike('name', `%${search}%`)
+  if (searchTerm) {
+    const safeTerm = searchTerm.replace(/[%,()]/g, ' ')
+    const clauses = [
+      `name.ilike.%${safeTerm}%`,
+      `description.ilike.%${safeTerm}%`,
+      `short_description.ilike.%${safeTerm}%`,
+      ...(matchingCategoryIds.length ? [`category_id.in.(${matchingCategoryIds.join(',')})`] : []),
+      ...(matchingCollectionIds.length ? [`collection_id.in.(${matchingCollectionIds.join(',')})`] : []),
+    ]
+    query = query.or(clauses.join(','))
+  }
 
   const { data, error, count } = await query
 
