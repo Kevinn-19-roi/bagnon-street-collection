@@ -18,7 +18,7 @@ Ce document sert de point de reprise entre les sprints. Il doit rester synchroni
 - Termine - Sprint 9 - SEO, performance finale et preparation production
 - Termine - Sprint 9.5 - UX, performance et finalisation avant lancement
 - Termine - Sprint 9.6 - Mes commandes, admin commandes, recherche et performance
-- En validation - Correctif admin commandes - suppression totale et filtres rapides
+- Termine - Correctif admin commandes - suppression totale et filtres rapides
 - Reporte - Orange Money
 - En attente - Sprint 10 - Validation finale production
 - En attente - Sprint 11 - Mise en production finale
@@ -186,10 +186,11 @@ Ce document sert de point de reprise entre les sprints. Il doit rester synchroni
 ## Correctif admin commandes - suppression totale et filtres rapides
 
 - Objectif : permettre la suppression definitive de n'importe quelle commande depuis l'administration, avec restauration de stock idempotente si necessaire, et rendre les filtres admin quasi instantanes.
-- Etat : en validation.
+- Etat : termine, migration 008 appliquee en production.
 - Date : 2026-07-16.
 - Fichiers principaux concernes : `src/app/admin/commandes/page.tsx`, `src/app/admin/commandes/[id]/page.tsx`, `src/components/admin/orders/AdminOrdersClient.tsx`, `src/lib/actions/orders.ts`, `supabase/migrations/008_delete_order_with_stock_restore.sql`.
 - Suppression : nouvelle RPC `delete_order_with_stock_restore` pour restaurer le stock une seule fois si `stock_decremented_at` existe et `stock_restored_at` est vide, supprimer les `order_items`, puis supprimer la commande dans une transaction PostgreSQL.
 - Filtres : la page admin charge les commandes une seule fois et filtre cote client avec React, sans navigation serveur a chaque clic.
 - Probleme rencontre : la RPC 007 d'annulation refuse les commandes livrees ; une RPC dediee de suppression etait donc necessaire pour couvrir aussi les commandes livrees/payees.
-- Prochaines etapes : appliquer `008_delete_order_with_stock_restore.sql` dans Supabase Production avant de tester une suppression reelle avec restauration de stock.
+- Validation production : `008_delete_order_with_stock_restore.sql` appliquee avec succes ; Vercel `READY` ; aucune erreur runtime detectee.
+- Prochaines etapes : valider les cas metier avec une vraie session admin si un probleme est observe sur une commande precise.

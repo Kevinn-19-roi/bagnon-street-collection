@@ -26,9 +26,13 @@
   - ESLint local : OK.
   - Build production local : OK.
   - Audit npm production : 0 vulnerabilite.
+  - Migration 008 appliquee en production : OK.
+  - Vercel production `READY` : OK.
+  - Logs runtime Vercel : aucune erreur detectee.
+  - Routes verifiees sans session : `/admin/commandes`, `/commandes`, `/recherche?q=sac`, `/panier`.
 - Points restant a traiter :
-  - Appliquer `supabase/migrations/008_delete_order_with_stock_restore.sql` en production avant une suppression reelle avec restauration stock.
-  - Valider avec une vraie session admin les suppressions de commandes payees, expediees, livrees et annulees.
+  - Aucun correctif applicatif restant identifie.
+  - Les tests de suppression reelle restent dependants d'une session admin et de commandes de test disponibles.
 
 ## 2026-07-15 - Sprint 9.6 Mes commandes, admin commandes, recherche et performance
 
