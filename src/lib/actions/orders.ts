@@ -22,6 +22,14 @@ function isMissingCancelRpcError(message?: string) {
   ))
 }
 
+function isMissingDeleteRpcError(message?: string) {
+  return Boolean(message && (
+    message.includes('delete_order_with_stock_restore') ||
+    message.includes('schema cache') ||
+    message.includes('function') && message.includes('not find')
+  ))
+}
+
 function revalidateOrderPaths(orderId: string) {
   revalidatePath('/admin/commandes')
   revalidatePath(`/admin/commandes/${orderId}`)
@@ -161,31 +169,29 @@ export async function cancelOrder(orderId: string): Promise<void> {
 }
 
 export async function deleteOrder(orderId: string): Promise<void> {
-  await requireAdmin()
+  const admin = await requireAdmin()
   const adminClient = createAdminClient()
 
   const { data: order, error: readError } = await adminClient
     .from('orders')
-    .select('id, order_status, payment_status, stock_decremented_at')
+    .select('id')
     .eq('id', orderId)
     .single()
 
   if (readError || !order) redirect('/admin/commandes?error=order-not-found')
 
-  const canDelete =
-    order.order_status === 'cancelled' ||
-    (order.payment_status !== 'paid' && !['shipped', 'delivered'].includes(order.order_status))
+  const { error } = await adminClient.rpc('delete_order_with_stock_restore', {
+    p_order_id: orderId,
+    p_admin_id: admin.id,
+  })
 
-  if (!canDelete) {
-    redirect(`/admin/commandes/${orderId}?error=delete-refused`)
+  if (error) {
+    if (isMissingDeleteRpcError(error.message)) {
+      redirect(`/admin/commandes/${orderId}?error=delete-rpc-missing`)
+    }
+
+    redirect(`/admin/commandes/${orderId}?error=delete-failed`)
   }
-
-  if (order.payment_status === 'paid' && order.stock_decremented_at && order.order_status !== 'cancelled') {
-    redirect(`/admin/commandes/${orderId}?error=restore-required`)
-  }
-
-  const { error } = await adminClient.from('orders').delete().eq('id', orderId)
-  if (error) redirect(`/admin/commandes/${orderId}?error=delete-failed`)
 
   revalidatePath('/admin/commandes')
   redirect('/admin/commandes?success=deleted')

@@ -1,5 +1,35 @@
 # Changelog Bagnon Street Collection
 
+## 2026-07-16 - Correctif admin commandes suppression totale et filtres rapides
+
+- Developpements :
+  - Ajout de la migration non destructive `008_delete_order_with_stock_restore.sql`.
+  - Ajout de la RPC `delete_order_with_stock_restore` pour restaurer le stock si necessaire, supprimer les `order_items`, puis supprimer la commande dans une seule transaction PostgreSQL.
+  - Suppression definitive disponible pour toutes les commandes admin, quel que soit leur statut.
+  - Remplacement des filtres admin commandes par un filtrage React instantane sur les commandes deja chargees.
+  - Ajout du composant `AdminOrdersClient` pour isoler l'UX interactive de la page serveur.
+  - Correction des libelles admin : Toutes, Commande recue, Confirmee, Expediee, Livree, Annulee, Details, Paiement, Montant.
+- Bugs corriges :
+  - Le bouton Supprimer etait masque pour les commandes payees, expediees ou livrees.
+  - Les filtres relancaient une navigation serveur et une requete Supabase complete a chaque clic.
+  - La suppression ne pouvait pas restaurer proprement le stock d'une commande livree avec la RPC d'annulation existante.
+- Fichiers modifies :
+  - `supabase/migrations/008_delete_order_with_stock_restore.sql`
+  - `src/components/admin/orders/AdminOrdersClient.tsx`
+  - `src/app/admin/commandes/page.tsx`
+  - `src/app/admin/commandes/[id]/page.tsx`
+  - `src/lib/actions/orders.ts`
+  - `ROADMAP.md`
+  - `CHANGELOG.md`
+- Validations effectuees :
+  - TypeScript local : OK.
+  - ESLint local : OK.
+  - Build production local : OK.
+  - Audit npm production : 0 vulnerabilite.
+- Points restant a traiter :
+  - Appliquer `supabase/migrations/008_delete_order_with_stock_restore.sql` en production avant une suppression reelle avec restauration stock.
+  - Valider avec une vraie session admin les suppressions de commandes payees, expediees, livrees et annulees.
+
 ## 2026-07-15 - Sprint 9.6 Mes commandes, admin commandes, recherche et performance
 
 - Developpements :

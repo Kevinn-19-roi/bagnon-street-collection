@@ -34,8 +34,7 @@ const errorMessages: Record<string, string> = {
   'cancel-rpc-missing': "La fonction d'annulation securisee n'est pas encore installee dans Supabase. Veuillez appliquer la migration 007_order_cancel_restore.sql.",
   'cancel-failed': "Impossible d'annuler cette commande. Verifie le statut et la migration 007.",
   'delivered-cancel-refused': 'Une commande livree ne peut pas etre annulee automatiquement.',
-  'delete-refused': 'Suppression refusee : seules les commandes annulees, de test ou non payees non expediees peuvent etre supprimees.',
-  'restore-required': 'Le stock doit etre restaure avant suppression.',
+  'delete-rpc-missing': "La fonction de suppression definitive n'est pas encore installee dans Supabase. Veuillez appliquer la migration 008_delete_order_with_stock_restore.sql.",
   'delete-failed': 'Impossible de supprimer cette commande.',
 }
 
@@ -62,7 +61,6 @@ export default async function OrderDetailPage({
   const canShip = order.payment_status === 'paid' && ['pending', 'confirmed'].includes(order.order_status)
   const canDeliver = order.order_status === 'shipped'
   const canCancel = order.order_status !== 'cancelled' && order.order_status !== 'delivered'
-  const canDelete = order.order_status === 'cancelled' || (order.payment_status !== 'paid' && !['shipped', 'delivered'].includes(order.order_status))
   const adminWhatsappUrl = buildWhatsappUrl(order.customer?.phone, buildAdminCustomerWhatsappMessage(order))
 
   const sectionStyle = {
@@ -256,13 +254,13 @@ export default async function OrderDetailPage({
                   </button>
                 </ConfirmSubmitForm>
               )}
-              {canDelete && (
-                <ConfirmSubmitForm action={deleteOrder.bind(null, id)} message="Supprimer definitivement cette commande ? Action reservee aux commandes de test, erreurs ou commandes annulees." style={{ display: 'grid' }}>
-                  <button type="submit" style={{ background: 'rgba(122,22,32,.18)', color: '#F2B8BE', border: '1px solid rgba(122,22,32,.45)', borderRadius: 3, padding: '11px', fontFamily: 'var(--font-display)', fontSize: 12, fontWeight: 700, letterSpacing: '.06em', textTransform: 'uppercase', cursor: 'pointer' }}>
-                    Supprimer la commande
-                  </button>
-                </ConfirmSubmitForm>
-              )}
+              <ConfirmSubmitForm action={deleteOrder.bind(null, id)} message={`Êtes-vous sûr de vouloir supprimer définitivement cette commande ?
+
+Cette action est irréversible.`} style={{ display: 'grid' }}>
+                <button type="submit" style={{ background: 'rgba(122,22,32,.18)', color: '#F2B8BE', border: '1px solid rgba(122,22,32,.45)', borderRadius: 3, padding: '11px', fontFamily: 'var(--font-display)', fontSize: 12, fontWeight: 700, letterSpacing: '.06em', textTransform: 'uppercase', cursor: 'pointer' }}>
+                  Supprimer définitivement
+                </button>
+              </ConfirmSubmitForm>
               {adminWhatsappUrl && (
                 <a href={adminWhatsappUrl} target="_blank" rel="noopener noreferrer" style={{ display: 'inline-flex', justifyContent: 'center', background: 'rgba(37,211,102,.12)', color: '#5BE28A', border: '1px solid rgba(37,211,102,.28)', borderRadius: 3, padding: '10px', fontFamily: 'var(--font-display)', fontSize: 11, fontWeight: 700, letterSpacing: '.06em', textTransform: 'uppercase' }}>
                   WhatsApp client
