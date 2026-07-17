@@ -1,5 +1,6 @@
 import { unstable_cache } from 'next/cache'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { isDirectVideoUrl } from '@/lib/media/video'
 import type { GalleryItem, VideoItem } from '@/types/database'
 
 export const getActiveGalleryItems = unstable_cache(async (): Promise<GalleryItem[]> => {
@@ -31,7 +32,7 @@ export const getActiveVideoItems = unstable_cache(async (): Promise<VideoItem[]>
       .order('created_at', { ascending: false })
       .limit(6)
 
-    return (data || []) as VideoItem[]
+    return ((data || []) as VideoItem[]).filter(item => isDirectVideoUrl(item.video_url)).slice(0, 6)
   } catch {
     return []
   }

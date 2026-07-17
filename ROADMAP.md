@@ -22,6 +22,7 @@ Ce document sert de point de reprise entre les sprints. Il doit rester synchroni
 - Reporte - Orange Money
 - Termine - Sprint 10 - Accueil premium, galerie et videos administrables
 - Termine - Sprint 10.1 - Correctifs hero, videos, galerie et produits
+- Termine - Sprint 10.2 - Stabilisation videos et exception client
 - En attente - Sprint 11 - Mise en production finale
 
 ## Sprint 1 - Stabilisation
@@ -220,3 +221,13 @@ Ce document sert de point de reprise entre les sprints. Il doit rester synchroni
 - Migration : `010_hero_media_and_optional_video_posters.sql` est non destructive ; elle ajoute les reglages hero video/cadrage/citation et rend `video_items.poster_url` nullable.
 - Validation : TypeScript, ESLint, build production et audit npm OK ; Vercel `READY`, routes critiques verifiees, aucun log runtime critique.
 - Prochaines etapes : appliquer la migration 010 dans Supabase Production, puis tester les uploads reels video/galerie avec une session admin.
+
+## Sprint 10.2 - Stabilisation videos et exception client
+
+- Objectif : empecher une video invalide ou un upload echoue de casser l'accueil, fiabiliser l'import video admin et ajouter une erreur client propre.
+- Etat : termine.
+- Date : 2026-07-17.
+- Fichiers principaux concernes : `src/components/HomeClient.tsx`, `src/app/admin/videos/page.tsx`, `src/components/admin/media/VideoCreateForm.tsx`, `src/lib/actions/media.ts`, `src/lib/database/media.ts`, `src/lib/media/video.ts`, `src/app/error.tsx`, `supabase/migrations/011_banners_video_storage.sql`.
+- Corrections realisees : validation partagee des URLs video, exclusion automatique des videos invalides de l'accueil, hero video avec fallback image, formulaire admin d'import multiple jusqu'a 6 videos, upload direct navigateur vers Supabase Storage, suppression fichier Storage via client admin, page d'erreur client en francais.
+- Probleme rencontre : le bucket `banners` historique acceptait seulement des images et 10 Mo ; les uploads video peuvent etre refuses tant que la migration 011 n'est pas appliquee.
+- Prochaines etapes : appliquer `011_banners_video_storage.sql` dans Supabase Production, puis tester un MP4 H.264 reel depuis mobile et desktop.

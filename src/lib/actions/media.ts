@@ -3,8 +3,19 @@
 import { revalidatePath, revalidateTag } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { requireAdmin } from '@/lib/actions/auth'
+import { isDirectVideoUrl } from '@/lib/media/video'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
+
+type VideoUploadEntry = {
+  title?: string | null
+  caption?: string | null
+  video_url: string
+  poster_url?: string | null
+  display_order?: number
+  active?: boolean
+  featured?: boolean
+}
 
 function mediaMissing(message?: string) {
   return Boolean(message && (
@@ -40,21 +51,6 @@ async function uploadBannerFile(file: File | null, folder: string) {
   return publicUrl
 }
 
-function isDirectVideoUrl(value: string) {
-  try {
-    const url = new URL(value)
-    if (!['http:', 'https:'].includes(url.protocol)) return false
-    const host = url.hostname.toLowerCase()
-    if (host.includes('youtube.') || host.includes('youtu.be') || host.includes('tiktok.') || host.includes('instagram.') || host.includes('drive.google.')) {
-      return false
-    }
-    return /\.(mp4|webm|ogg|ogv|m4v)(\?|$)/i.test(url.pathname + url.search)
-      || value.includes('/storage/v1/object/public/')
-  } catch {
-    return false
-  }
-}
-
 function storagePathFromBannersUrl(urlValue?: string | null) {
   if (!urlValue) return null
   try {
@@ -72,7 +68,7 @@ function storagePathFromBannersUrl(urlValue?: string | null) {
 async function removeBannersFileIfSafe(urlValue?: string | null) {
   const path = storagePathFromBannersUrl(urlValue)
   if (!path) return
-  const supabase = await createClient()
+  const supabase = createAdminClient()
   await supabase.storage.from('banners').remove([path])
 }
 
@@ -210,6 +206,62 @@ async function hasVideoCapacity(adminClient: ReturnType<typeof createAdminClient
   const { count, error } = await query
   if (error) throw new Error(error.message)
   return (count || 0) < 6
+}
+
+async function getActiveVideoCount(adminClient: ReturnType<typeof createAdminClient>) {
+  const { count, error } = await adminClient
+    .from('video_items')
+    .select('id', { count: 'exact', head: true })
+    .eq('active', true)
+
+  if (error) throw new Error(error.message)
+  return count || 0
+}
+
+export async function createVideoItemsFromUrls(entries: VideoUploadEntry[]): Promise<{ success: boolean; message: string }> {
+  await requireAdmin()
+  const adminClient = createAdminClient()
+  const cleanEntries = entries
+    .slice(0, 6)
+    .map((entry, index) => ({
+      title: entry.title?.trim() || null,
+      caption: entry.caption?.trim() || null,
+      video_url: entry.video_url?.trim(),
+      poster_url: entry.poster_url?.trim() || null,
+      display_order: Number.isFinite(entry.display_order) ? Number(entry.display_order) : index + 1,
+      active: Boolean(entry.active),
+      featured: Boolean(entry.featured),
+    }))
+    .filter(entry => entry.video_url)
+
+  if (!cleanEntries.length) return { success: false, message: 'Ajoute au moins une video.' }
+  if (cleanEntries.some(entry => !isDirectVideoUrl(entry.video_url))) {
+    return { success: false, message: 'Une video contient une URL incompatible.' }
+  }
+
+  try {
+    const activeToAdd = cleanEntries.filter(entry => entry.active).length
+    if (activeToAdd > 0) {
+      const activeCount = await getActiveVideoCount(adminClient)
+      if (activeCount + activeToAdd > 6) {
+        return { success: false, message: "Maximum 6 videos actives sur l'accueil." }
+      }
+    }
+
+    const { error } = await adminClient.from('video_items').insert(cleanEntries)
+    if (error) {
+      if (mediaMissing(error.message)) return { success: false, message: 'La migration video doit etre appliquee dans Supabase.' }
+      return { success: false, message: error.message || 'Impossible d enregistrer les videos.' }
+    }
+  } catch (error) {
+    return {
+      success: false,
+      message: error instanceof Error ? error.message : 'Impossible d enregistrer les videos.',
+    }
+  }
+
+  refreshMedia('/admin/videos')
+  return { success: true, message: cleanEntries.length > 1 ? 'Videos ajoutees.' : 'Video ajoutee.' }
 }
 
 export async function createVideoItem(formData: FormData): Promise<void> {

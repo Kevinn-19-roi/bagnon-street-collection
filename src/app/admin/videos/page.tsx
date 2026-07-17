@@ -3,9 +3,11 @@ import AdminShell from '@/components/admin/layout/AdminShell'
 import PageHeader from '@/components/admin/ui/PageHeader'
 import ConfirmSubmitForm from '@/components/admin/forms/ConfirmSubmitForm'
 import PendingSubmitButton from '@/components/admin/forms/PendingSubmitButton'
+import VideoCreateForm from '@/components/admin/media/VideoCreateForm'
 import Badge from '@/components/admin/ui/Badge'
-import { createVideoItem, deleteVideoItem, updateVideoItem } from '@/lib/actions/media'
+import { deleteVideoItem, updateVideoItem } from '@/lib/actions/media'
 import { getVideoItemsAdmin } from '@/lib/database/media'
+import { isDirectVideoUrl } from '@/lib/media/video'
 
 export const dynamic = 'force-dynamic'
 export const metadata = { title: 'Vidéos - Admin BSC' }
@@ -43,7 +45,9 @@ function Message({ success, error }: { success?: string; error?: string }) {
         ? 'Ajoute un fichier video ou une URL video directe.'
         : error === 'video-url'
           ? 'Lien video incompatible. Utilise une URL directe MP4/WebM ou une URL publique Supabase Storage.'
-        : error ? "L'operation a echoue." : null
+        : error === 'delete'
+          ? 'Suppression impossible. Reessaie ou verifie les droits Supabase.'
+          : error ? "L'operation a echoue." : null
 
   if (!successText && !errorText) return null
 
@@ -76,29 +80,16 @@ export default async function AdminVideosPage({
       `}</style>
 
       <div className="video-admin-grid" style={{ display: 'grid', gridTemplateColumns: '360px minmax(0,1fr)', gap: 16 }}>
-        <form action={createVideoItem} style={{ background: '#17171B', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 6, padding: 18, display: 'grid', gap: 14, alignSelf: 'start' }}>
-          <p style={{ fontFamily: 'var(--font-display)', fontSize: 12, fontWeight: 700, letterSpacing: '.1em', textTransform: 'uppercase', color: '#F2F1ED' }}>Ajouter une video</p>
-          <label><span style={labelStyle}>Titre</span><input name="title" placeholder="Optionnel" style={inputStyle} /></label>
-          <label><span style={labelStyle}>Legende</span><input name="caption" placeholder="Optionnel" style={inputStyle} /></label>
-          <label><span style={labelStyle}>Importer une video</span><input name="video_file" type="file" accept="video/mp4,video/webm,video/ogg" style={inputStyle} /></label>
-          <label><span style={labelStyle}>Ou URL video directe</span><input name="video_url" placeholder="https://.../video.mp4" style={inputStyle} /></label>
-          <p style={{ color: '#94938E', fontSize: 11, lineHeight: 1.6 }}>
-            Liens compatibles : URL directe MP4/WebM/Ogg ou URL publique Supabase Storage. Les pages Instagram, TikTok, YouTube ou Google Drive ne sont pas lisibles directement dans ce lecteur.
-          </p>
-          <label><span style={labelStyle}>Miniature optionnelle</span><input name="poster_file" type="file" accept="image/*" style={inputStyle} /></label>
-          <label><span style={labelStyle}>Ou URL miniature</span><input name="poster_url" placeholder="https://..." style={inputStyle} /></label>
-          <label><span style={labelStyle}>Ordre</span><input name="display_order" type="number" defaultValue={items.length + 1} style={inputStyle} /></label>
-          <label style={{ display: 'flex', gap: 10, alignItems: 'center', color: '#F2F1ED', fontFamily: 'var(--font-display)', fontSize: 12 }}><input name="active" type="checkbox" defaultChecked style={{ accentColor: '#7A1620' }} />Active</label>
-          <label style={{ display: 'flex', gap: 10, alignItems: 'center', color: '#F2F1ED', fontFamily: 'var(--font-display)', fontSize: 12 }}><input name="featured" type="checkbox" style={{ accentColor: '#7A1620' }} />Mise en avant</label>
-          <PendingSubmitButton idle="Ajouter" pending="Import en cours..." fullWidth />
-        </form>
+        <VideoCreateForm nextOrder={items.length + 1} />
 
         <div style={{ display: 'grid', gap: 12 }}>
           {items.length === 0 ? (
             <div style={{ background: '#17171B', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 6, padding: 28, color: '#94938E', fontFamily: 'var(--font-display)', fontSize: 13 }}>
               Aucune video pour le moment.
             </div>
-          ) : items.map(item => (
+          ) : items.map(item => {
+            const invalid = !isDirectVideoUrl(item.video_url)
+            return (
             <div key={item.id} className="video-admin-card" style={{ display: 'grid', gridTemplateColumns: '150px minmax(0,1fr)', gap: 14, background: '#17171B', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 6, padding: 14 }}>
               <div style={{ position: 'relative', aspectRatio: '9/12', borderRadius: 4, overflow: 'hidden', background: '#0A0A0C' }}>
                 {item.poster_url ? (
@@ -114,8 +105,9 @@ export default async function AdminVideosPage({
                   <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
                     <Badge label={item.active ? 'Active' : 'Inactive'} variant={item.active ? 'success' : 'default'} />
                     {item.featured && <Badge label="Mise en avant" variant="info" />}
+                    {invalid && <Badge label="Video invalide" variant="error" />}
                   </div>
-                  <ConfirmSubmitForm action={deleteVideoItem.bind(null, item.id)} message="Supprimer cette video ?">
+                  <ConfirmSubmitForm action={deleteVideoItem.bind(null, item.id)} message="Supprimer definitivement cette video ?">
                     <PendingSubmitButton idle="Supprimer" pending="Suppression..." variant="danger" size="sm" />
                   </ConfirmSubmitForm>
                 </div>
@@ -135,7 +127,7 @@ export default async function AdminVideosPage({
                 </form>
               </div>
             </div>
-          ))}
+          )})}
         </div>
       </div>
     </AdminShell>

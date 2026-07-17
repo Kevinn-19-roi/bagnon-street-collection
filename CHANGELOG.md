@@ -1,5 +1,39 @@
 # Changelog Bagnon Street Collection
 
+## 2026-07-17 - Sprint 10.2 Stabilisation videos et exception client
+
+- Developpements :
+  - Ajout d'une validation partagee des URLs video (`MP4`, `WebM`, `Ogg`, URL publique Supabase Storage).
+  - Exclusion automatique des videos invalides de l'accueil pour eviter une exception client globale.
+  - Hero video protege : si l'URL video est invalide, l'image hero est utilisee en fallback.
+  - Nouveau formulaire admin d'import direct : selection multiple jusqu'a 6 videos, validation locale, etat par fichier, upload navigateur vers Supabase Storage.
+  - Miniature toujours facultative avec placeholder propre.
+  - Badge `Video invalide` dans `/admin/videos`.
+  - Suppression video fiabilisee : suppression de la ligne puis tentative de suppression du fichier Storage via client admin.
+  - Ajout d'une page d'erreur client en francais avec `Reessayer` et `Retour a l'accueil`.
+- Bugs corriges :
+  - Une entree video vide, `blob:`, locale ou sociale pouvait etre transmise au rendu frontend.
+  - Le formulaire admin faisait transiter le fichier video via Server Action, ce qui pouvait provoquer timeout/limite de taille/reponse inattendue.
+  - Le bucket `banners` initial etait configure pour les images uniquement, ce qui pouvait faire echouer l'upload video sans retour clair.
+- Fichiers modifies :
+  - `src/app/admin/videos/page.tsx`
+  - `src/app/error.tsx`
+  - `src/components/HomeClient.tsx`
+  - `src/components/admin/media/VideoCreateForm.tsx`
+  - `src/lib/actions/media.ts`
+  - `src/lib/database/media.ts`
+  - `src/lib/media/video.ts`
+  - `supabase/migrations/011_banners_video_storage.sql`
+  - `ROADMAP.md`
+  - `CHANGELOG.md`
+- Validations effectuees :
+  - TypeScript local : OK.
+  - ESLint local : OK.
+  - Build production local : OK.
+- Points restant a traiter :
+  - Appliquer `supabase/migrations/011_banners_video_storage.sql` dans Supabase Production pour autoriser `video/mp4`, `video/webm`, `video/ogg` et 50 Mo dans le bucket `banners`.
+  - Tester l'upload reel video avec une session admin apres application de la migration.
+
 ## 2026-07-17 - Sprint 10.1 Correctifs hero, videos, galerie et produits
 
 - Developpements :

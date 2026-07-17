@@ -9,6 +9,7 @@ import { useFavorites } from '@/hooks/useFavorites'
 import LogoutButton from '@/components/LogoutButton'
 import FavoriteButton from '@/components/FavoriteButton'
 import PublicMediaImage from '@/components/PublicMediaImage'
+import { isDirectVideoUrl } from '@/lib/media/video'
 import type { GalleryItem, SiteSettings, VideoItem } from '@/types/database'
 
 const I = {
@@ -368,7 +369,8 @@ function VideoSection({ videos }: { videos: VideoItem[] }) {
 function VideoSectionSafe({ videos }: { videos: VideoItem[] }) {
   const [activeId, setActiveId] = useState<string | null>(null)
   const [failedIds, setFailedIds] = useState(() => new Set<string>())
-  if (!videos.length) return null
+  const safeVideos = videos.filter(video => isDirectVideoUrl(video.video_url)).slice(0, 6)
+  if (!safeVideos.length) return null
 
   return (
     <section style={{ padding: `38px ${px}`, borderTop: '1px solid var(--border)' }}>
@@ -377,7 +379,7 @@ function VideoSectionSafe({ videos }: { videos: VideoItem[] }) {
         <h2 style={{ fontFamily: 'var(--font-display)', fontSize: 'clamp(22px,5vw,36px)', lineHeight: 1 }}>Bagnon Street en mouvement</h2>
       </div>
       <div className="no-scrollbar" style={{ maxWidth: 1440, margin: '0 auto', display: 'flex', gap: 14, overflowX: 'auto', scrollSnapType: 'x mandatory', paddingBottom: 8 }}>
-        {videos.slice(0, 6).map((video, index) => {
+        {safeVideos.map((video, index) => {
           const playing = activeId === video.id
           return (
             <article key={video.id} style={{ flex: '0 0 clamp(220px, 72vw, 320px)', scrollSnapAlign: 'center', borderRadius: 12, overflow: 'hidden', background: 'var(--card)', border: '1px solid var(--border)', transform: index === 1 ? 'scale(1.02)' : undefined }}>
@@ -470,7 +472,8 @@ export default function HomeClient({ featured, newItems, bestsellers, allProduct
   const heroDescription = siteSettings?.hero_description?.trim() || 'La nouvelle collection Bagnon Street est disponible.'
   const heroButtonText = siteSettings?.hero_button_text?.trim() || 'Découvrir'
   const heroButtonLink = siteSettings?.hero_button_link?.trim() || '#collection'
-  const heroVideo = siteSettings?.hero_media_type === 'video' ? siteSettings?.hero_video_url?.trim() : ''
+  const heroVideoCandidate = siteSettings?.hero_media_type === 'video' ? siteSettings?.hero_video_url?.trim() : ''
+  const heroVideo = isDirectVideoUrl(heroVideoCandidate) ? heroVideoCandidate : ''
   const heroObjectPosition = mediaPosition(siteSettings?.hero_media_position)
   const heroOverlay = Math.min(.75, Math.max(.15, Number(siteSettings?.hero_overlay_opacity || .42)))
   const brandQuote = siteSettings?.brand_quote?.trim() || 'On ne suit pas les tendances.\nOn construit notre propre langage.\n\nBagnon Street est une declaration,\npas simplement un vetement.'
