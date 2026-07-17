@@ -37,10 +37,10 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="fr" data-theme="dark" suppressHydrationWarning>
+    <html lang="fr" data-theme="light" suppressHydrationWarning>
       <head>
         <script dangerouslySetInnerHTML={{
-          __html: `(function(){var t=localStorage.getItem('bsc-theme')||'dark';document.documentElement.setAttribute('data-theme',t);})();`
+          __html: `(function(){var t=localStorage.getItem('bsc-theme')||'light';document.documentElement.setAttribute('data-theme',t);})();`
         }} />
       </head>
       <body>{children}</body>

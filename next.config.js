@@ -12,9 +12,10 @@ const securityHeaders = [
       "default-src 'self'",
       "script-src 'self' 'unsafe-inline'",
       "style-src 'self' 'unsafe-inline'",
-      "img-src 'self' data: blob: https://*.supabase.co",
+      "img-src 'self' data: blob: https:",
       "font-src 'self' data:",
       "connect-src 'self' https://*.supabase.co",
+      "media-src 'self' blob: https:",
       "form-action 'self'",
       "frame-ancestors 'none'",
       "base-uri 'self'",
@@ -29,7 +30,7 @@ const nextConfig = {
   outputFileTracingRoot: path.join(__dirname),
   experimental: {
     serverActions: {
-      bodySizeLimit: '8mb',
+      bodySizeLimit: '25mb',
     },
   },
   images: {
@@ -37,6 +38,10 @@ const nextConfig = {
       {
         protocol: 'https',
         hostname: '*.supabase.co',
+      },
+      {
+        protocol: 'https',
+        hostname: '**',
       },
     ],
     formats: ['image/avif', 'image/webp'],

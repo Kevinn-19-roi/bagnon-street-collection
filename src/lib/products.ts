@@ -3,8 +3,8 @@
 
 export const CATEGORIES = [
   { id: 'all', label: 'Tout voir' },
-  { id: 'tshirts', label: 'T-shirts' },
-  { id: 'hoodies', label: 'Hoodies' },
+  { id: 'tshirts', label: 'Tee-shirts' },
+  { id: 'hoodies', label: 'Sweats' },
   { id: 'bas', label: 'Bas' },
   { id: 'sacs', label: 'Sacs' },
 ]

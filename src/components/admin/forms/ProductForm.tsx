@@ -76,12 +76,43 @@ export default function ProductForm({ categories, collections, product, onSubmit
     setImagePreviews(previews)
   }
 
+  function generateDescription() {
+    const category = categories.find(c => c.id === categoryId)?.name || 'piece'
+    const categoryLabel = category.toLowerCase() === 'hoodies' ? 'sweat' : category.toLowerCase()
+    const colorText = selectedColors.size ? ` ${[...selectedColors].join(', ').toLowerCase()}` : ''
+    const materialText = material.trim() ? ` en ${material.trim()}` : ''
+    const sizeText = selectedSizes.size ? ` Disponible en ${[...selectedSizes].join(', ')}.` : ''
+    const baseName = name.trim() || 'Cette piece'
+
+    setDescription(`${baseName}, ${categoryLabel}${colorText}${materialText}, pense pour un style moderne, confortable et facile a porter.${sizeText}`)
+    if (!shortDesc.trim()) {
+      setShortDesc(`${baseName} au style Bagnon Street, simple et efficace.`)
+    }
+  }
+
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
     setLoading(true)
     setFormMessage(null)
 
     try {
+      const maxFileSize = 5 * 1024 * 1024
+      const maxTotalSize = 24 * 1024 * 1024
+      const tooLarge = imageFiles.find(file => file.size > maxFileSize)
+      const totalSize = imageFiles.reduce((sum, file) => sum + file.size, 0)
+
+      if (tooLarge) {
+        setFormMessage({ type: 'error', text: `L'image "${tooLarge.name}" depasse 5 Mo.` })
+        setLoading(false)
+        return
+      }
+
+      if (totalSize > maxTotalSize) {
+        setFormMessage({ type: 'error', text: 'Le total des images est trop lourd. Ajoute moins d images en une seule fois.' })
+        setLoading(false)
+        return
+      }
+
       const formData = new FormData(e.currentTarget)
       formData.set('featured', featured.toString())
       formData.set('new_arrival', newArrival.toString())
@@ -228,7 +259,29 @@ export default function ProductForm({ categories, collections, product, onSubmit
                 <input name="short_description" value={shortDesc} onChange={e => setShortDesc(e.target.value)} style={inputStyle} placeholder="Résumé en une ligne..." />
               </div>
               <div style={groupStyle}>
-                <label style={labelStyle}>Description complète</label>
+                <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8, alignItems: 'center' }}>
+                  <label style={{ ...labelStyle, marginBottom: 0 }}>Description complète</label>
+                  <button
+                    type="button"
+                    onClick={generateDescription}
+                    style={{
+                      background: 'rgba(122,22,32,0.14)',
+                      color: '#F2F1ED',
+                      border: '1px solid rgba(122,22,32,0.32)',
+                      borderRadius: 3,
+                      padding: '7px 9px',
+                      fontFamily: 'var(--font-display)',
+                      fontSize: 10,
+                      fontWeight: 800,
+                      letterSpacing: '.05em',
+                      textTransform: 'uppercase',
+                      cursor: 'pointer',
+                      whiteSpace: 'nowrap',
+                    }}
+                  >
+                    Générer une description
+                  </button>
+                </div>
                 <textarea name="description" value={description} onChange={e => setDescription(e.target.value)} rows={4} style={{ ...inputStyle, resize: 'vertical' }} placeholder="Description détaillée du produit..." />
               </div>
             </div>

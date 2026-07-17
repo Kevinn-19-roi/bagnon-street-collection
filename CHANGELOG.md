@@ -1,5 +1,53 @@
 # Changelog Bagnon Street Collection
 
+## 2026-07-17 - Sprint 10 Accueil premium, galerie et videos administrables
+
+- Developpements :
+  - Simplification de l'accueil avec hero compact, texte reduit et produits visibles plus rapidement.
+  - Passage du theme par defaut en mode clair, tout en conservant le choix utilisateur deja enregistre.
+  - Ajout d'un bandeau defilant automatique pour categories, collections, nouveautes et editions limitees.
+  - Remplacement des sections produits lourdes par des carrousels tactiles `Nouveautes` et `Produits tendance`.
+  - Ajout d'une section videos publique qui charge uniquement le poster au premier rendu et lit la video au clic.
+  - Ajout d'une section galerie publique optimisee avec images lazy-load.
+  - Creation des pages admin `/admin/galerie` et `/admin/videos`.
+  - Ajout de la migration non destructive `009_gallery_video_items.sql` pour `gallery_items` et `video_items`.
+  - Ajout d'une limite de 6 videos actives pour l'accueil.
+  - Ajout du composant `PublicMediaImage` avec fallback propre si une image est invalide.
+  - Adaptation de `next.config.js` pour les medias administrables, les videos et les uploads admin plus volumineux.
+  - Amelioration du formulaire produit : validation image avant envoi, messages plus clairs, generation locale de description.
+- Bugs corriges :
+  - Le mode sombre restait le choix par defaut lors d'une premiere visite.
+  - Certaines images externes ou signees pouvaient echouer selon le contexte desktop/mobile.
+  - La creation/modification produit pouvait afficher une erreur serveur opaque lorsque plusieurs images depassaient la limite d'action serveur.
+  - Les erreurs galerie/video obligatoires ou limite active pouvaient etre remplacees par une erreur generique.
+- Fichiers modifies :
+  - `next.config.js`
+  - `src/app/layout.tsx`
+  - `src/app/page.tsx`
+  - `src/components/HomeClient.tsx`
+  - `src/components/PublicMediaImage.tsx`
+  - `src/components/admin/forms/ProductForm.tsx`
+  - `src/components/admin/layout/Sidebar.tsx`
+  - `src/app/admin/galerie/page.tsx`
+  - `src/app/admin/videos/page.tsx`
+  - `src/lib/actions/media.ts`
+  - `src/lib/actions/products.ts`
+  - `src/lib/database/media.ts`
+  - `src/lib/products.ts`
+  - `src/types/database.ts`
+  - `supabase/migrations/009_gallery_video_items.sql`
+  - `ROADMAP.md`
+  - `CHANGELOG.md`
+- Validations effectuees :
+  - TypeScript local : OK.
+  - ESLint local : OK.
+  - Build production local : OK.
+  - Audit npm production : 0 vulnerabilite.
+- Points restant a traiter :
+  - Appliquer `supabase/migrations/009_gallery_video_items.sql` dans Supabase Production.
+  - Tester l'ajout d'images/videos en production avec une vraie session admin apres migration.
+  - Verifier Vercel `READY` et les routes production apres publication.
+
 ## 2026-07-16 - Correctif admin commandes suppression totale et filtres rapides
 
 - Developpements :

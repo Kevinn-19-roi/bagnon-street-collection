@@ -2,6 +2,7 @@ import HomeClient from '@/components/HomeClient'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
 import { unstable_cache } from 'next/cache'
+import { getActiveGalleryItems, getActiveVideoItems } from '@/lib/database/media'
 
 export const dynamic = 'force-dynamic'
 
@@ -95,11 +96,42 @@ const getSiteSettings = unstable_cache(async () => {
   }
 }, ['site-settings'], { revalidate: 300, tags: ['site-settings'] })
 
+const getHomeMarqueeItems = unstable_cache(async () => {
+  try {
+    const adminClient = createAdminClient()
+    const [categoriesRes, collectionsRes] = await Promise.all([
+      adminClient.from('categories').select('name, slug').eq('active', true).order('display_order', { ascending: true }).limit(8),
+      adminClient.from('collections').select('name, slug').eq('active', true).order('created_at', { ascending: false }).limit(6),
+    ])
+
+    const categories = (categoriesRes.data || []).map(item => ({
+      label: item.name.toLowerCase() === 'hoodies' ? 'Sweats' : item.name,
+      href: `/categorie/${item.slug}`,
+    }))
+    const collections = (collectionsRes.data || []).map(item => ({
+      label: item.name.toLowerCase().includes('summer') ? 'Collection été' : item.name,
+      href: `/collection/${item.slug}`,
+    }))
+
+    return [
+      ...categories,
+      { label: 'Nouveautés', href: '#nouveautes' },
+      { label: 'Éditions limitées', href: '#collection' },
+      ...collections,
+    ]
+  } catch {
+    return []
+  }
+}, ['home-marquee-items'], { revalidate: 300, tags: ['site-products'] })
+
 export default async function HomePage() {
-  const [products, currentUser, siteSettings] = await Promise.all([
+  const [products, currentUser, siteSettings, galleryItems, videoItems, marqueeItems] = await Promise.all([
     getHomeProducts(),
     getCurrentUser(),
     getSiteSettings(),
+    getActiveGalleryItems(),
+    getActiveVideoItems(),
+    getHomeMarqueeItems(),
   ])
 
   return (
@@ -110,6 +142,9 @@ export default async function HomePage() {
       allProducts={products.allProducts}
       currentUser={currentUser}
       siteSettings={siteSettings}
+      galleryItems={galleryItems}
+      videoItems={videoItems}
+      marqueeItems={marqueeItems}
     />
   )
 }

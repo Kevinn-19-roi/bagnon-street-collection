@@ -20,7 +20,7 @@ Ce document sert de point de reprise entre les sprints. Il doit rester synchroni
 - Termine - Sprint 9.6 - Mes commandes, admin commandes, recherche et performance
 - Termine - Correctif admin commandes - suppression totale et filtres rapides
 - Reporte - Orange Money
-- En attente - Sprint 10 - Validation finale production
+- Termine localement - Sprint 10 - Accueil premium, galerie et videos administrables
 - En attente - Sprint 11 - Mise en production finale
 
 ## Sprint 1 - Stabilisation
@@ -194,3 +194,16 @@ Ce document sert de point de reprise entre les sprints. Il doit rester synchroni
 - Probleme rencontre : la RPC 007 d'annulation refuse les commandes livrees ; une RPC dediee de suppression etait donc necessaire pour couvrir aussi les commandes livrees/payees.
 - Validation production : `008_delete_order_with_stock_restore.sql` appliquee avec succes ; Vercel `READY` ; aucune erreur runtime detectee.
 - Prochaines etapes : valider les cas metier avec une vraie session admin si un probleme est observe sur une commande precise.
+
+## Sprint 10 - Accueil premium, galerie et videos administrables
+
+- Objectif : simplifier l'accueil, rendre le site plus visuel et plus rapide percu, ajouter une galerie et une section videos administrables.
+- Etat : termine localement, a publier sur `main` puis a valider sur Vercel.
+- Date : 2026-07-17.
+- Fichiers principaux concernes : `src/app/page.tsx`, `src/components/HomeClient.tsx`, `src/components/PublicMediaImage.tsx`, `src/app/admin/galerie/page.tsx`, `src/app/admin/videos/page.tsx`, `src/lib/database/media.ts`, `src/lib/actions/media.ts`, `src/components/admin/forms/ProductForm.tsx`, `src/lib/actions/products.ts`, `supabase/migrations/009_gallery_video_items.sql`.
+- Accueil : mode clair par defaut sans ecraser le choix utilisateur, hero simplifie, suppression du gros bloc d'avantages en haut, bandeau defilant categories/collections, carrousels produits, sections videos et galerie.
+- Videos : maximum 6 videos actives affichees sur l'accueil, lecture uniquement au clic, poster obligatoire, pas de chargement complet avant interaction.
+- Galerie : images actives ordonnees et lazy-load sur l'accueil, administration ajout/modification/suppression.
+- Produit admin : validation plus claire, limite d'upload adaptee, generation locale de description sans API externe.
+- Migration : `009_gallery_video_items.sql` est non destructive et doit etre appliquee manuellement dans Supabase Production avant d'utiliser les pages `/admin/galerie` et `/admin/videos`.
+- Prochaines etapes : appliquer la migration 009 en production, tester l'ajout de medias avec une session admin, puis valider l'accueil production mobile/tablette/desktop.

@@ -178,6 +178,29 @@ export interface SiteSettings {
   updated_at: string
 }
 
+export interface GalleryItem {
+  id: string
+  image_url: string
+  caption: string | null
+  display_order: number
+  active: boolean
+  created_at: string
+  updated_at: string
+}
+
+export interface VideoItem {
+  id: string
+  title: string | null
+  caption: string | null
+  video_url: string
+  poster_url: string
+  display_order: number
+  active: boolean
+  featured: boolean
+  created_at: string
+  updated_at: string
+}
+
 // ─── API RESPONSE TYPES ─────────────────────────────────────
 
 export interface ApiResponse<T> {

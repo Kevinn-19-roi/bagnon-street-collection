@@ -104,17 +104,72 @@ async function uniqueSlug(baseSlug: string, excludeId?: string) {
 }
 
 async function uniqueSku(baseSku: string) {
+  return uniqueProductSku(`${baseSku || 'BSC-PROD'}-COPY`)
+}
+
+async function uniqueProductSku(baseSku: string, excludeId?: string) {
   const adminClient = createAdminClient()
   const cleanBase = (baseSku || 'BSC-PROD').trim() || 'BSC-PROD'
-  let candidate = `${cleanBase}-COPY`
+  let candidate = cleanBase
   let index = 2
 
   while (true) {
-    const { data, error } = await adminClient.from('products').select('id').eq('sku', candidate).limit(1)
+    let query = adminClient.from('products').select('id').eq('sku', candidate).limit(1)
+    if (excludeId) query = query.neq('id', excludeId)
+    const { data, error } = await query
     if (error) throw new Error(error.message)
     if (!data || data.length === 0) return candidate
-    candidate = `${cleanBase}-COPY-${index}`
+    candidate = `${cleanBase}-${index}`
     index += 1
+  }
+}
+
+function cleanText(value: FormDataEntryValue | null) {
+  return String(value || '').trim()
+}
+
+function parseRequiredNumber(value: FormDataEntryValue | null) {
+  const parsed = Number(value)
+  return Number.isFinite(parsed) ? parsed : NaN
+}
+
+function validateProductInput(formData: FormData) {
+  const name = cleanText(formData.get('name'))
+  const category_id = cleanText(formData.get('category_id'))
+  const price = parseRequiredNumber(formData.get('price'))
+  const stock = parseInt(String(formData.get('stock') || ''), 10)
+  const oldPriceValue = cleanText(formData.get('old_price'))
+  const old_price = oldPriceValue ? Number(oldPriceValue) : null
+  const weightValue = cleanText(formData.get('weight'))
+  const weight = weightValue ? Number(weightValue) : null
+
+  if (!name) return { error: 'Le nom du produit est obligatoire.' }
+  if (!category_id) return { error: 'La categorie du produit est obligatoire.' }
+  if (!Number.isFinite(price) || price < 0) return { error: 'Le prix doit etre un nombre valide.' }
+  if (!Number.isInteger(stock) || stock < 0) return { error: 'Le stock doit etre un nombre entier positif.' }
+  if (old_price !== null && (!Number.isFinite(old_price) || old_price < 0)) return { error: 'L ancien prix doit etre un nombre valide.' }
+  if (weight !== null && (!Number.isFinite(weight) || weight < 0)) return { error: 'Le poids doit etre un nombre valide.' }
+
+  return {
+    value: {
+      name,
+      skuBase: cleanText(formData.get('sku')) || generateSKU(name, 'BSC'),
+      slugBase: cleanText(formData.get('slug')) || generateSlug(name),
+      description: cleanText(formData.get('description')),
+      short_description: cleanText(formData.get('short_description')),
+      category_id,
+      collection_id: cleanText(formData.get('collection_id')) || null,
+      price,
+      old_price,
+      stock,
+      featured: formData.get('featured') === 'true',
+      new_arrival: formData.get('new_arrival') === 'true',
+      on_sale: formData.get('on_sale') === 'true',
+      active: formData.get('active') === 'true',
+      material: cleanText(formData.get('material')),
+      care_instructions: cleanText(formData.get('care_instructions')),
+      weight,
+    },
   }
 }
 
@@ -124,45 +179,42 @@ export async function createProduct(formData: FormData): Promise<ProductActionRe
   const adminClient = createAdminClient()
   const supabase = await createClient()
 
-  const name = formData.get('name') as string
-  const slug = (formData.get('slug') as string) || generateSlug(name)
-  const skuRaw = formData.get('sku') as string
-  const sku = skuRaw?.trim() || generateSKU(name, 'BSC')
-  const description = formData.get('description') as string
-  const short_description = formData.get('short_description') as string
-  const category_id = formData.get('category_id') as string
-  const collection_id = (formData.get('collection_id') as string) || null
-  const price = parseFloat(formData.get('price') as string)
-  const old_price = formData.get('old_price') ? parseFloat(formData.get('old_price') as string) : null
-  const stock = parseInt(formData.get('stock') as string, 10)
-  const featured = formData.get('featured') === 'true'
-  const new_arrival = formData.get('new_arrival') === 'true'
-  const on_sale = formData.get('on_sale') === 'true'
-  const active = formData.get('active') === 'true'
-  const material = formData.get('material') as string
-  const care_instructions = formData.get('care_instructions') as string
-  const weight = formData.get('weight') ? parseFloat(formData.get('weight') as string) : null
+  const parsed = validateProductInput(formData)
+  if ('error' in parsed) return { success: false, message: parsed.error || 'Les informations du produit sont invalides.' }
+  const values = parsed.value
+
+  let slug: string
+  let sku: string
+  try {
+    slug = await uniqueSlug(values.slugBase)
+    sku = await uniqueProductSku(values.skuBase)
+  } catch (error) {
+    return {
+      success: false,
+      message: error instanceof Error ? error.message : 'Impossible de verifier le slug ou le SKU.',
+    }
+  }
 
   const { data: product, error } = await adminClient
     .from('products')
     .insert({
-      name,
+      name: values.name,
       slug,
       sku,
-      description,
-      short_description,
-      category_id,
-      collection_id,
-      price,
-      old_price,
-      stock,
-      featured,
-      new_arrival,
-      on_sale,
-      active,
-      material,
-      care_instructions,
-      weight,
+      description: values.description,
+      short_description: values.short_description,
+      category_id: values.category_id,
+      collection_id: values.collection_id,
+      price: values.price,
+      old_price: values.old_price,
+      stock: values.stock,
+      featured: values.featured,
+      new_arrival: values.new_arrival,
+      on_sale: values.on_sale,
+      active: values.active,
+      material: values.material,
+      care_instructions: values.care_instructions,
+      weight: values.weight,
     })
     .select()
     .single()
@@ -175,7 +227,7 @@ export async function createProduct(formData: FormData): Promise<ProductActionRe
   }
 
   try {
-    await syncProductVariants(product.id, formData, stock)
+    await syncProductVariants(product.id, formData, values.stock)
   } catch (variantError) {
     return {
       success: false,
@@ -230,44 +282,42 @@ export async function updateProduct(id: string, formData: FormData): Promise<Pro
   const adminClient = createAdminClient()
   const supabase = await createClient()
 
-  const name = formData.get('name') as string
-  const slug = formData.get('slug') as string
-  const sku = formData.get('sku') as string
-  const description = formData.get('description') as string
-  const short_description = formData.get('short_description') as string
-  const category_id = formData.get('category_id') as string
-  const collection_id = (formData.get('collection_id') as string) || null
-  const price = parseFloat(formData.get('price') as string)
-  const old_price = formData.get('old_price') ? parseFloat(formData.get('old_price') as string) : null
-  const stock = parseInt(formData.get('stock') as string, 10)
-  const featured = formData.get('featured') === 'true'
-  const new_arrival = formData.get('new_arrival') === 'true'
-  const on_sale = formData.get('on_sale') === 'true'
-  const active = formData.get('active') === 'true'
-  const material = formData.get('material') as string
-  const care_instructions = formData.get('care_instructions') as string
-  const weight = formData.get('weight') ? parseFloat(formData.get('weight') as string) : null
+  const parsed = validateProductInput(formData)
+  if ('error' in parsed) return { success: false, message: parsed.error || 'Les informations du produit sont invalides.' }
+  const values = parsed.value
+
+  let slug: string
+  let sku: string
+  try {
+    slug = await uniqueSlug(values.slugBase, id)
+    sku = await uniqueProductSku(values.skuBase, id)
+  } catch (error) {
+    return {
+      success: false,
+      message: error instanceof Error ? error.message : 'Impossible de verifier le slug ou le SKU.',
+    }
+  }
 
   const { error } = await adminClient
     .from('products')
     .update({
-      name,
+      name: values.name,
       slug,
       sku,
-      description,
-      short_description,
-      category_id,
-      collection_id,
-      price,
-      old_price,
-      stock,
-      featured,
-      new_arrival,
-      on_sale,
-      active,
-      material,
-      care_instructions,
-      weight,
+      description: values.description,
+      short_description: values.short_description,
+      category_id: values.category_id,
+      collection_id: values.collection_id,
+      price: values.price,
+      old_price: values.old_price,
+      stock: values.stock,
+      featured: values.featured,
+      new_arrival: values.new_arrival,
+      on_sale: values.on_sale,
+      active: values.active,
+      material: values.material,
+      care_instructions: values.care_instructions,
+      weight: values.weight,
     })
     .eq('id', id)
 
@@ -279,7 +329,7 @@ export async function updateProduct(id: string, formData: FormData): Promise<Pro
   }
 
   try {
-    await syncProductVariants(id, formData, stock)
+    await syncProductVariants(id, formData, values.stock)
   } catch (variantError) {
     return {
       success: false,
