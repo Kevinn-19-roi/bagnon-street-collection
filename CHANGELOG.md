@@ -39,9 +39,13 @@
   - ESLint local : OK.
   - Build production local : OK.
   - Audit npm production : 0 vulnerabilite.
+  - Publication GitHub `main` : OK, commit `642e2bf`.
+  - Deploiement Vercel production : READY, `dpl_Hjex3oQZrwVg4wPDtmrj8SjUmxwQ`.
+  - Logs runtime Vercel recents : aucune erreur critique.
+  - Routes production verifiees : `/`, `/admin/galerie`, `/admin/videos`, `/admin/parametres`, `/admin/produits`, `/admin/produits/nouveau`, `/categorie/tshirts`, `/recherche?q=sac`.
 - Points restant a traiter :
-  - Publier sur `main`, attendre Vercel READY et verifier les logs runtime.
-  - Appliquer `010_hero_media_and_optional_video_posters.sql` dans Supabase Production apres publication.
+  - Appliquer `010_hero_media_and_optional_video_posters.sql` dans Supabase Production.
+  - Tester les uploads reels galerie/video et le hero video avec une vraie session admin apres migration.
 
 ## 2026-07-17 - Sprint 10 Accueil premium, galerie et videos administrables
 
