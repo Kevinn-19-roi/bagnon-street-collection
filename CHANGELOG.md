@@ -1,5 +1,28 @@
 # Changelog Bagnon Street Collection
 
+## 2026-07-17 - Correctif videos miniature automatique
+
+- Developpements :
+  - Generation navigateur d'une miniature pendant l'import direct d'une video.
+  - Capture d'une frame proche de 1 seconde, export JPEG qualite 0.82 et largeur cible maximale 720 px.
+  - Upload automatique des miniatures dans `videos/posters/` via le bucket `banners`.
+  - Suivi par fichier : analyse, generation miniature, upload video, upload miniature, enregistrement, termine.
+  - Import multiple plus robuste : l'echec d'une video ne bloque pas les autres, et l'echec de miniature n'annule pas l'ajout de la video.
+- Bugs corriges :
+  - Les videos sans miniature restaient sur un placeholder gris alors qu'une frame locale pouvait etre reutilisee.
+  - Les etats d'import video etaient trop generiques pour diagnostiquer l'etape bloquee.
+- Fichiers modifies :
+  - `src/components/admin/media/VideoCreateForm.tsx`
+  - `ROADMAP.md`
+  - `CHANGELOG.md`
+- Validations effectuees :
+  - TypeScript local : OK.
+  - ESLint local : OK.
+  - Build production local : OK.
+  - Audit production npm : OK, 0 vulnerabilite.
+- Points restant a traiter :
+  - Tester avec une vraie session admin : MP4 sans miniature, MP4 avec miniature manuelle, import multiple, suppression et affichage frontend.
+
 ## 2026-07-17 - Correctif 10.4 poster video nullable
 
 - Developpements :

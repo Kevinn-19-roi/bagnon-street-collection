@@ -25,6 +25,7 @@ Ce document sert de point de reprise entre les sprints. Il doit rester synchroni
 - Termine - Sprint 10.2 - Stabilisation videos et exception client
 - Termine - Sprint 10.3 - Correctifs videos et frontend
 - En attente migration - Correctif 10.4 - poster video nullable en production
+- En validation - Correctif videos - generation automatique des miniatures
 - En attente - Sprint 11 - Mise en production finale
 
 ## Sprint 1 - Stabilisation
@@ -253,3 +254,13 @@ Ce document sert de point de reprise entre les sprints. Il doit rester synchroni
 - Diagnostic : la migration 010 contient bien `ALTER COLUMN poster_url DROP NOT NULL`, mais la base production conserve encore `poster_url NOT NULL`.
 - Correction : creation de `012_fix_video_poster_nullable.sql`, idempotente et non destructive.
 - Prochaines etapes : appliquer 012 dans Supabase Production, puis tester upload video sans miniature, avec miniature, multiple, activation/desactivation et suppression.
+
+## Correctif videos - generation automatique des miniatures
+
+- Objectif : generer automatiquement une miniature lors de l'import d'une video admin, sans rendre la miniature obligatoire.
+- Etat : en validation.
+- Date : 2026-07-17.
+- Fichiers principaux concernes : `src/components/admin/media/VideoCreateForm.tsx`.
+- Correction : capture navigateur d'une frame vers 1 seconde, export JPEG compresse, upload dans `banners/videos/posters/`, puis enregistrement en `poster_url`.
+- Probleme gere : si Safari, le codec ou le navigateur bloque la capture, la video reste importable et l'admin voit un avertissement.
+- Prochaines etapes : tester en production avec MP4 H.264, import multiple, suppression video et verification du poster sur l'accueil.
