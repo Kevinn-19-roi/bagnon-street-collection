@@ -13,7 +13,9 @@
   - `CHANGELOG.md`
 - Validations effectuees :
   - Verification locale de la migration 010 : OK.
-  - TypeScript / ESLint / build : a relancer apres ajout de la migration.
+  - TypeScript local : OK.
+  - ESLint local : OK.
+  - Build production local : OK.
 - Points restant a traiter :
   - Appliquer `012_fix_video_poster_nullable.sql` dans Supabase Production.
   - Tester upload MP4 sans miniature, avec miniature, multiple, suppression, activation et desactivation.
