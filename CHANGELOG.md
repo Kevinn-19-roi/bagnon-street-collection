@@ -1,5 +1,23 @@
 # Changelog Bagnon Street Collection
 
+## 2026-07-17 - Correctif 10.4 poster video nullable
+
+- Developpements :
+  - Verification de `010_hero_media_and_optional_video_posters.sql` : la migration contient bien `ALTER COLUMN poster_url DROP NOT NULL`.
+  - Ajout de la migration idempotente `012_fix_video_poster_nullable.sql`.
+- Bugs corriges :
+  - La base Supabase Production conservait `video_items.poster_url` en `NOT NULL`, provoquant PostgreSQL `23502` lors d'un upload video sans miniature.
+- Fichiers modifies :
+  - `supabase/migrations/012_fix_video_poster_nullable.sql`
+  - `ROADMAP.md`
+  - `CHANGELOG.md`
+- Validations effectuees :
+  - Verification locale de la migration 010 : OK.
+  - TypeScript / ESLint / build : a relancer apres ajout de la migration.
+- Points restant a traiter :
+  - Appliquer `012_fix_video_poster_nullable.sql` dans Supabase Production.
+  - Tester upload MP4 sans miniature, avec miniature, multiple, suppression, activation et desactivation.
+
 ## 2026-07-17 - Sprint 10.3 Correctifs videos et frontend
 
 - Developpements :

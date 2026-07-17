@@ -24,6 +24,7 @@ Ce document sert de point de reprise entre les sprints. Il doit rester synchroni
 - Termine - Sprint 10.1 - Correctifs hero, videos, galerie et produits
 - Termine - Sprint 10.2 - Stabilisation videos et exception client
 - Termine - Sprint 10.3 - Correctifs videos et frontend
+- En attente migration - Correctif 10.4 - poster video nullable en production
 - En attente - Sprint 11 - Mise en production finale
 
 ## Sprint 1 - Stabilisation
@@ -242,3 +243,13 @@ Ce document sert de point de reprise entre les sprints. Il doit rester synchroni
 - Corrections realisees : message de migration remplace par diagnostic Supabase reel, creation `video_items` attendue avant succes UI, compteur 0/6 base sur les videos actives valides, hero `Trouvez votre outfit`, logo centre au-dessus de la citation.
 - Problemes rencontres : l'ancien message etait declenche par toute erreur contenant `video_items`, meme si les migrations etaient appliquees.
 - Prochaines etapes : tester upload/suppression avec une vraie session admin en production.
+
+## Correctif 10.4 - poster video nullable en production
+
+- Objectif : corriger l'erreur PostgreSQL `23502 null value in column poster_url` pendant l'ajout d'une video sans miniature.
+- Etat : code pret, migration a appliquer en production.
+- Date : 2026-07-17.
+- Fichiers principaux concernes : `supabase/migrations/010_hero_media_and_optional_video_posters.sql`, `supabase/migrations/012_fix_video_poster_nullable.sql`, `src/types/database.ts`, `src/lib/actions/media.ts`, `src/components/admin/media/VideoCreateForm.tsx`.
+- Diagnostic : la migration 010 contient bien `ALTER COLUMN poster_url DROP NOT NULL`, mais la base production conserve encore `poster_url NOT NULL`.
+- Correction : creation de `012_fix_video_poster_nullable.sql`, idempotente et non destructive.
+- Prochaines etapes : appliquer 012 dans Supabase Production, puis tester upload video sans miniature, avec miniature, multiple, activation/desactivation et suppression.
