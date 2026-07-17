@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo, useRef, useState, useTransition } from 'react'
+import { useMemo, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Button from '@/components/admin/ui/Button'
 import { createVideoItemsFromUrls } from '@/lib/actions/media'
@@ -66,7 +66,7 @@ export default function VideoCreateForm({ nextOrder }: { nextOrder: number }) {
   const [active, setActive] = useState(true)
   const [featured, setFeatured] = useState(false)
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
-  const [isPending, startTransition] = useTransition()
+  const [isPending, setIsPending] = useState(false)
 
   const maxSizeLabel = useMemo(() => formatBytes(MAX_VIDEO_UPLOAD_BYTES), [])
 
@@ -125,7 +125,9 @@ export default function VideoCreateForm({ nextOrder }: { nextOrder: number }) {
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault()
+    if (isPending) return
     setMessage(null)
+    setIsPending(true)
 
     try {
       const uploadedUrls = items.length ? await uploadQueuedVideos() : []
@@ -133,36 +135,37 @@ export default function VideoCreateForm({ nextOrder }: { nextOrder: number }) {
 
       if (!urls.length) {
         setMessage({ type: 'error', text: 'Ajoute une video ou une URL video directe.' })
+        setIsPending(false)
         return
       }
 
-      startTransition(async () => {
-        const result = await createVideoItemsFromUrls(urls.map((url, index) => ({
-          title: index === 0 ? title : null,
-          caption: index === 0 ? caption : null,
-          video_url: url,
-          poster_url: posterUrl,
-          display_order: nextOrder + index,
-          active,
-          featured: index === 0 ? featured : false,
-        })))
+      const result = await createVideoItemsFromUrls(urls.map((url, index) => ({
+        title: index === 0 ? title : null,
+        caption: index === 0 ? caption : null,
+        video_url: url,
+        poster_url: posterUrl,
+        display_order: nextOrder + index,
+        active,
+        featured: index === 0 ? featured : false,
+      })))
 
-        setMessage({ type: result.success ? 'success' : 'error', text: result.message })
-        if (result.success) {
-          setItems([])
-          setTitle('')
-          setCaption('')
-          setVideoUrl('')
-          setPosterUrl('')
-          if (inputRef.current) inputRef.current.value = ''
-          router.refresh()
-        }
-      })
+      setMessage({ type: result.success ? 'success' : 'error', text: result.message })
+      if (result.success) {
+        setItems([])
+        setTitle('')
+        setCaption('')
+        setVideoUrl('')
+        setPosterUrl('')
+        if (inputRef.current) inputRef.current.value = ''
+        router.refresh()
+      }
     } catch (error) {
       setMessage({
         type: 'error',
         text: error instanceof Error ? error.message : 'Import video impossible.',
       })
+    } finally {
+      setIsPending(false)
     }
   }
 

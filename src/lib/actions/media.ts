@@ -19,10 +19,18 @@ type VideoUploadEntry = {
 
 function mediaMissing(message?: string) {
   return Boolean(message && (
-    message.includes('gallery_items') ||
-    message.includes('video_items') ||
+    message.includes('does not exist') ||
     message.includes('schema cache')
   ))
+}
+
+function mediaErrorMessage(error: { message?: string; code?: string; details?: string | null } | Error | unknown, fallback: string) {
+  if (error instanceof Error) return error.message || fallback
+  if (error && typeof error === 'object' && 'message' in error) {
+    const record = error as { message?: string; details?: string | null; code?: string }
+    return [record.message, record.details, record.code ? `Code ${record.code}` : null].filter(Boolean).join(' - ') || fallback
+  }
+  return fallback
 }
 
 function cleanOptional(value: FormDataEntryValue | null) {
@@ -198,24 +206,24 @@ export async function deleteGalleryItem(id: string): Promise<void> {
 async function hasVideoCapacity(adminClient: ReturnType<typeof createAdminClient>, id?: string) {
   let query = adminClient
     .from('video_items')
-    .select('id', { count: 'exact', head: true })
+    .select('id, video_url')
     .eq('active', true)
 
   if (id) query = query.neq('id', id)
 
-  const { count, error } = await query
+  const { data, error } = await query
   if (error) throw new Error(error.message)
-  return (count || 0) < 6
+  return ((data || []).filter(item => isDirectVideoUrl(item.video_url)).length) < 6
 }
 
 async function getActiveVideoCount(adminClient: ReturnType<typeof createAdminClient>) {
-  const { count, error } = await adminClient
+  const { data, error } = await adminClient
     .from('video_items')
-    .select('id', { count: 'exact', head: true })
+    .select('id, video_url')
     .eq('active', true)
 
   if (error) throw new Error(error.message)
-  return count || 0
+  return (data || []).filter(item => isDirectVideoUrl(item.video_url)).length
 }
 
 export async function createVideoItemsFromUrls(entries: VideoUploadEntry[]): Promise<{ success: boolean; message: string }> {
@@ -248,15 +256,27 @@ export async function createVideoItemsFromUrls(entries: VideoUploadEntry[]): Pro
       }
     }
 
-    const { error } = await adminClient.from('video_items').insert(cleanEntries)
+    const { data, error } = await adminClient.from('video_items').insert(cleanEntries).select('id')
     if (error) {
-      if (mediaMissing(error.message)) return { success: false, message: 'La migration video doit etre appliquee dans Supabase.' }
-      return { success: false, message: error.message || 'Impossible d enregistrer les videos.' }
+      console.error('[admin/videos] video_items insert failed', {
+        code: error.code,
+        message: error.message,
+        details: error.details,
+        hint: error.hint,
+      })
+      if (mediaMissing(error.message)) return { success: false, message: 'La table ou une colonne video est absente dans Supabase.' }
+      return { success: false, message: mediaErrorMessage(error, 'Impossible d enregistrer les videos.') }
+    }
+
+    if (!data?.length) {
+      console.error('[admin/videos] video_items insert returned no rows')
+      return { success: false, message: 'Les fichiers sont importes, mais aucune video n a ete creee en base.' }
     }
   } catch (error) {
+    console.error('[admin/videos] video_items insert exception', mediaErrorMessage(error, 'Erreur inconnue'))
     return {
       success: false,
-      message: error instanceof Error ? error.message : 'Impossible d enregistrer les videos.',
+      message: mediaErrorMessage(error, 'Impossible d enregistrer les videos.'),
     }
   }
 

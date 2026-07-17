@@ -65,7 +65,7 @@ export default async function AdminVideosPage({
 }) {
   const query = await searchParams
   const items = await getVideoItemsAdmin()
-  const activeCount = items.filter(item => item.active).length
+  const activeCount = items.filter(item => item.active && isDirectVideoUrl(item.video_url)).length
 
   return (
     <AdminShell>

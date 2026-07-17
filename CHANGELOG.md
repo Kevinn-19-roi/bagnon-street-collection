@@ -1,5 +1,32 @@
 # Changelog Bagnon Street Collection
 
+## 2026-07-17 - Sprint 10.3 Correctifs videos et frontend
+
+- Developpements :
+  - Correction du faux positif `La migration video doit etre appliquee dans Supabase`.
+  - Ajout d'un diagnostic serveur plus precis lors de l'insertion `video_items`.
+  - Le formulaire d'import video attend maintenant la creation en base avant d'afficher un succes.
+  - Le compteur admin `0/6` ne compte plus les videos actives invalides.
+  - Texte hero par defaut remplace par `Trouvez votre outfit`.
+  - Logo Bagnon Street centre au-dessus de la citation de marque.
+- Bugs corriges :
+  - Toute erreur Supabase contenant `video_items` etait traitee comme une migration absente.
+  - Les barres d'upload pouvaient devenir vertes alors que la creation `video_items` avait echoue ensuite.
+  - Une video active invalide pouvait compter dans la limite des 6 videos affichables.
+- Fichiers modifies :
+  - `src/lib/actions/media.ts`
+  - `src/components/admin/media/VideoCreateForm.tsx`
+  - `src/app/admin/videos/page.tsx`
+  - `src/components/HomeClient.tsx`
+  - `ROADMAP.md`
+  - `CHANGELOG.md`
+- Validations effectuees :
+  - TypeScript local : a relancer apres correction finale.
+  - ESLint local : a relancer apres correction finale.
+  - Build production local : a relancer apres correction finale.
+- Points restant a traiter :
+  - Tester upload/suppression avec une session admin de production.
+
 ## 2026-07-17 - Sprint 10.2 Stabilisation videos et exception client
 
 - Developpements :

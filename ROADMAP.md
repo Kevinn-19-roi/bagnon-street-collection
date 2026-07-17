@@ -23,6 +23,7 @@ Ce document sert de point de reprise entre les sprints. Il doit rester synchroni
 - Termine - Sprint 10 - Accueil premium, galerie et videos administrables
 - Termine - Sprint 10.1 - Correctifs hero, videos, galerie et produits
 - Termine - Sprint 10.2 - Stabilisation videos et exception client
+- Termine - Sprint 10.3 - Correctifs videos et frontend
 - En attente - Sprint 11 - Mise en production finale
 
 ## Sprint 1 - Stabilisation
@@ -231,3 +232,13 @@ Ce document sert de point de reprise entre les sprints. Il doit rester synchroni
 - Corrections realisees : validation partagee des URLs video, exclusion automatique des videos invalides de l'accueil, hero video avec fallback image, formulaire admin d'import multiple jusqu'a 6 videos, upload direct navigateur vers Supabase Storage, suppression fichier Storage via client admin, page d'erreur client en francais.
 - Probleme rencontre : le bucket `banners` historique acceptait seulement des images et 10 Mo ; les uploads video peuvent etre refuses tant que la migration 011 n'est pas appliquee.
 - Prochaines etapes : appliquer `011_banners_video_storage.sql` dans Supabase Production, puis tester un MP4 H.264 reel depuis mobile et desktop.
+
+## Sprint 10.3 - Correctifs videos et frontend
+
+- Objectif : corriger le faux message de migration video, fiabiliser la creation/suppression des videos, ajuster le texte hero et ajouter le logo au-dessus de la citation.
+- Etat : termine cote code.
+- Date : 2026-07-17.
+- Fichiers principaux concernes : `src/lib/actions/media.ts`, `src/components/admin/media/VideoCreateForm.tsx`, `src/app/admin/videos/page.tsx`, `src/components/HomeClient.tsx`, `ROADMAP.md`, `CHANGELOG.md`.
+- Corrections realisees : message de migration remplace par diagnostic Supabase reel, creation `video_items` attendue avant succes UI, compteur 0/6 base sur les videos actives valides, hero `Trouvez votre outfit`, logo centre au-dessus de la citation.
+- Problemes rencontres : l'ancien message etait declenche par toute erreur contenant `video_items`, meme si les migrations etaient appliquees.
+- Prochaines etapes : tester upload/suppression avec une vraie session admin en production.

@@ -467,7 +467,8 @@ export default function HomeClient({ featured, newItems, bestsellers, allProduct
   const cartCount = useCart(s => s.count)
   const { favorites } = useFavorites()
   const heroImage = siteSettings?.hero_image_url?.trim() || '/brand/hero-model.jpg'
-  const heroTitle = siteSettings?.hero_title?.trim() || 'Affirmez votre style'
+  const heroTitleSetting = siteSettings?.hero_title?.trim()
+  const heroTitle = !heroTitleSetting || heroTitleSetting === 'Affirmez votre style' ? 'Trouvez votre outfit' : heroTitleSetting
   const heroTitleAccent = siteSettings?.hero_title_accent?.trim() || ''
   const heroDescription = siteSettings?.hero_description?.trim() || 'La nouvelle collection Bagnon Street est disponible.'
   const heroButtonText = siteSettings?.hero_button_text?.trim() || 'Découvrir'
@@ -476,8 +477,8 @@ export default function HomeClient({ featured, newItems, bestsellers, allProduct
   const heroVideo = isDirectVideoUrl(heroVideoCandidate) ? heroVideoCandidate : ''
   const heroObjectPosition = mediaPosition(siteSettings?.hero_media_position)
   const heroOverlay = Math.min(.75, Math.max(.15, Number(siteSettings?.hero_overlay_opacity || .42)))
-  const brandQuote = siteSettings?.brand_quote?.trim() || 'On ne suit pas les tendances.\nOn construit notre propre langage.\n\nBagnon Street est une declaration,\npas simplement un vetement.'
-  const brandQuoteAuthor = siteSettings?.brand_quote_author?.trim() || 'Bagnon Street Collection'
+  const brandQuote = siteSettings?.brand_quote?.trim() || 'On ne suit pas les tendances.\nOn construit notre propre langage.\n\nBagnon Street est une declaration,\npas un vetement.'
+  const brandQuoteAuthor = siteSettings?.brand_quote_author?.trim() || 'BAGNON STREET COLLECTION, ABIDJAN'
   const railNew = newItems.length ? newItems : allProducts.slice(0, 6)
   const railFeatured = featured.length ? featured : bestsellers.length ? bestsellers : allProducts.slice(6, 12)
 
@@ -573,11 +574,15 @@ export default function HomeClient({ featured, newItems, bestsellers, allProduct
 
       <section style={{ padding: `clamp(38px,6vw,70px) ${px}`, borderTop: '1px solid var(--border)', background: 'var(--bg2)' }}>
         <figure style={{ maxWidth: 920, margin: '0 auto', textAlign: 'center' }}>
+          <div style={{ width: 74, height: 74, margin: '0 auto 22px', borderRadius: '50%', overflow: 'hidden', border: '1px solid var(--border2)', position: 'relative' }}>
+            <Image src="/brand/logo-round.jpg" alt="Bagnon Street Collection" fill style={{ objectFit: 'cover' }} sizes="74px" />
+          </div>
           <blockquote style={{ fontFamily: 'var(--font-display)', fontSize: 'clamp(22px,5vw,44px)', lineHeight: 1.15, fontWeight: 700, letterSpacing: '-.02em', whiteSpace: 'pre-line' }}>
             “{brandQuote}”
           </blockquote>
           <figcaption style={{ marginTop: 20, fontFamily: 'var(--font-display)', fontSize: 11, fontWeight: 800, letterSpacing: '.16em', textTransform: 'uppercase', color: 'var(--text2)' }}>
-            — {brandQuoteAuthor}
+            <span aria-hidden="true" style={{ display: 'block', marginBottom: 8 }}>—</span>
+            {brandQuoteAuthor}
           </figcaption>
         </figure>
       </section>
