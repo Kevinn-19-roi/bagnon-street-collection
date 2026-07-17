@@ -2,9 +2,10 @@ import Image from 'next/image'
 import AdminShell from '@/components/admin/layout/AdminShell'
 import PageHeader from '@/components/admin/ui/PageHeader'
 import ConfirmSubmitForm from '@/components/admin/forms/ConfirmSubmitForm'
-import Button from '@/components/admin/ui/Button'
+import PendingSubmitButton from '@/components/admin/forms/PendingSubmitButton'
 import Badge from '@/components/admin/ui/Badge'
-import { createGalleryItem, deleteGalleryItem, updateGalleryItem } from '@/lib/actions/media'
+import GalleryCreateForm from '@/components/admin/media/GalleryCreateForm'
+import { createGalleryItems, deleteGalleryItem, updateGalleryItem } from '@/lib/actions/media'
 import { getGalleryItemsAdmin } from '@/lib/database/media'
 
 export const dynamic = 'force-dynamic'
@@ -71,30 +72,7 @@ export default async function AdminGaleriePage({
       `}</style>
 
       <div className="gallery-admin-grid" style={{ display: 'grid', gridTemplateColumns: '360px minmax(0,1fr)', gap: 16 }}>
-        <form action={createGalleryItem} style={{ background: '#17171B', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 6, padding: 18, display: 'grid', gap: 14, alignSelf: 'start' }}>
-          <p style={{ fontFamily: 'var(--font-display)', fontSize: 12, fontWeight: 700, letterSpacing: '.1em', textTransform: 'uppercase', color: '#F2F1ED' }}>Ajouter une image</p>
-          <label>
-            <span style={labelStyle}>Upload image</span>
-            <input name="image_file" type="file" accept="image/*" style={inputStyle} />
-          </label>
-          <label>
-            <span style={labelStyle}>Ou URL publique</span>
-            <input name="image_url" placeholder="https://..." style={inputStyle} />
-          </label>
-          <label>
-            <span style={labelStyle}>Legende courte</span>
-            <input name="caption" placeholder="Optionnel" style={inputStyle} />
-          </label>
-          <label>
-            <span style={labelStyle}>Ordre</span>
-            <input name="display_order" type="number" defaultValue={items.length + 1} style={inputStyle} />
-          </label>
-          <label style={{ display: 'flex', gap: 10, alignItems: 'center', color: '#F2F1ED', fontFamily: 'var(--font-display)', fontSize: 12 }}>
-            <input name="active" type="checkbox" defaultChecked style={{ accentColor: '#7A1620' }} />
-            Active sur l'accueil
-          </label>
-          <Button type="submit" fullWidth>Ajouter</Button>
-        </form>
+        <GalleryCreateForm action={createGalleryItems} defaultOrder={items.length + 1} inputStyle={inputStyle} labelStyle={labelStyle} />
 
         <div style={{ display: 'grid', gap: 12 }}>
           {items.length === 0 ? (
@@ -106,25 +84,27 @@ export default async function AdminGaleriePage({
               <div style={{ position: 'relative', aspectRatio: '4/3', borderRadius: 4, overflow: 'hidden', background: '#0A0A0C' }}>
                 <Image src={item.image_url} alt={item.caption || 'Galerie Bagnon Street'} fill style={{ objectFit: 'cover' }} sizes="160px" />
               </div>
-              <form action={updateGalleryItem.bind(null, item.id)} style={{ display: 'grid', gap: 10 }}>
+              <div style={{ display: 'grid', gap: 10 }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8, alignItems: 'center' }}>
                   <Badge label={item.active ? 'Active' : 'Inactive'} variant={item.active ? 'success' : 'default'} />
                   <ConfirmSubmitForm action={deleteGalleryItem.bind(null, item.id)} message="Supprimer cette image de la galerie ?">
-                    <Button type="submit" variant="danger" size="sm">Supprimer</Button>
+                    <PendingSubmitButton idle="Supprimer" pending="Suppression..." variant="danger" size="sm" />
                   </ConfirmSubmitForm>
                 </div>
-                <input name="image_url" defaultValue={item.image_url} style={inputStyle} />
-                <input name="caption" defaultValue={item.caption || ''} placeholder="Legende" style={inputStyle} />
-                <div style={{ display: 'grid', gridTemplateColumns: '120px 1fr', gap: 10 }}>
-                  <input name="display_order" type="number" defaultValue={item.display_order} style={inputStyle} />
-                  <label style={{ display: 'flex', gap: 10, alignItems: 'center', color: '#F2F1ED', fontFamily: 'var(--font-display)', fontSize: 12 }}>
-                    <input name="active" type="checkbox" defaultChecked={item.active} style={{ accentColor: '#7A1620' }} />
-                    Active
-                  </label>
-                </div>
-                <input name="image_file" type="file" accept="image/*" style={inputStyle} />
-                <Button type="submit" variant="secondary" size="sm">Enregistrer</Button>
-              </form>
+                <form action={updateGalleryItem.bind(null, item.id)} style={{ display: 'grid', gap: 10 }}>
+                  <input name="image_url" defaultValue={item.image_url} style={inputStyle} />
+                  <input name="caption" defaultValue={item.caption || ''} placeholder="Legende" style={inputStyle} />
+                  <div style={{ display: 'grid', gridTemplateColumns: '120px 1fr', gap: 10 }}>
+                    <input name="display_order" type="number" defaultValue={item.display_order} style={inputStyle} />
+                    <label style={{ display: 'flex', gap: 10, alignItems: 'center', color: '#F2F1ED', fontFamily: 'var(--font-display)', fontSize: 12 }}>
+                      <input name="active" type="checkbox" defaultChecked={item.active} style={{ accentColor: '#7A1620' }} />
+                      Active
+                    </label>
+                  </div>
+                  <input name="image_file" type="file" accept="image/*" style={inputStyle} />
+                  <PendingSubmitButton idle="Enregistrer" pending="Enregistrement..." variant="secondary" size="sm" />
+                </form>
+              </div>
             </div>
           ))}
         </div>

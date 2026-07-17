@@ -122,7 +122,12 @@ export default function ProductForm({ categories, collections, product, onSubmit
       imageFiles.forEach(f => formData.append('images', f))
 
       const result = await onSubmit(formData)
-      setFormMessage({ type: result.success ? 'success' : 'error', text: result.message })
+      setFormMessage({
+        type: result.success ? 'success' : 'error',
+        text: result.success
+          ? `${result.message} Si le produit n'apparait pas dans une section publique, verifie qu'il est actif, en stock, marque Nouveaute/Vedette, avec une image, et qu'il n'est pas hors limite d'affichage.`
+          : result.message,
+      })
 
       if (result.success) {
         router.refresh()

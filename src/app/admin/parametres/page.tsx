@@ -8,6 +8,7 @@ export const dynamic = 'force-dynamic'
 export default async function ParametresPage() {
   const settings = await getSettings()
   const heroSettingsReady = Boolean(settings && 'hero_image_url' in settings)
+  const heroMediaReady = Boolean(settings && 'hero_video_url' in settings)
 
   const inputStyle = {
     width: '100%', background: '#0A0A0C',
@@ -115,6 +116,42 @@ export default async function ParametresPage() {
             <div style={sectionStyle}>
               <p style={sectionTitle}>Banniere principale</p>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+                {heroMediaReady && (
+                  <>
+                    <div className="settings-subgrid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
+                      <div>
+                        <label style={labelStyle}>Media du hero</label>
+                        <select name="hero_media_type" defaultValue={settings?.hero_media_type || 'image'} style={{ ...inputStyle, appearance: 'none' }}>
+                          <option value="image">Image</option>
+                          <option value="video">Video</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label style={labelStyle}>Cadrage</label>
+                        <select name="hero_media_position" defaultValue={settings?.hero_media_position || 'center'} style={{ ...inputStyle, appearance: 'none' }}>
+                          <option value="center">Centre</option>
+                          <option value="top">Haut</option>
+                          <option value="bottom">Bas</option>
+                          <option value="left">Gauche</option>
+                          <option value="right">Droite</option>
+                        </select>
+                      </div>
+                    </div>
+                    <div>
+                      <label style={labelStyle}>Intensite overlay</label>
+                      <input name="hero_overlay_opacity" type="number" min="0.15" max="0.75" step="0.05" defaultValue={settings?.hero_overlay_opacity || 0.42} style={inputStyle} />
+                    </div>
+                    <div>
+                      <label style={labelStyle}>Video hero optionnelle</label>
+                      {settings?.hero_video_url && <p style={{ fontSize: 10, color: '#94938E', marginBottom: 6, fontFamily: 'var(--font-display)', wordBreak: 'break-all' }}>Video actuelle : {settings.hero_video_url}</p>}
+                      <input name="hero_video" type="file" accept="video/mp4,video/webm,video/ogg" style={{ ...inputStyle, padding: '8px' }} />
+                    </div>
+                    <div>
+                      <label style={labelStyle}>Ou URL video directe</label>
+                      <input name="hero_video_url" defaultValue={settings?.hero_video_url || ''} placeholder="https://.../video.mp4" style={inputStyle} />
+                    </div>
+                  </>
+                )}
                 <div>
                   <label style={labelStyle}>Image principale</label>
                   {settings?.hero_image_url && (
@@ -153,6 +190,18 @@ export default async function ParametresPage() {
                     <input name="hero_button_link" defaultValue={settings?.hero_button_link || ''} placeholder="#collection" style={inputStyle} />
                   </div>
                 </div>
+                {heroMediaReady && (
+                  <>
+                    <div>
+                      <label style={labelStyle}>Citation de marque</label>
+                      <textarea name="brand_quote" defaultValue={settings?.brand_quote || ''} rows={4} placeholder={'On ne suit pas les tendances.\nOn construit notre propre langage.'} style={{ ...inputStyle, resize: 'vertical' }} />
+                    </div>
+                    <div>
+                      <label style={labelStyle}>Signature citation</label>
+                      <input name="brand_quote_author" defaultValue={settings?.brand_quote_author || ''} placeholder="Bagnon Street Collection" style={inputStyle} />
+                    </div>
+                  </>
+                )}
               </div>
             </div>
           ) : (

@@ -2,7 +2,7 @@ import Image from 'next/image'
 import AdminShell from '@/components/admin/layout/AdminShell'
 import PageHeader from '@/components/admin/ui/PageHeader'
 import ConfirmSubmitForm from '@/components/admin/forms/ConfirmSubmitForm'
-import Button from '@/components/admin/ui/Button'
+import PendingSubmitButton from '@/components/admin/forms/PendingSubmitButton'
 import Badge from '@/components/admin/ui/Badge'
 import { createVideoItem, deleteVideoItem, updateVideoItem } from '@/lib/actions/media'
 import { getVideoItemsAdmin } from '@/lib/database/media'
@@ -40,7 +40,9 @@ function Message({ success, error }: { success?: string; error?: string }) {
     : error === 'active-limit'
       ? "Maximum 6 videos actives sur l'accueil. Desactive une video avant d'en activer une autre."
       : error === 'video-required'
-        ? 'URL video et poster sont obligatoires.'
+        ? 'Ajoute un fichier video ou une URL video directe.'
+        : error === 'video-url'
+          ? 'Lien video incompatible. Utilise une URL directe MP4/WebM ou une URL publique Supabase Storage.'
         : error ? "L'operation a echoue." : null
 
   if (!successText && !errorText) return null
@@ -78,13 +80,17 @@ export default async function AdminVideosPage({
           <p style={{ fontFamily: 'var(--font-display)', fontSize: 12, fontWeight: 700, letterSpacing: '.1em', textTransform: 'uppercase', color: '#F2F1ED' }}>Ajouter une video</p>
           <label><span style={labelStyle}>Titre</span><input name="title" placeholder="Optionnel" style={inputStyle} /></label>
           <label><span style={labelStyle}>Legende</span><input name="caption" placeholder="Optionnel" style={inputStyle} /></label>
-          <label><span style={labelStyle}>URL video *</span><input name="video_url" required placeholder="https://..." style={inputStyle} /></label>
-          <label><span style={labelStyle}>Poster image *</span><input name="poster_file" type="file" accept="image/*" style={inputStyle} /></label>
-          <label><span style={labelStyle}>Ou URL poster</span><input name="poster_url" placeholder="https://..." style={inputStyle} /></label>
+          <label><span style={labelStyle}>Importer une video</span><input name="video_file" type="file" accept="video/mp4,video/webm,video/ogg" style={inputStyle} /></label>
+          <label><span style={labelStyle}>Ou URL video directe</span><input name="video_url" placeholder="https://.../video.mp4" style={inputStyle} /></label>
+          <p style={{ color: '#94938E', fontSize: 11, lineHeight: 1.6 }}>
+            Liens compatibles : URL directe MP4/WebM/Ogg ou URL publique Supabase Storage. Les pages Instagram, TikTok, YouTube ou Google Drive ne sont pas lisibles directement dans ce lecteur.
+          </p>
+          <label><span style={labelStyle}>Miniature optionnelle</span><input name="poster_file" type="file" accept="image/*" style={inputStyle} /></label>
+          <label><span style={labelStyle}>Ou URL miniature</span><input name="poster_url" placeholder="https://..." style={inputStyle} /></label>
           <label><span style={labelStyle}>Ordre</span><input name="display_order" type="number" defaultValue={items.length + 1} style={inputStyle} /></label>
           <label style={{ display: 'flex', gap: 10, alignItems: 'center', color: '#F2F1ED', fontFamily: 'var(--font-display)', fontSize: 12 }}><input name="active" type="checkbox" defaultChecked style={{ accentColor: '#7A1620' }} />Active</label>
           <label style={{ display: 'flex', gap: 10, alignItems: 'center', color: '#F2F1ED', fontFamily: 'var(--font-display)', fontSize: 12 }}><input name="featured" type="checkbox" style={{ accentColor: '#7A1620' }} />Mise en avant</label>
-          <Button type="submit" fullWidth>Ajouter</Button>
+          <PendingSubmitButton idle="Ajouter" pending="Import en cours..." fullWidth />
         </form>
 
         <div style={{ display: 'grid', gap: 12 }}>
@@ -95,30 +101,39 @@ export default async function AdminVideosPage({
           ) : items.map(item => (
             <div key={item.id} className="video-admin-card" style={{ display: 'grid', gridTemplateColumns: '150px minmax(0,1fr)', gap: 14, background: '#17171B', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 6, padding: 14 }}>
               <div style={{ position: 'relative', aspectRatio: '9/12', borderRadius: 4, overflow: 'hidden', background: '#0A0A0C' }}>
-                <Image src={item.poster_url} alt={item.title || 'Video Bagnon Street'} fill style={{ objectFit: 'cover' }} sizes="150px" />
+                {item.poster_url ? (
+                  <Image src={item.poster_url} alt={item.title || 'Video Bagnon Street'} fill style={{ objectFit: 'cover' }} sizes="150px" />
+                ) : (
+                  <div style={{ position: 'absolute', inset: 0, display: 'grid', placeItems: 'center', color: '#F2F1ED', fontFamily: 'var(--font-display)', fontSize: 11, textTransform: 'uppercase', letterSpacing: '.08em', textAlign: 'center', padding: 12 }}>
+                    Lecture video
+                  </div>
+                )}
               </div>
-              <form action={updateVideoItem.bind(null, item.id)} style={{ display: 'grid', gap: 10 }}>
+              <div style={{ display: 'grid', gap: 10 }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
                   <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
                     <Badge label={item.active ? 'Active' : 'Inactive'} variant={item.active ? 'success' : 'default'} />
                     {item.featured && <Badge label="Mise en avant" variant="info" />}
                   </div>
                   <ConfirmSubmitForm action={deleteVideoItem.bind(null, item.id)} message="Supprimer cette video ?">
-                    <Button type="submit" variant="danger" size="sm">Supprimer</Button>
+                    <PendingSubmitButton idle="Supprimer" pending="Suppression..." variant="danger" size="sm" />
                   </ConfirmSubmitForm>
                 </div>
-                <input name="title" defaultValue={item.title || ''} placeholder="Titre" style={inputStyle} />
-                <input name="caption" defaultValue={item.caption || ''} placeholder="Legende" style={inputStyle} />
-                <input name="video_url" defaultValue={item.video_url} required style={inputStyle} />
-                <input name="poster_url" defaultValue={item.poster_url} required style={inputStyle} />
-                <div style={{ display: 'grid', gridTemplateColumns: '110px 1fr 1fr', gap: 10 }}>
-                  <input name="display_order" type="number" defaultValue={item.display_order} style={inputStyle} />
-                  <label style={{ display: 'flex', gap: 8, alignItems: 'center', color: '#F2F1ED', fontFamily: 'var(--font-display)', fontSize: 12 }}><input name="active" type="checkbox" defaultChecked={item.active} style={{ accentColor: '#7A1620' }} />Active</label>
-                  <label style={{ display: 'flex', gap: 8, alignItems: 'center', color: '#F2F1ED', fontFamily: 'var(--font-display)', fontSize: 12 }}><input name="featured" type="checkbox" defaultChecked={item.featured} style={{ accentColor: '#7A1620' }} />Avant</label>
-                </div>
-                <input name="poster_file" type="file" accept="image/*" style={inputStyle} />
-                <Button type="submit" variant="secondary" size="sm">Enregistrer</Button>
-              </form>
+                <form action={updateVideoItem.bind(null, item.id)} style={{ display: 'grid', gap: 10 }}>
+                  <input name="title" defaultValue={item.title || ''} placeholder="Titre" style={inputStyle} />
+                  <input name="caption" defaultValue={item.caption || ''} placeholder="Legende" style={inputStyle} />
+                  <input name="video_url" defaultValue={item.video_url} style={inputStyle} />
+                  <input name="poster_url" defaultValue={item.poster_url || ''} placeholder="Miniature optionnelle" style={inputStyle} />
+                  <div style={{ display: 'grid', gridTemplateColumns: '110px 1fr 1fr', gap: 10 }}>
+                    <input name="display_order" type="number" defaultValue={item.display_order} style={inputStyle} />
+                    <label style={{ display: 'flex', gap: 8, alignItems: 'center', color: '#F2F1ED', fontFamily: 'var(--font-display)', fontSize: 12 }}><input name="active" type="checkbox" defaultChecked={item.active} style={{ accentColor: '#7A1620' }} />Active</label>
+                    <label style={{ display: 'flex', gap: 8, alignItems: 'center', color: '#F2F1ED', fontFamily: 'var(--font-display)', fontSize: 12 }}><input name="featured" type="checkbox" defaultChecked={item.featured} style={{ accentColor: '#7A1620' }} />Avant</label>
+                  </div>
+                  <input name="video_file" type="file" accept="video/mp4,video/webm,video/ogg" style={inputStyle} />
+                  <input name="poster_file" type="file" accept="image/*" style={inputStyle} />
+                  <PendingSubmitButton idle="Enregistrer" pending="Enregistrement..." variant="secondary" size="sm" />
+                </form>
+              </div>
             </div>
           ))}
         </div>

@@ -1,5 +1,48 @@
 # Changelog Bagnon Street Collection
 
+## 2026-07-17 - Sprint 10.1 Correctifs hero, videos, galerie et produits
+
+- Developpements :
+  - Hero reconstruit autour du media admin : video prioritaire si configuree, sinon image hero, sinon fallback propre.
+  - Hauteur hero raccourcie et responsive, avec overlay reglable et cadrage configurable via les parametres.
+  - Ajout d'une citation de marque courte plus bas dans l'accueil, administrable lorsque la migration 010 est appliquee.
+  - Videos admin : upload fichier video ou URL directe, miniature devenue facultative, aide claire sur les liens compatibles.
+  - Galerie admin : import multiple jusqu'a 10 images, apercus, retrait avant envoi, import actif par defaut.
+  - Actions admin : boutons avec etats `Import en cours...`, `Enregistrement...`, `Suppression...`.
+  - Produit admin : apercus images avec fallback, avertissement si URL temporaire/invalide, invalidation cache renforcee apres creation/modification/duplication.
+- Bugs corriges :
+  - L'image hero etait affichee comme un bloc separe au lieu de remplir le hero.
+  - Le poster video etait obligatoire alors que le besoin est de pouvoir lire une video sans miniature separee.
+  - Les liens Instagram/TikTok/YouTube/Drive etaient traites comme des videos directes alors qu'ils ne sont pas lisibles par `<video>`.
+  - Le bouton supprimer galerie etait dans une structure de formulaires imbriques, ce qui pouvait empecher la soumission.
+  - Le fallback `BSC` d'une image pouvait rester visible apres changement d'URL.
+- Fichiers modifies :
+  - `src/components/HomeClient.tsx`
+  - `src/components/PublicMediaImage.tsx`
+  - `src/components/admin/media/GalleryCreateForm.tsx`
+  - `src/components/admin/forms/PendingSubmitButton.tsx`
+  - `src/app/admin/galerie/page.tsx`
+  - `src/app/admin/videos/page.tsx`
+  - `src/app/admin/parametres/page.tsx`
+  - `src/app/admin/produits/page.tsx`
+  - `src/app/admin/produits/[id]/modifier/page.tsx`
+  - `src/app/page.tsx`
+  - `src/lib/actions/media.ts`
+  - `src/lib/actions/settings.ts`
+  - `src/lib/actions/products.ts`
+  - `src/types/database.ts`
+  - `supabase/migrations/010_hero_media_and_optional_video_posters.sql`
+  - `ROADMAP.md`
+  - `CHANGELOG.md`
+- Validations effectuees :
+  - TypeScript local : OK.
+  - ESLint local : OK.
+  - Build production local : OK.
+  - Audit npm production : 0 vulnerabilite.
+- Points restant a traiter :
+  - Publier sur `main`, attendre Vercel READY et verifier les logs runtime.
+  - Appliquer `010_hero_media_and_optional_video_posters.sql` dans Supabase Production apres publication.
+
 ## 2026-07-17 - Sprint 10 Accueil premium, galerie et videos administrables
 
 - Developpements :

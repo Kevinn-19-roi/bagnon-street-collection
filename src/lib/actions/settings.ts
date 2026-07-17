@@ -30,6 +30,12 @@ export async function updateSettings(formData: FormData): Promise<void> {
   const hero_description = formData.get('hero_description') as string
   const hero_button_text = formData.get('hero_button_text') as string
   const hero_button_link = formData.get('hero_button_link') as string
+  const hero_video_url_input = String(formData.get('hero_video_url') || '').trim()
+  const hero_media_type = String(formData.get('hero_media_type') || 'image') === 'video' ? 'video' : 'image'
+  const hero_media_position = String(formData.get('hero_media_position') || 'center').trim() || 'center'
+  const hero_overlay_opacity = Math.min(0.75, Math.max(0.15, Number(formData.get('hero_overlay_opacity') || 0.42)))
+  const brand_quote = formData.get('brand_quote') as string
+  const brand_quote_author = formData.get('brand_quote_author') as string
 
   // Handle logo upload
   let logo_url: string | undefined
@@ -69,6 +75,18 @@ export async function updateSettings(formData: FormData): Promise<void> {
     }
   }
 
+  let hero_video_url: string | undefined
+  const heroVideoFile = formData.get('hero_video') as File
+  if (supportsHeroSettings && heroVideoFile && heroVideoFile.size > 0) {
+    const ext = heroVideoFile.name.split('.').pop()
+    const path = `hero/home-hero-video-${Date.now()}.${ext}`
+    const { data: upload } = await supabase.storage.from('banners').upload(path, heroVideoFile, { upsert: true })
+    if (upload) {
+      const { data: { publicUrl } } = supabase.storage.from('banners').getPublicUrl(upload.path)
+      hero_video_url = publicUrl
+    }
+  }
+
   const updateData: Record<string, unknown> = {
     whatsapp, facebook, instagram, tiktok,
     address, email, phone,
@@ -83,6 +101,12 @@ export async function updateSettings(formData: FormData): Promise<void> {
     updateData.hero_description = hero_description
     updateData.hero_button_text = hero_button_text
     updateData.hero_button_link = hero_button_link
+    if ('hero_media_type' in existing) updateData.hero_media_type = hero_media_type
+    if ('hero_media_position' in existing) updateData.hero_media_position = hero_media_position
+    if ('hero_overlay_opacity' in existing) updateData.hero_overlay_opacity = hero_overlay_opacity
+    if ('hero_video_url' in existing) updateData.hero_video_url = hero_video_url || hero_video_url_input || null
+    if ('brand_quote' in existing) updateData.brand_quote = brand_quote
+    if ('brand_quote_author' in existing) updateData.brand_quote_author = brand_quote_author
   }
 
   if (logo_url) updateData.logo_url = logo_url

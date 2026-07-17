@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import type { CSSProperties } from 'react'
 import Image from 'next/image'
 
@@ -40,6 +40,10 @@ export default function PublicMediaImage({
 }: Props) {
   const [failed, setFailed] = useState(false)
   const valid = isProbablyImageUrl(src)
+
+  useEffect(() => {
+    setFailed(false)
+  }, [src])
 
   if (!valid || failed) {
     return (

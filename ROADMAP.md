@@ -21,6 +21,7 @@ Ce document sert de point de reprise entre les sprints. Il doit rester synchroni
 - Termine - Correctif admin commandes - suppression totale et filtres rapides
 - Reporte - Orange Money
 - Termine - Sprint 10 - Accueil premium, galerie et videos administrables
+- En cours - Sprint 10.1 - Correctifs hero, videos, galerie et produits
 - En attente - Sprint 11 - Mise en production finale
 
 ## Sprint 1 - Stabilisation
@@ -207,3 +208,14 @@ Ce document sert de point de reprise entre les sprints. Il doit rester synchroni
 - Produit admin : validation plus claire, limite d'upload adaptee, generation locale de description sans API externe.
 - Migration : `009_gallery_video_items.sql` est non destructive et doit etre appliquee manuellement dans Supabase Production avant d'utiliser les pages `/admin/galerie` et `/admin/videos`.
 - Prochaines etapes : appliquer la migration 009 en production, puis tester l'ajout de medias avec une session admin.
+
+## Sprint 10.1 - Correctifs hero, videos, galerie et produits
+
+- Objectif : corriger les observations production du Sprint 10 sans refonte globale.
+- Etat : en cours de validation.
+- Date : 2026-07-17.
+- Fichiers principaux concernes : `src/components/HomeClient.tsx`, `src/app/admin/galerie/page.tsx`, `src/app/admin/videos/page.tsx`, `src/app/admin/parametres/page.tsx`, `src/lib/actions/media.ts`, `src/lib/actions/settings.ts`, `src/lib/actions/products.ts`, `src/components/admin/media/GalleryCreateForm.tsx`, `supabase/migrations/010_hero_media_and_optional_video_posters.sql`.
+- Corrections realisees : hero image/video integre au bloc principal, hauteur raccourcie, poster video facultatif, validation des liens video directs, import galerie multiple jusqu'a 10 images, suppression galerie hors formulaire imbrique, boutons avec etat de chargement, fallback image produit remis a zero quand l'URL change.
+- Produit admin : invalidation renforcee de l'accueil, recherche, categories, collections et fiche produit apres creation/modification/duplication ; message admin explicite si un produit actif/vedette/nouveau ne s'affiche pas pour cause de stock, image ou limite d'affichage.
+- Migration : `010_hero_media_and_optional_video_posters.sql` est non destructive ; elle ajoute les reglages hero video/cadrage/citation et rend `video_items.poster_url` nullable.
+- Prochaines etapes : appliquer la migration 010 dans Supabase Production apres publication, puis tester les uploads reels video/galerie avec une session admin.

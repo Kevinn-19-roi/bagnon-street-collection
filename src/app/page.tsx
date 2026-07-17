@@ -86,7 +86,7 @@ const getSiteSettings = unstable_cache(async () => {
     const adminClient = createAdminClient()
     const { data } = await adminClient
       .from('site_settings')
-      .select('whatsapp, facebook, instagram, tiktok, address, email, phone, hero_image_url, hero_eyebrow, hero_title, hero_title_accent, hero_description, hero_button_text, hero_button_link')
+      .select('*')
       .limit(1)
       .maybeSingle()
 

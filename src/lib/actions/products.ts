@@ -16,6 +16,9 @@ export type ProductActionResult = {
 function refreshProductCaches(path?: string) {
   revalidatePath('/admin/produits')
   revalidatePath('/')
+  revalidatePath('/recherche')
+  revalidatePath('/categorie/[slug]', 'page')
+  revalidatePath('/collection/[slug]', 'page')
   revalidateTag('home-products')
   revalidateTag('site-products')
   if (path) revalidatePath(path)
@@ -267,7 +270,7 @@ export async function createProduct(formData: FormData): Promise<ProductActionRe
     }
   }
 
-  refreshProductCaches()
+  refreshProductCaches(`/produit/${slug}`)
 
   return {
     success: true,
@@ -378,7 +381,8 @@ export async function updateProduct(id: string, formData: FormData): Promise<Pro
     }
   }
 
-  refreshProductCaches(`/admin/produits/${id}/modifier`)
+  refreshProductCaches(`/produit/${slug}`)
+  revalidatePath(`/admin/produits/${id}/modifier`)
 
   return {
     success: true,

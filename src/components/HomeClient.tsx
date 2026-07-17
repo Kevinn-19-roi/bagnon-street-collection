@@ -54,6 +54,12 @@ type PublicSiteSettings = Pick<
   | 'hero_description'
   | 'hero_button_text'
   | 'hero_button_link'
+  | 'hero_video_url'
+  | 'hero_media_type'
+  | 'hero_media_position'
+  | 'hero_overlay_opacity'
+  | 'brand_quote'
+  | 'brand_quote_author'
 >
 
 type MarqueeItem = { label: string; href: string }
@@ -82,6 +88,14 @@ function categoryHref(id: string) {
 function displayCategoryLabel(label: string) {
   if (label.toLowerCase() === 'hoodies') return 'Sweats'
   return label
+}
+
+function mediaPosition(value?: string | null) {
+  if (value === 'top') return 'center top'
+  if (value === 'bottom') return 'center bottom'
+  if (value === 'left') return 'left center'
+  if (value === 'right') return 'right center'
+  return 'center center'
 }
 
 function ProductCard({ product }: { product: Product }) {
@@ -327,10 +341,73 @@ function VideoSection({ videos }: { videos: VideoItem[] }) {
             <article key={video.id} style={{ flex: '0 0 clamp(220px, 72vw, 320px)', scrollSnapAlign: 'center', borderRadius: 12, overflow: 'hidden', background: 'var(--card)', border: '1px solid var(--border)', transform: index === 1 ? 'scale(1.02)' : undefined }}>
               <div style={{ position: 'relative', aspectRatio: '9/13', background: 'var(--bg3)' }}>
                 {playing ? (
-                  <video src={video.video_url} controls autoPlay muted playsInline preload="metadata" poster={video.poster_url} style={{ width: '100%', height: '100%', objectFit: 'cover' }} onPlay={() => setActiveId(video.id)} />
+                  <video src={video.video_url} controls autoPlay muted playsInline preload="metadata" poster={video.poster_url || undefined} style={{ width: '100%', height: '100%', objectFit: 'cover' }} onPlay={() => setActiveId(video.id)} />
                 ) : (
                   <button onClick={() => setActiveId(video.id)} aria-label={`Lire ${video.title || 'la vidéo'}`} style={{ position: 'absolute', inset: 0 }}>
                     <PublicMediaImage src={video.poster_url} alt={video.title || 'Bagnon Street en mouvement'} fill style={{ objectFit: 'cover' }} sizes="320px" />
+                    <span style={{ position: 'absolute', inset: 0, display: 'grid', placeItems: 'center', background: 'linear-gradient(to top, rgba(0,0,0,.45), transparent)' }}>
+                      <span style={{ width: 54, height: 54, borderRadius: '50%', background: 'rgba(255,255,255,.9)', color: '#0A0A0C', display: 'grid', placeItems: 'center' }}>{I.play}</span>
+                    </span>
+                  </button>
+                )}
+              </div>
+              {(video.title || video.caption) && (
+                <div style={{ padding: 12 }}>
+                  {video.title && <h3 style={{ fontFamily: 'var(--font-display)', fontSize: 13, fontWeight: 800 }}>{video.title}</h3>}
+                  {video.caption && <p style={{ fontSize: 11, color: 'var(--text2)', marginTop: 4 }}>{video.caption}</p>}
+                </div>
+              )}
+            </article>
+          )
+        })}
+      </div>
+    </section>
+  )
+}
+
+function VideoSectionSafe({ videos }: { videos: VideoItem[] }) {
+  const [activeId, setActiveId] = useState<string | null>(null)
+  const [failedIds, setFailedIds] = useState(() => new Set<string>())
+  if (!videos.length) return null
+
+  return (
+    <section style={{ padding: `38px ${px}`, borderTop: '1px solid var(--border)' }}>
+      <div style={{ maxWidth: 1440, margin: '0 auto 18px' }}>
+        <p style={{ fontFamily: 'var(--font-display)', fontSize: 10, fontWeight: 800, letterSpacing: '.28em', textTransform: 'uppercase', color: 'var(--blue)', marginBottom: 6 }}>Videos</p>
+        <h2 style={{ fontFamily: 'var(--font-display)', fontSize: 'clamp(22px,5vw,36px)', lineHeight: 1 }}>Bagnon Street en mouvement</h2>
+      </div>
+      <div className="no-scrollbar" style={{ maxWidth: 1440, margin: '0 auto', display: 'flex', gap: 14, overflowX: 'auto', scrollSnapType: 'x mandatory', paddingBottom: 8 }}>
+        {videos.slice(0, 6).map((video, index) => {
+          const playing = activeId === video.id
+          return (
+            <article key={video.id} style={{ flex: '0 0 clamp(220px, 72vw, 320px)', scrollSnapAlign: 'center', borderRadius: 12, overflow: 'hidden', background: 'var(--card)', border: '1px solid var(--border)', transform: index === 1 ? 'scale(1.02)' : undefined }}>
+              <div style={{ position: 'relative', aspectRatio: '9/13', background: 'var(--bg3)' }}>
+                {playing ? (
+                  failedIds.has(video.id) ? (
+                    <div role="alert" style={{ position: 'absolute', inset: 0, display: 'grid', placeItems: 'center', padding: 18, textAlign: 'center', color: 'var(--text2)', fontFamily: 'var(--font-display)', fontSize: 12 }}>
+                      Video indisponible. Verifie le lien dans l'administration.
+                    </div>
+                  ) : (
+                    <video
+                      src={video.video_url}
+                      controls
+                      autoPlay
+                      muted
+                      playsInline
+                      preload="metadata"
+                      poster={video.poster_url || undefined}
+                      style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                      onPlay={() => setActiveId(video.id)}
+                      onError={() => setFailedIds(current => new Set(current).add(video.id))}
+                    />
+                  )
+                ) : (
+                  <button onClick={() => setActiveId(video.id)} aria-label={`Lire ${video.title || 'la video'}`} style={{ position: 'absolute', inset: 0 }}>
+                    {video.poster_url ? (
+                      <PublicMediaImage src={video.poster_url} alt={video.title || 'Bagnon Street en mouvement'} fill style={{ objectFit: 'cover' }} sizes="320px" />
+                    ) : (
+                      <span style={{ position: 'absolute', inset: 0, background: 'linear-gradient(145deg, var(--bg3), var(--card))' }} />
+                    )}
                     <span style={{ position: 'absolute', inset: 0, display: 'grid', placeItems: 'center', background: 'linear-gradient(to top, rgba(0,0,0,.45), transparent)' }}>
                       <span style={{ width: 54, height: 54, borderRadius: '50%', background: 'rgba(255,255,255,.9)', color: '#0A0A0C', display: 'grid', placeItems: 'center' }}>{I.play}</span>
                     </span>
@@ -393,6 +470,11 @@ export default function HomeClient({ featured, newItems, bestsellers, allProduct
   const heroDescription = siteSettings?.hero_description?.trim() || 'La nouvelle collection Bagnon Street est disponible.'
   const heroButtonText = siteSettings?.hero_button_text?.trim() || 'Découvrir'
   const heroButtonLink = siteSettings?.hero_button_link?.trim() || '#collection'
+  const heroVideo = siteSettings?.hero_media_type === 'video' ? siteSettings?.hero_video_url?.trim() : ''
+  const heroObjectPosition = mediaPosition(siteSettings?.hero_media_position)
+  const heroOverlay = Math.min(.75, Math.max(.15, Number(siteSettings?.hero_overlay_opacity || .42)))
+  const brandQuote = siteSettings?.brand_quote?.trim() || 'On ne suit pas les tendances.\nOn construit notre propre langage.\n\nBagnon Street est une declaration,\npas simplement un vetement.'
+  const brandQuoteAuthor = siteSettings?.brand_quote_author?.trim() || 'Bagnon Street Collection'
   const railNew = newItems.length ? newItems : allProducts.slice(0, 6)
   const railFeatured = featured.length ? featured : bestsellers.length ? bestsellers : allProducts.slice(6, 12)
 
@@ -464,24 +546,38 @@ export default function HomeClient({ featured, newItems, bestsellers, allProduct
 
       <Marquee items={finalMarquee} />
 
-      <section className="hero-grid" style={{ display: 'grid', background: 'var(--bg2)', borderBottom: '1px solid var(--border)' }}>
-        <div style={{ padding: `clamp(32px,7vw,76px) ${px}`, display: 'flex', flexDirection: 'column', justifyContent: 'center', minHeight: 'min(620px, 72vh)' }}>
-          {siteSettings?.hero_eyebrow?.trim() && <p style={{ fontFamily: 'var(--font-display)', fontSize: 10, fontWeight: 800, letterSpacing: '.28em', textTransform: 'uppercase', color: 'var(--red)', marginBottom: 12 }}>{siteSettings.hero_eyebrow}</p>}
-          <h1 style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: 'clamp(38px,8vw,82px)', letterSpacing: '-.04em', lineHeight: .95, maxWidth: 640 }}>
-            {heroTitle}{heroTitleAccent && <><br /><em style={{ color: 'var(--blue)', fontStyle: 'italic', fontWeight: 500 }}>{heroTitleAccent}</em></>}
+      <section style={{ position: 'relative', minHeight: 'clamp(390px,62vh,660px)', display: 'flex', alignItems: 'center', overflow: 'hidden', borderBottom: '1px solid var(--border)', background: 'var(--bg3)' }}>
+        {heroVideo ? (
+          <video src={heroVideo} autoPlay muted loop playsInline preload="metadata" poster={heroImage} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', objectPosition: heroObjectPosition }} />
+        ) : (
+          <PublicMediaImage src={heroImage} alt="Bagnon Street Collection" fill priority style={{ objectFit: 'cover', objectPosition: heroObjectPosition }} sizes="100vw" />
+        )}
+        <div aria-hidden="true" style={{ position: 'absolute', inset: 0, background: `linear-gradient(90deg, rgba(0,0,0,${heroOverlay + .18}) 0%, rgba(0,0,0,${heroOverlay}) 48%, rgba(0,0,0,${Math.max(.12, heroOverlay - .18)}) 100%)` }} />
+        <div style={{ position: 'relative', zIndex: 1, padding: `clamp(42px,7vw,78px) ${px}`, width: '100%', maxWidth: 1440, margin: '0 auto', color: '#fff' }}>
+          {siteSettings?.hero_eyebrow?.trim() && <p style={{ fontFamily: 'var(--font-display)', fontSize: 10, fontWeight: 800, letterSpacing: '.28em', textTransform: 'uppercase', color: '#fff', opacity: .78, marginBottom: 12 }}>{siteSettings.hero_eyebrow}</p>}
+          <h1 style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: 'clamp(38px,8vw,84px)', letterSpacing: '-.04em', lineHeight: .95, maxWidth: 680, textShadow: '0 10px 34px rgba(0,0,0,.32)' }}>
+            {heroTitle}{heroTitleAccent && <><br /><em style={{ color: '#F2F1ED', fontStyle: 'italic', fontWeight: 500 }}>{heroTitleAccent}</em></>}
           </h1>
-          <p style={{ fontSize: 'clamp(13px,2vw,15px)', lineHeight: 1.75, color: 'var(--text2)', maxWidth: 390, margin: '18px 0 24px' }}>{heroDescription}</p>
-          <Link href={heroButtonLink} style={{ display: 'inline-flex', alignItems: 'center', gap: 9, background: 'var(--btn)', color: 'var(--btn-t)', borderRadius: 4, padding: '14px 24px', fontFamily: 'var(--font-display)', fontSize: 12, fontWeight: 800, letterSpacing: '.08em', textTransform: 'uppercase', width: 'fit-content' }}>{heroButtonText} {I.arrow}</Link>
-        </div>
-        <div style={{ minHeight: 'clamp(300px,58vw,640px)', position: 'relative', overflow: 'hidden' }}>
-          <PublicMediaImage src={heroImage} alt="Bagnon Street Collection" fill priority style={{ objectFit: 'cover' }} sizes="(max-width:768px) 100vw, 55vw" />
+          <p style={{ fontSize: 'clamp(13px,2vw,15px)', lineHeight: 1.7, color: 'rgba(255,255,255,.86)', maxWidth: 390, margin: '16px 0 22px' }}>{heroDescription}</p>
+          <Link href={heroButtonLink} style={{ display: 'inline-flex', alignItems: 'center', gap: 9, background: '#fff', color: '#0A0A0C', borderRadius: 4, padding: '13px 22px', fontFamily: 'var(--font-display)', fontSize: 12, fontWeight: 800, letterSpacing: '.08em', textTransform: 'uppercase', width: 'fit-content' }}>{heroButtonText} {I.arrow}</Link>
         </div>
       </section>
 
       <ProductRail id="nouveautes" eyebrow="Nouveautés" title="Nouveautés" products={railNew} href="/recherche?tag=nouveautes" />
       <ProductRail id="collection" eyebrow="Sélection" title="Produits tendance" products={railFeatured} href="/categorie/tshirts" />
-      <VideoSection videos={videoItems} />
+      <VideoSectionSafe videos={videoItems} />
       <GallerySection items={galleryItems} />
+
+      <section style={{ padding: `clamp(38px,6vw,70px) ${px}`, borderTop: '1px solid var(--border)', background: 'var(--bg2)' }}>
+        <figure style={{ maxWidth: 920, margin: '0 auto', textAlign: 'center' }}>
+          <blockquote style={{ fontFamily: 'var(--font-display)', fontSize: 'clamp(22px,5vw,44px)', lineHeight: 1.15, fontWeight: 700, letterSpacing: '-.02em', whiteSpace: 'pre-line' }}>
+            “{brandQuote}”
+          </blockquote>
+          <figcaption style={{ marginTop: 20, fontFamily: 'var(--font-display)', fontSize: 11, fontWeight: 800, letterSpacing: '.16em', textTransform: 'uppercase', color: 'var(--text2)' }}>
+            — {brandQuoteAuthor}
+          </figcaption>
+        </figure>
+      </section>
 
       <section style={{ padding: `34px ${px}`, borderTop: '1px solid var(--border)' }}>
         <div className="home-gallery-grid" style={{ maxWidth: 1440, margin: '0 auto', display: 'grid', gridTemplateColumns: 'repeat(4,minmax(0,1fr))', gap: 10 }}>

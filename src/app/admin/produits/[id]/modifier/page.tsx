@@ -7,8 +7,8 @@ import { getAllCategoriesAdmin, getCollections } from '@/lib/database/categories
 import { updateProduct, deleteProduct, deleteProductImage, duplicateProduct } from '@/lib/actions/products'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { notFound } from 'next/navigation'
-import Image from 'next/image'
-import Button from '@/components/admin/ui/Button'
+import PendingSubmitButton from '@/components/admin/forms/PendingSubmitButton'
+import PublicMediaImage from '@/components/PublicMediaImage'
 
 export const metadata = { title: 'Modifier produit — Admin BSC' }
 
@@ -20,6 +20,14 @@ async function getProductAdmin(id: string) {
     .eq('id', id)
     .single()
   return data
+}
+
+function hasTemporaryImageUrl(value?: string | null) {
+  if (!value) return true
+  return value.startsWith('blob:')
+    || value.startsWith('data:')
+    || value.startsWith('file:')
+    || value.includes('/storage/v1/object/sign/')
 }
 
 export default async function ModifierProduitPage({
@@ -52,14 +60,10 @@ export default async function ModifierProduitPage({
         action={
           <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
             <ConfirmSubmitForm action={duplicateWithId} message="Dupliquer ce produit ?">
-              <Button type="submit" variant="secondary" size="sm">
-                Dupliquer
-              </Button>
+              <PendingSubmitButton idle="Dupliquer" pending="Duplication..." variant="secondary" size="sm" />
             </ConfirmSubmitForm>
             <ConfirmSubmitForm action={deleteWithId} message="Supprimer ce produit ?">
-              <Button type="submit" variant="danger" size="sm">
-                Supprimer
-              </Button>
+              <PendingSubmitButton idle="Supprimer" pending="Suppression..." variant="danger" size="sm" />
             </ConfirmSubmitForm>
           </div>
         }
@@ -95,8 +99,13 @@ export default async function ModifierProduitPage({
               .map((img: any) => (
                 <div key={img.id} style={{ position: 'relative' }}>
                   <div style={{ width: 90, height: 110, position: 'relative', borderRadius: 4, overflow: 'hidden', border: '1px solid rgba(255,255,255,0.1)' }}>
-                    <Image src={img.image_url} alt="" fill style={{ objectFit: 'cover' }} sizes="90px" />
+                    <PublicMediaImage src={img.image_url} alt="Image produit" fill style={{ objectFit: 'cover' }} sizes="90px" />
                   </div>
+                  {hasTemporaryImageUrl(img.image_url) && (
+                    <p style={{ width: 90, color: '#F2B8BE', fontSize: 9, lineHeight: 1.3, marginTop: 5 }}>
+                      URL temporaire ou invalide. Supprime puis reimporte cette image.
+                    </p>
+                  )}
                   <form action={deleteProductImage.bind(null, img.id, id)}>
                     <button type="submit" style={{
                       position: 'absolute', top: 4, right: 4,

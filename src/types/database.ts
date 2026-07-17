@@ -175,6 +175,12 @@ export interface SiteSettings {
   hero_description: string | null
   hero_button_text: string | null
   hero_button_link: string | null
+  hero_video_url?: string | null
+  hero_media_type?: 'image' | 'video' | string | null
+  hero_media_position?: string | null
+  hero_overlay_opacity?: number | null
+  brand_quote?: string | null
+  brand_quote_author?: string | null
   updated_at: string
 }
 
@@ -193,7 +199,7 @@ export interface VideoItem {
   title: string | null
   caption: string | null
   video_url: string
-  poster_url: string
+  poster_url: string | null
   display_order: number
   active: boolean
   featured: boolean

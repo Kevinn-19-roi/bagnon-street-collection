@@ -7,7 +7,7 @@ import { getProducts } from '@/lib/database/products'
 import { deleteProduct, duplicateProduct } from '@/lib/actions/products'
 import { formatPrice, formatDate } from '@/lib/helpers/slugify'
 import Link from 'next/link'
-import Image from 'next/image'
+import PublicMediaImage from '@/components/PublicMediaImage'
 
 export const metadata = { title: 'Produits — Admin BSC' }
 export const dynamic = 'force-dynamic'
@@ -147,7 +147,7 @@ export default async function ProduitsPage({
                   <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                     <div style={{ width: 40, height: 50, background: '#0A0A0C', borderRadius: 3, flexShrink: 0, overflow: 'hidden', position: 'relative', border: '1px solid rgba(255,255,255,0.07)' }}>
                       {p.images && p.images[0] ? (
-                        <Image src={p.images[0].image_url} alt={p.name} fill style={{ objectFit: 'cover' }} sizes="40px" />
+                        <PublicMediaImage src={p.images[0].image_url} alt={p.name} fill style={{ objectFit: 'cover' }} sizes="40px" />
                       ) : (
                         <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 8, color: '#4D4D52', fontFamily: 'var(--font-display)' }}>BSC</div>
                       )}
