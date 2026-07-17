@@ -1,6 +1,4 @@
 /** @type {import('next').NextConfig} */
-const path = require('path')
-
 const securityHeaders = [
   { key: 'X-Content-Type-Options', value: 'nosniff' },
   { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
@@ -27,7 +25,6 @@ const securityHeaders = [
 
 const nextConfig = {
   poweredByHeader: false,
-  outputFileTracingRoot: path.join(__dirname),
   experimental: {
     serverActions: {
       bodySizeLimit: '25mb',
