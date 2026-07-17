@@ -43,10 +43,13 @@
   - ESLint local : OK.
   - Build production local : OK.
   - Audit npm production : 0 vulnerabilite.
+  - Publication GitHub `main` : OK, commit `00808fd`.
+  - Deploiement Vercel production : READY.
+  - Logs runtime Vercel recents : aucune erreur critique.
+  - Routes production verifiees sur le deploiement READY : `/`, `/categorie/tshirts`, `/recherche?q=sac`, `/admin/galerie`, `/admin/videos`, `/admin/produits/nouveau`.
 - Points restant a traiter :
   - Appliquer `supabase/migrations/009_gallery_video_items.sql` dans Supabase Production.
   - Tester l'ajout d'images/videos en production avec une vraie session admin apres migration.
-  - Verifier Vercel `READY` et les routes production apres publication.
 
 ## 2026-07-16 - Correctif admin commandes suppression totale et filtres rapides
 
