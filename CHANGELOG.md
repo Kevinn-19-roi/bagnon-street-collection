@@ -1,5 +1,35 @@
 # Changelog Bagnon Street Collection
 
+## 2026-07-18 - Sprint performance frontend/admin reel
+
+- Developpements :
+  - Accueil : suppression des tailles/couleurs de la requete initiale, car les cartes d'accueil ne les affichent pas.
+  - Accueil : preparation des deux rails produits cote serveur pour ne plus serialiser `allProducts` et `bestsellers` vers le client.
+  - Galerie : limite Supabase alignee sur les 8 images reellement rendues.
+  - Admin produits : nouvelle requete de liste minimale sans variantes ni colonnes inutiles.
+  - Admin videos : extraction de la generation canvas/poster dans un module charge dynamiquement uniquement pendant l'import.
+- Optimisations mesurees localement :
+  - Route `/` : route size build 10.7 kB -> 10.6 kB.
+  - Route `/admin/videos` : route size build 69.5 kB -> 69.0 kB.
+  - Requete accueil : moins de colonnes produit et moins de donnees serialisees dans le HTML.
+  - Requete admin produits : suppression du chargement des tailles/couleurs pour la liste.
+- Fichiers modifies :
+  - `src/app/page.tsx`
+  - `src/app/admin/produits/page.tsx`
+  - `src/components/admin/media/VideoCreateForm.tsx`
+  - `src/lib/database/media.ts`
+  - `src/lib/database/products.ts`
+  - `src/lib/media/client-video-poster.ts`
+  - `ROADMAP.md`
+  - `CHANGELOG.md`
+- Validations effectuees :
+  - TypeScript local : OK.
+  - ESLint local : OK.
+  - Build production local : OK.
+  - Audit production npm : OK, 0 vulnerabilite.
+- Mesures production :
+  - A completer apres deploiement Vercel.
+
 ## 2026-07-18 - Sprint performance et correctifs produits
 
 - Developpements :

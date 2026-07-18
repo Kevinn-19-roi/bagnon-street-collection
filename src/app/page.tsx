@@ -11,10 +11,10 @@ const getHomeProducts = unstable_cache(async () => {
 
   const { data } = await adminClient
     .from('products')
-    .select('*, images:product_images(image_url, display_order), category:categories(name, slug), sizes:product_sizes(size, stock), colors:product_colors(color_name, color_hex, stock)')
+    .select('id, slug, name, description, short_description, price, old_price, stock, featured, new_arrival, on_sale, active, category_id, images:product_images(image_url, display_order), category:categories(name, slug)')
     .eq('active', true)
     .order('created_at', { ascending: false })
-    .limit(24)
+    .limit(18)
 
   function normalize(products: any[]) {
     return (products || []).map(p => ({
@@ -29,12 +29,13 @@ const getHomeProducts = unstable_cache(async () => {
   }
 
   const products = normalize(data || [])
+  const featured = products.filter(p => p.featured).slice(0, 6)
+  const newItems = products.filter(p => p.new_arrival).slice(0, 6)
+  const bestsellers = products.filter(p => p.on_sale).slice(0, 6)
 
   return {
-    featured: products.filter(p => p.featured).slice(0, 6),
-    newItems: products.filter(p => p.new_arrival).slice(0, 6),
-    bestsellers: products.filter(p => p.on_sale).slice(0, 6),
-    allProducts: products.slice(0, 20),
+    featured: featured.length ? featured : bestsellers.length ? bestsellers : products.slice(6, 12),
+    newItems: newItems.length ? newItems : products.slice(0, 6),
   }
 }, ['home-products'], { revalidate: 300, tags: ['home-products', 'site-products'] })
 
@@ -138,8 +139,6 @@ export default async function HomePage() {
     <HomeClient
       featured={products.featured}
       newItems={products.newItems}
-      bestsellers={products.bestsellers}
-      allProducts={products.allProducts}
       currentUser={currentUser}
       siteSettings={siteSettings}
       galleryItems={galleryItems}

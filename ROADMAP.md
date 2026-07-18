@@ -27,6 +27,7 @@ Ce document sert de point de reprise entre les sprints. Il doit rester synchroni
 - En attente migration - Correctif 10.4 - poster video nullable en production
 - En validation - Correctif videos - generation automatique des miniatures
 - En validation - Sprint performance & correctifs produits
+- En validation - Sprint performance frontend/admin reel
 - En attente - Sprint 11 - Mise en production finale
 
 ## Sprint 1 - Stabilisation
@@ -275,3 +276,13 @@ Ce document sert de point de reprise entre les sprints. Il doit rester synchroni
 - Corrections realisees : URLs produit centralisees et normalisees, anciens slugs toleres avec redirection vers l'URL propre, anciens chemins encodes nettoyes dans le middleware, sitemap sur `bagnon-street.com`, lien panier remplace par icone accessible.
 - Optimisations : fiche produit servie avec cache court de 5 minutes via requetes serveur admin sans dependance aux cookies, produits similaires et parametres livraison caches.
 - Prochaines etapes : auditer les URLs produit de production apres deploiement et verifier Vercel READY.
+
+## Sprint performance frontend/admin reel
+
+- Objectif : reduire les donnees chargees et serialisees par l'accueil, alleger les requetes admin et separer le code lourd de generation video.
+- Etat : en validation.
+- Date : 2026-07-18.
+- Fichiers principaux concernes : `src/app/page.tsx`, `src/lib/database/products.ts`, `src/lib/database/media.ts`, `src/app/admin/produits/page.tsx`, `src/components/admin/media/VideoCreateForm.tsx`, `src/lib/media/client-video-poster.ts`.
+- Optimisations realisees : accueil sans tailles/couleurs inutiles, rails produits prepares cote serveur, galerie limitee aux 8 images rendues, liste admin produits avec requete minimale, capture canvas video chargee uniquement au moment de l'import.
+- Mesures locales : `/admin/videos` passe de 69.5 kB a 69.0 kB route size ; `/` passe de 10.7 kB a 10.6 kB route size. Les mesures HTTP production sont a reprendre apres deploiement.
+- Prochaines etapes : verifier Vercel READY, mesurer poids HTML accueil et temps HTTP apres deploiement.

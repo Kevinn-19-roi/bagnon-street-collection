@@ -455,8 +455,6 @@ function GallerySection({ items }: { items: GalleryItem[] }) {
 interface Props {
   featured: Product[]
   newItems: Product[]
-  bestsellers: Product[]
-  allProducts: Product[]
   currentUser?: CurrentUser | null
   siteSettings?: PublicSiteSettings | null
   galleryItems?: GalleryItem[]
@@ -464,7 +462,7 @@ interface Props {
   marqueeItems?: MarqueeItem[]
 }
 
-export default function HomeClient({ featured, newItems, bestsellers, allProducts, currentUser, siteSettings, galleryItems = [], videoItems = [], marqueeItems = [] }: Props) {
+export default function HomeClient({ featured, newItems, currentUser, siteSettings, galleryItems = [], videoItems = [], marqueeItems = [] }: Props) {
   const [menuOpen, setMenuOpen] = useState(false)
   const cartCount = useCart(s => s.count)
   const { favorites } = useFavorites()
@@ -481,8 +479,6 @@ export default function HomeClient({ featured, newItems, bestsellers, allProduct
   const heroOverlay = Math.min(.75, Math.max(.15, Number(siteSettings?.hero_overlay_opacity || .42)))
   const brandQuote = siteSettings?.brand_quote?.trim() || 'On ne suit pas les tendances.\nOn construit notre propre langage.\n\nBagnon Street est une declaration,\npas un vetement.'
   const brandQuoteAuthor = siteSettings?.brand_quote_author?.trim() || 'BAGNON STREET COLLECTION, ABIDJAN'
-  const railNew = newItems.length ? newItems : allProducts.slice(0, 6)
-  const railFeatured = featured.length ? featured : bestsellers.length ? bestsellers : allProducts.slice(6, 12)
 
   const finalMarquee = useMemo(() => {
     const fallback = [
@@ -569,8 +565,8 @@ export default function HomeClient({ featured, newItems, bestsellers, allProduct
         </div>
       </section>
 
-      <ProductRail id="nouveautes" eyebrow="Nouveautés" title="Nouveautés" products={railNew} href="/recherche?tag=nouveautes" />
-      <ProductRail id="collection" eyebrow="Sélection" title="Produits tendance" products={railFeatured} href="/categorie/tshirts" />
+      <ProductRail id="nouveautes" eyebrow="Nouveautés" title="Nouveautés" products={newItems} href="/recherche?tag=nouveautes" />
+      <ProductRail id="collection" eyebrow="Sélection" title="Produits tendance" products={featured} href="/categorie/tshirts" />
       <VideoSectionSafe videos={videoItems} />
       <GallerySection items={galleryItems} />
 

@@ -12,7 +12,7 @@ export const getActiveGalleryItems = unstable_cache(async (): Promise<GalleryIte
       .eq('active', true)
       .order('display_order', { ascending: true })
       .order('created_at', { ascending: false })
-      .limit(12)
+      .limit(8)
 
     return (data || []) as GalleryItem[]
   } catch {

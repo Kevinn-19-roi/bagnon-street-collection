@@ -75,6 +75,80 @@ export async function getProducts(
   }
 }
 
+export async function getProductsAdminList(
+  filters: ProductFilters = {}
+): Promise<PaginatedResponse<Product>> {
+  const supabase = await createClient()
+
+  const {
+    active,
+    search,
+    page = 1,
+    per_page = 20,
+  } = filters
+
+  const searchTerm = search?.trim()
+  let query = supabase
+    .from('products')
+    .select(`
+      id,
+      name,
+      slug,
+      sku,
+      price,
+      old_price,
+      stock,
+      active,
+      featured,
+      new_arrival,
+      on_sale,
+      created_at,
+      category:categories(id, name, slug),
+      images:product_images(id, image_url, display_order)
+    `, { count: 'exact' })
+    .order('created_at', { ascending: false })
+    .range((page - 1) * per_page, page * per_page - 1)
+
+  if (active !== null) query = query.eq('active', active ?? true)
+  if (searchTerm) {
+    const safeTerm = searchTerm.replace(/[%,()]/g, ' ')
+    query = query.or(`name.ilike.%${safeTerm}%,sku.ilike.%${safeTerm}%,description.ilike.%${safeTerm}%`)
+  }
+
+  const { data, error, count } = await query
+  if (error) throw new Error(error.message)
+
+  const normalized = ((data || []) as Array<any>).map(item => ({
+    ...item,
+    description: null,
+    short_description: null,
+    category_id: item.category?.id || '',
+    collection_id: null,
+    weight: null,
+    material: null,
+    care_instructions: null,
+    updated_at: item.created_at,
+    category: Array.isArray(item.category) ? item.category[0] : item.category,
+    images: (item.images || []).map((image: any) => ({
+      id: image.id,
+      product_id: item.id,
+      image_url: image.image_url,
+      display_order: image.display_order,
+      created_at: item.created_at,
+    })),
+    sizes: [],
+    colors: [],
+  })) as Product[]
+
+  return {
+    data: normalized,
+    total: count || 0,
+    page,
+    per_page,
+    total_pages: Math.ceil((count || 0) / per_page),
+  }
+}
+
 // ─── GET SINGLE PRODUCT ──────────────────────────────────────
 
 export async function getProductBySlug(slug: string): Promise<Product | null> {

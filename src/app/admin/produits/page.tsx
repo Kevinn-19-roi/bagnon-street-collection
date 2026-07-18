@@ -3,7 +3,7 @@ import PageHeader from '@/components/admin/ui/PageHeader'
 import Badge from '@/components/admin/ui/Badge'
 import ResponsiveTable from '@/components/admin/ui/ResponsiveTable'
 import ConfirmSubmitForm from '@/components/admin/forms/ConfirmSubmitForm'
-import { getProducts } from '@/lib/database/products'
+import { getProductsAdminList } from '@/lib/database/products'
 import { deleteProduct, duplicateProduct } from '@/lib/actions/products'
 import { formatPrice, formatDate } from '@/lib/helpers/slugify'
 import Link from 'next/link'
@@ -33,7 +33,7 @@ export default async function ProduitsPage({
       ? 'Impossible de dupliquer le produit. Réessayez depuis la liste produits.'
       : null
 
-  const { data: products, total, total_pages } = await getProducts({
+  const { data: products, total, total_pages } = await getProductsAdminList({
     search: search || undefined,
     active: null,
     page,
