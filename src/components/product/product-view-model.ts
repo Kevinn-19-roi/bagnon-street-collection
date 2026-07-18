@@ -1,4 +1,5 @@
 import type { Product } from '@/types/database'
+import { canonicalProductSlug } from '@/lib/helpers/product-url'
 
 export type ProductDetailViewModel = {
   id: string
@@ -21,7 +22,7 @@ export type ProductDetailViewModel = {
 export function toProductDetailViewModel(product: Product): ProductDetailViewModel {
   return {
     id: product.id,
-    slug: product.slug,
+    slug: canonicalProductSlug(product),
     name: product.name,
     description: product.description || '',
     shortDescription: product.short_description || '',

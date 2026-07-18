@@ -1,12 +1,14 @@
 import type { MetadataRoute } from 'next'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { generateSlug } from '@/lib/helpers/slugify'
 
-const SITE_URL = 'https://bagnon-street-collection-ci.vercel.app'
+const SITE_URL = 'https://bagnon-street.com'
 
 export const revalidate = 3600
 
 type SitemapRecord = {
   slug: string
+  name?: string | null
   updated_at?: string | null
   created_at?: string | null
 }
@@ -30,7 +32,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     const [products, categories, collections] = await Promise.all([
       adminClient
         .from('products')
-        .select('slug, updated_at, created_at')
+        .select('slug, name, updated_at, created_at')
         .eq('active', true)
         .order('updated_at', { ascending: false }),
       adminClient
@@ -54,7 +56,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     }
 
     for (const product of (products.data || []) as SitemapRecord[]) {
-      routes.push(entry(`${SITE_URL}/produit/${product.slug}`, product.updated_at || product.created_at, 0.9))
+      const slug = generateSlug(product.slug || product.name || '')
+      if (slug) routes.push(entry(`${SITE_URL}/produit/${slug}`, product.updated_at || product.created_at, 0.9))
     }
   } catch {
     return routes

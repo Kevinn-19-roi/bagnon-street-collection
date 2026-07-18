@@ -1,9 +1,10 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
-import { notFound } from 'next/navigation'
+import { notFound, redirect } from 'next/navigation'
+import { unstable_cache } from 'next/cache'
 import { createAdminClient } from '@/lib/supabase/admin'
-import { getProductBySlug, getProducts } from '@/lib/database/products'
 import { formatPrice } from '@/lib/helpers/slugify'
+import { canonicalProductSlug } from '@/lib/helpers/product-url'
 import ProductMediaGallery from '@/components/product/ProductMediaGallery'
 import ProductPurchasePanel from '@/components/product/ProductPurchasePanel'
 import RelatedProductCard from '@/components/product/RelatedProductCard'
@@ -12,19 +13,60 @@ import FavoriteButton from '@/components/FavoriteButton'
 import CartHeaderLink from '@/components/cart/CartHeaderLink'
 import type { Product, SiteSettings } from '@/types/database'
 
-export const dynamic = 'force-dynamic'
+export const revalidate = 300
 
-const SITE_URL = 'https://bagnon-street-collection-ci.vercel.app'
+const SITE_URL = 'https://bagnon-street.com'
 
 type ProductPageProps = {
   params: Promise<{ slug: string }>
 }
 
-function isValidSlug(slug: string) {
-  return /^[a-z0-9-]{2,120}$/.test(slug)
+const PRODUCT_SELECT = `
+  *,
+  category:categories(id, name, slug),
+  collection:collections(id, name, slug),
+  images:product_images(id, image_url, display_order),
+  sizes:product_sizes(id, size, stock),
+  colors:product_colors(id, color_name, color_hex, stock)
+`
+
+type LoadedProduct = {
+  product: Product | null
+  canonicalSlug: string | null
 }
 
-async function getSiteSettings(): Promise<Pick<SiteSettings, 'shipping_cost' | 'free_shipping_from'> | null> {
+const getProductByStoredSlug = unstable_cache(async (storedSlug: string): Promise<Product | null> => {
+  if (!storedSlug.trim()) return null
+  const adminClient = createAdminClient()
+  const { data, error } = await adminClient
+    .from('products')
+    .select(PRODUCT_SELECT)
+    .eq('slug', storedSlug)
+    .eq('active', true)
+    .maybeSingle()
+
+  if (error) return null
+  return data as Product | null
+}, ['product-by-stored-slug'], { revalidate: 300, tags: ['site-products'] })
+
+const getProductSlugIndex = unstable_cache(async (): Promise<Array<{ slug: string; name: string | null }>> => {
+  const adminClient = createAdminClient()
+  const { data, error } = await adminClient
+    .from('products')
+    .select('slug, name')
+    .eq('active', true)
+    .limit(500)
+
+  if (error) return []
+  return (data || []) as Array<{ slug: string; name: string | null }>
+}, ['product-slug-index'], { revalidate: 300, tags: ['site-products'] })
+
+async function getStoredSlugFromCanonical(canonicalSlug: string) {
+  const index = await getProductSlugIndex()
+  return index.find(item => canonicalProductSlug(item) === canonicalSlug)?.slug || null
+}
+
+const getSiteSettings = unstable_cache(async (): Promise<Pick<SiteSettings, 'shipping_cost' | 'free_shipping_from'> | null> => {
   try {
     const adminClient = createAdminClient()
     const { data } = await adminClient
@@ -37,13 +79,14 @@ async function getSiteSettings(): Promise<Pick<SiteSettings, 'shipping_cost' | '
   } catch {
     return null
   }
-}
+}, ['product-site-settings'], { revalidate: 300, tags: ['site-settings'] })
 
-async function getSimilarProducts(product: Product) {
+const getSimilarProducts = unstable_cache(async (productId: string, collectionId?: string | null, categoryId?: string | null) => {
+  const adminClient = createAdminClient()
   const related: Product[] = []
-  const seen = new Set<string>([product.id])
+  const seen = new Set<string>([productId])
 
-  async function addProducts(products: Product[]) {
+  function addProducts(products: Product[]) {
     for (const item of products) {
       if (seen.has(item.id)) continue
       seen.add(item.id)
@@ -52,27 +95,51 @@ async function getSimilarProducts(product: Product) {
     }
   }
 
-  if (product.collection_id) {
-    const byCollection = await getProducts({ collection_id: product.collection_id, per_page: 5 })
-    await addProducts(byCollection.data)
+  async function loadBy(field: 'collection_id' | 'category_id', value: string, limit: number) {
+    const { data, error } = await adminClient
+      .from('products')
+      .select(PRODUCT_SELECT)
+      .eq('active', true)
+      .eq(field, value)
+      .order('created_at', { ascending: false })
+      .limit(limit)
+
+    if (error) return []
+    return (data || []) as Product[]
   }
 
-  if (related.length < 4 && product.category_id) {
-    const byCategory = await getProducts({ category_id: product.category_id, per_page: 8 })
-    await addProducts(byCategory.data)
+  if (collectionId) {
+    addProducts(await loadBy('collection_id', collectionId, 6))
+  }
+
+  if (related.length < 4 && categoryId) {
+    addProducts(await loadBy('category_id', categoryId, 8))
   }
 
   return related.slice(0, 4)
-}
+}, ['similar-products'], { revalidate: 300, tags: ['site-products'] })
 
-async function loadProduct(slug: string) {
-  if (!isValidSlug(slug)) return null
-  return getProductBySlug(slug)
+async function loadProduct(slug: string): Promise<LoadedProduct> {
+  const canonicalSlug = canonicalProductSlug({ slug })
+  if (!canonicalSlug) return { product: null, canonicalSlug: null }
+
+  const candidates = Array.from(new Set([slug.trim(), canonicalSlug].filter(Boolean)))
+
+  for (const candidate of candidates) {
+    const product = await getProductByStoredSlug(candidate)
+    if (product) return { product, canonicalSlug: canonicalProductSlug(product) }
+  }
+
+  const storedSlug = await getStoredSlugFromCanonical(canonicalSlug)
+  if (!storedSlug) return { product: null, canonicalSlug }
+
+  const product = await getProductByStoredSlug(storedSlug)
+  return { product, canonicalSlug: product ? canonicalProductSlug(product) : canonicalSlug }
 }
 
 export async function generateMetadata({ params }: ProductPageProps): Promise<Metadata> {
   const { slug } = await params
-  const product = await loadProduct(slug)
+  const { product, canonicalSlug } = await loadProduct(slug)
 
   if (!product) {
     return {
@@ -83,7 +150,7 @@ export async function generateMetadata({ params }: ProductPageProps): Promise<Me
 
   const viewModel = toProductDetailViewModel(product)
   const description = viewModel.shortDescription || viewModel.description || `${viewModel.name} chez Bagnon Street Collection.`
-  const url = `${SITE_URL}/produit/${viewModel.slug}`
+  const url = `${SITE_URL}/produit/${canonicalSlug || viewModel.slug}`
   const image = viewModel.images[0]
 
   return {
@@ -108,13 +175,14 @@ export async function generateMetadata({ params }: ProductPageProps): Promise<Me
 
 export default async function ProductPage({ params }: ProductPageProps) {
   const { slug } = await params
-  const product = await loadProduct(slug)
+  const { product, canonicalSlug } = await loadProduct(slug)
 
   if (!product) notFound()
+  if (canonicalSlug && slug !== canonicalSlug) redirect(`/produit/${canonicalSlug}`)
 
   const [settings, similarProducts] = await Promise.all([
     getSiteSettings(),
-    getSimilarProducts(product),
+    getSimilarProducts(product.id, product.collection_id, product.category_id),
   ])
 
   const viewModel = toProductDetailViewModel(product)

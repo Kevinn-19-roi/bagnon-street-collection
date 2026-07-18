@@ -2,6 +2,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import type { Product } from '@/types/database'
 import FavoriteButton from '@/components/FavoriteButton'
+import { productPath } from '@/lib/helpers/product-url'
 
 type RelatedProductCardProps = {
   product: Product
@@ -14,10 +15,11 @@ function firstImage(product: Product) {
 export default function RelatedProductCard({ product }: RelatedProductCardProps) {
   const image = firstImage(product)
   const discount = product.old_price ? Math.max(0, Math.round((1 - product.price / product.old_price) * 100)) : 0
+  const href = productPath(product)
 
   return (
     <Link
-      href={`/produit/${product.slug}`}
+      href={href}
       prefetch={false}
       style={{
         display: 'block',

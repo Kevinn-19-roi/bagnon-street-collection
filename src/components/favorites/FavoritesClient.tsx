@@ -4,6 +4,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import FavoriteButton from '@/components/FavoriteButton'
 import { useFavorites } from '@/hooks/useFavorites'
+import { productPath } from '@/lib/helpers/product-url'
 import type { Product } from '@/types/database'
 
 type FavoritesClientProps = {
@@ -55,11 +56,12 @@ export default function FavoritesClient({ products }: FavoritesClientProps) {
           {favoriteProducts.map(product => {
             const image = firstImage(product)
             const discount = product.old_price ? Math.max(0, Math.round((1 - product.price / product.old_price) * 100)) : 0
+            const href = productPath(product)
 
             return (
               <article key={product.id} style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: 6, overflow: 'hidden' }}>
                 <div style={{ position: 'relative', aspectRatio: '4 / 5', background: 'var(--bg3)' }}>
-                  <Link href={`/produit/${product.slug}`} prefetch={false} aria-label={`Voir ${product.name}`} style={{ position: 'absolute', inset: 0 }}>
+                  <Link href={href} prefetch={false} aria-label={`Voir ${product.name}`} style={{ position: 'absolute', inset: 0 }}>
                     {image ? (
                       <Image src={image} alt={product.name} fill sizes="(max-width:640px) 46vw, (max-width:1024px) 30vw, 260px" style={{ objectFit: 'cover' }} />
                     ) : (
@@ -74,7 +76,7 @@ export default function FavoritesClient({ products }: FavoritesClientProps) {
                   <FavoriteButton productId={product.id} size={18} style={{ position: 'absolute', top: 8, right: 8, zIndex: 2 }} />
                 </div>
                 <div style={{ padding: '12px 13px 14px' }}>
-                  <Link href={`/produit/${product.slug}`} prefetch={false}>
+                  <Link href={href} prefetch={false}>
                     <h2 style={{ fontFamily: 'var(--font-display)', fontSize: 14, fontWeight: 700, lineHeight: 1.35, marginBottom: 7 }}>{product.name}</h2>
                   </Link>
                   <div style={{ display: 'flex', alignItems: 'baseline', gap: 6 }}>

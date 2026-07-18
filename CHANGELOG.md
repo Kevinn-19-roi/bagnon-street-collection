@@ -1,5 +1,40 @@
 # Changelog Bagnon Street Collection
 
+## 2026-07-18 - Sprint performance et correctifs produits
+
+- Developpements :
+  - Ajout d'un helper centralise pour generer les URL produit publiques propres.
+  - Normalisation des slugs publics dans l'accueil, les produits similaires, le panier, les favoris et le sitemap.
+  - Fiche produit rendue tolerante aux anciens slugs avec espaces, doubles tirets ou tirets finaux.
+  - Redirection automatique vers l'URL produit canonique.
+  - Remplacement du lien texte `Panier` du header produit par une icone panier accessible avec badge.
+- Bugs corriges :
+  - Certains produits actifs pouvaient pointer vers une page 404 a cause de slugs en base contenant des espaces ou un tiret final.
+  - Le sitemap publiait des URL produit brutes et l'ancien domaine Vercel.
+- Optimisations :
+  - Cache serveur court pour les fiches produit, les slugs actifs, les produits similaires et les parametres livraison.
+  - Suppression de la dependance aux cookies Supabase pour charger les donnees publiques d'une fiche produit.
+- Fichiers modifies :
+  - `src/app/produit/[slug]/page.tsx`
+  - `src/app/sitemap.ts`
+  - `src/components/HomeClient.tsx`
+  - `src/components/cart/CartHeaderLink.tsx`
+  - `src/components/cart/CartPageClient.tsx`
+  - `src/components/favorites/FavoritesClient.tsx`
+  - `src/components/product/RelatedProductCard.tsx`
+  - `src/components/product/product-view-model.ts`
+  - `src/lib/helpers/product-url.ts`
+  - `src/lib/helpers/slugify.ts`
+  - `ROADMAP.md`
+  - `CHANGELOG.md`
+- Validations effectuees :
+  - TypeScript local : OK.
+  - ESLint local : OK.
+  - Build production local : OK.
+  - Audit production npm : OK, 0 vulnerabilite.
+- Points restant a traiter :
+  - Tester les routes produit de production apres deploiement Vercel.
+
 ## 2026-07-17 - Correctif videos miniature automatique
 
 - Developpements :

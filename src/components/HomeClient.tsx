@@ -10,6 +10,7 @@ import LogoutButton from '@/components/LogoutButton'
 import FavoriteButton from '@/components/FavoriteButton'
 import PublicMediaImage from '@/components/PublicMediaImage'
 import { isDirectVideoUrl } from '@/lib/media/video'
+import { productPath } from '@/lib/helpers/product-url'
 import type { GalleryItem, SiteSettings, VideoItem } from '@/types/database'
 
 const I = {
@@ -102,6 +103,7 @@ function mediaPosition(value?: string | null) {
 function ProductCard({ product }: { product: Product }) {
   const addItem = useCart(s => s.addItem)
   const [added, setAdded] = useState(false)
+  const href = productPath(product)
 
   function handleAdd(e: React.MouseEvent) {
     e.preventDefault()
@@ -115,7 +117,7 @@ function ProductCard({ product }: { product: Product }) {
   return (
     <article style={{ flex: '0 0 clamp(168px, 44vw, 230px)', scrollSnapAlign: 'start', background: 'var(--card)', border: '1px solid var(--border)', borderRadius: 8, overflow: 'hidden' }}>
       <div style={{ position: 'relative', aspectRatio: '4/5', overflow: 'hidden', background: 'var(--bg3)' }}>
-        <Link href={`/produit/${product.slug}`} prefetch={false} aria-label={`Voir ${product.name}`} style={{ position: 'absolute', inset: 0 }}>
+        <Link href={href} prefetch={false} aria-label={`Voir ${product.name}`} style={{ position: 'absolute', inset: 0 }}>
           <PublicMediaImage src={product.images[0]} alt={product.name} fill style={{ objectFit: 'cover' }} sizes="(max-width:640px) 44vw, 230px" />
         </Link>
         {product.isNew && <span style={{ position: 'absolute', top: 8, left: 8, background: 'var(--blue)', color: '#fff', fontFamily: 'var(--font-display)', fontSize: 10, fontWeight: 700, padding: '4px 8px', borderRadius: 3 }}>Nouveau</span>}
@@ -123,7 +125,7 @@ function ProductCard({ product }: { product: Product }) {
         <FavoriteButton productId={product.id} size={18} style={{ position: 'absolute', top: 6, right: 6, zIndex: 2 }} />
       </div>
       <div style={{ padding: '12px' }}>
-        <Link href={`/produit/${product.slug}`} prefetch={false}>
+        <Link href={href} prefetch={false}>
           <h3 style={{ fontFamily: 'var(--font-display)', fontSize: 14, fontWeight: 700, lineHeight: 1.3, marginBottom: 5 }}>{product.name}</h3>
         </Link>
         <p style={{ fontSize: 11, color: 'var(--text2)', lineHeight: 1.45, height: 32, overflow: 'hidden', marginBottom: 10 }}>{product.short_description || product.description}</p>

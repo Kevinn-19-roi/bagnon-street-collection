@@ -4,6 +4,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { useState } from 'react'
 import { useCart } from '@/hooks/useCart'
+import { productPath } from '@/lib/helpers/product-url'
 
 function formatPrice(value: number) {
   return `${value.toLocaleString('fr-FR')} FCFA`
@@ -79,6 +80,7 @@ export default function CartPageClient() {
           <div style={{ display: 'grid', gap: 12 }}>
             {items.map(item => {
               const image = firstImage(item.product.images)
+              const href = productPath(item.product)
               const maxStock = item.maxStock ?? item.product.stock
               const sizeOptions = item.product.sizes || []
               const colorOptions = item.product.colors || []
@@ -87,7 +89,7 @@ export default function CartPageClient() {
 
               return (
                 <article key={item.id} style={{ display: 'grid', gridTemplateColumns: '88px minmax(0,1fr)', gap: 14, background: 'var(--card)', border: '1px solid var(--border)', borderRadius: 6, padding: 12 }}>
-                  <Link href={`/produit/${item.product.slug}`} prefetch={false} style={{ position: 'relative', width: 88, height: 110, borderRadius: 4, overflow: 'hidden', background: 'var(--bg3)' }}>
+                  <Link href={href} prefetch={false} style={{ position: 'relative', width: 88, height: 110, borderRadius: 4, overflow: 'hidden', background: 'var(--bg3)' }}>
                     {image ? (
                       <Image src={image} alt={item.product.name} fill sizes="88px" style={{ objectFit: 'cover' }} />
                     ) : (
@@ -98,7 +100,7 @@ export default function CartPageClient() {
                   <div style={{ minWidth: 0, display: 'grid', gap: 9 }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12 }}>
                       <div style={{ minWidth: 0 }}>
-                        <Link href={`/produit/${item.product.slug}`} prefetch={false}>
+                        <Link href={href} prefetch={false}>
                           <h2 style={{ fontFamily: 'var(--font-display)', fontSize: 15, fontWeight: 700, lineHeight: 1.3, marginBottom: 4 }}>{item.product.name}</h2>
                         </Link>
                         {(item.size || item.color) && !needsSize && !needsColor && (

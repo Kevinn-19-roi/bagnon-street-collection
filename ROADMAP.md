@@ -26,6 +26,7 @@ Ce document sert de point de reprise entre les sprints. Il doit rester synchroni
 - Termine - Sprint 10.3 - Correctifs videos et frontend
 - En attente migration - Correctif 10.4 - poster video nullable en production
 - En validation - Correctif videos - generation automatique des miniatures
+- En validation - Sprint performance & correctifs produits
 - En attente - Sprint 11 - Mise en production finale
 
 ## Sprint 1 - Stabilisation
@@ -264,3 +265,13 @@ Ce document sert de point de reprise entre les sprints. Il doit rester synchroni
 - Correction : capture navigateur d'une frame vers 1 seconde, export JPEG compresse, upload dans `banners/videos/posters/`, puis enregistrement en `poster_url`.
 - Probleme gere : si Safari, le codec ou le navigateur bloque la capture, la video reste importable et l'admin voit un avertissement.
 - Prochaines etapes : tester en production avec MP4 H.264, import multiple, suppression video et verification du poster sur l'accueil.
+
+## Sprint performance & correctifs produits
+
+- Objectif : corriger les fiches produit en 404, nettoyer les slugs publics, accelerer l'ouverture des fiches produit et simplifier l'acces panier.
+- Etat : en validation.
+- Date : 2026-07-18.
+- Fichiers principaux concernes : `src/app/produit/[slug]/page.tsx`, `src/lib/helpers/product-url.ts`, `src/lib/helpers/slugify.ts`, cartes produit, panier, favoris, sitemap.
+- Corrections realisees : URLs produit centralisees et normalisees, anciens slugs toleres avec redirection vers l'URL propre, sitemap sur `bagnon-street.com`, lien panier remplace par icone accessible.
+- Optimisations : fiche produit servie avec cache court de 5 minutes via requetes serveur admin sans dependance aux cookies, produits similaires et parametres livraison caches.
+- Prochaines etapes : auditer les URLs produit de production apres deploiement et verifier Vercel READY.
