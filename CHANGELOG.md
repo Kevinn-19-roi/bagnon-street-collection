@@ -28,7 +28,17 @@
   - Build production local : OK.
   - Audit production npm : OK, 0 vulnerabilite.
 - Mesures production :
-  - A completer apres deploiement Vercel.
+  - Deploiement Vercel `dpl_FZYiuHuCcVvR5jJnCiFeV8FKGckw` : `READY`, commit `7479877`.
+  - HTML accueil : 158 743 -> 140 522 caracteres.
+  - Accueil : 1417 ms -> 1402 ms sur 3 requetes HTTP.
+  - Fiche produit test : 922 ms -> 653 ms.
+  - Recherche : 771 ms -> 1034 ms.
+  - Favoris : 637 ms -> 886 ms.
+  - Panier : 304 ms -> 317 ms.
+  - Admin videos, redirection login incluse : 712 ms -> 1074 ms.
+  - Admin produits, redirection login incluse : 670 ms -> 767 ms.
+  - Logs runtime Vercel erreurs/fatales : aucun log trouve sur le deploiement mesure.
+  - Lighthouse non execute dans cet environnement ; mesures utilisees : timings HTTP, poids HTML et tailles de routes Next.js.
 
 ## 2026-07-18 - Sprint performance et correctifs produits
 
