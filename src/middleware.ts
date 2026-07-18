@@ -1,10 +1,30 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServerClient, type CookieOptions } from '@supabase/ssr'
+import { generateSlug } from '@/lib/helpers/slugify'
 
 const ADMIN_LOGIN = '/admin/login'
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
+
+  if (pathname.startsWith('/produit/')) {
+    const rawSlug = pathname.slice('/produit/'.length)
+    let decodedSlug = rawSlug
+    try {
+      decodedSlug = decodeURIComponent(rawSlug)
+    } catch {
+      decodedSlug = rawSlug
+    }
+    const cleanSlug = generateSlug(decodedSlug)
+
+    if (cleanSlug && rawSlug !== cleanSlug) {
+      const url = request.nextUrl.clone()
+      url.pathname = `/produit/${cleanSlug}`
+      return NextResponse.redirect(url)
+    }
+
+    return NextResponse.next()
+  }
 
   if (!pathname.startsWith('/admin')) return NextResponse.next()
 
@@ -61,5 +81,5 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/admin/:path*'],
+  matcher: ['/admin/:path*', '/produit/:path*'],
 }

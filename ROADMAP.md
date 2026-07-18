@@ -271,7 +271,7 @@ Ce document sert de point de reprise entre les sprints. Il doit rester synchroni
 - Objectif : corriger les fiches produit en 404, nettoyer les slugs publics, accelerer l'ouverture des fiches produit et simplifier l'acces panier.
 - Etat : en validation.
 - Date : 2026-07-18.
-- Fichiers principaux concernes : `src/app/produit/[slug]/page.tsx`, `src/lib/helpers/product-url.ts`, `src/lib/helpers/slugify.ts`, cartes produit, panier, favoris, sitemap.
-- Corrections realisees : URLs produit centralisees et normalisees, anciens slugs toleres avec redirection vers l'URL propre, sitemap sur `bagnon-street.com`, lien panier remplace par icone accessible.
+- Fichiers principaux concernes : `src/app/produit/[slug]/page.tsx`, `src/middleware.ts`, `src/lib/helpers/product-url.ts`, `src/lib/helpers/slugify.ts`, cartes produit, panier, favoris, sitemap.
+- Corrections realisees : URLs produit centralisees et normalisees, anciens slugs toleres avec redirection vers l'URL propre, anciens chemins encodes nettoyes dans le middleware, sitemap sur `bagnon-street.com`, lien panier remplace par icone accessible.
 - Optimisations : fiche produit servie avec cache court de 5 minutes via requetes serveur admin sans dependance aux cookies, produits similaires et parametres livraison caches.
 - Prochaines etapes : auditer les URLs produit de production apres deploiement et verifier Vercel READY.

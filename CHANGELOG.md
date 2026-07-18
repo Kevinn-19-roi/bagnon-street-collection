@@ -6,6 +6,7 @@
   - Ajout d'un helper centralise pour generer les URL produit publiques propres.
   - Normalisation des slugs publics dans l'accueil, les produits similaires, le panier, les favoris et le sitemap.
   - Fiche produit rendue tolerante aux anciens slugs avec espaces, doubles tirets ou tirets finaux.
+  - Middleware produit ajoutant une redirection propre pour les anciens chemins encodes.
   - Redirection automatique vers l'URL produit canonique.
   - Remplacement du lien texte `Panier` du header produit par une icone panier accessible avec badge.
 - Bugs corriges :
@@ -17,6 +18,7 @@
 - Fichiers modifies :
   - `src/app/produit/[slug]/page.tsx`
   - `src/app/sitemap.ts`
+  - `src/middleware.ts`
   - `src/components/HomeClient.tsx`
   - `src/components/cart/CartHeaderLink.tsx`
   - `src/components/cart/CartPageClient.tsx`
