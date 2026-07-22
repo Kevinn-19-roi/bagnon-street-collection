@@ -625,8 +625,25 @@ export default function HomeClient({ featured, newItems, currentUser, siteSettin
             </div>
           ))}
         </div>
-        <div style={{ maxWidth: 1440, margin: '36px auto 0', borderTop: '1px solid var(--border)', paddingTop: 18, textAlign: 'center' }}>
+        <div style={{ maxWidth: 1440, margin: '36px auto 0', borderTop: '1px solid var(--border)', paddingTop: 18, display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'center', gap: '10px 14px', textAlign: 'center' }}>
           <span style={{ fontSize: 11, color: 'var(--text3)' }}>© 2026 Bagnon Street Collection. Tous droits réservés.</span>
+          <span aria-hidden="true" style={{ fontSize: 11, color: 'var(--text3)' }}>&bull;</span>
+          <span style={{ display: 'inline-flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'center', gap: 6, fontSize: 11, color: 'var(--text3)' }}>
+            <a
+              href="https://www.bloop-ci.com/"
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{ display: 'inline-flex', alignItems: 'center', gap: 6, color: 'var(--text2)', textDecoration: 'none' }}
+              aria-label="Powered by Bloop"
+            >
+              <span style={{ position: 'relative', display: 'inline-block', width: 24, height: 24, borderRadius: 6, overflow: 'hidden', background: '#fff' }}>
+                <Image src="/brand/bloop-logo.jpg" alt="Bloop" fill sizes="24px" style={{ objectFit: 'contain', padding: 2 }} />
+              </span>
+              <span>Powered by Bloop</span>
+            </a>
+            <span aria-hidden="true">&bull;</span>
+            <span>Créé par Kevin Yeo</span>
+          </span>
         </div>
       </footer>
 
