@@ -4,6 +4,7 @@ import { z } from 'zod'
 import { revalidatePath } from 'next/cache'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
+import { sendOrderCreatedEmailsSafe } from '@/lib/email/notifications'
 import type { PaymentMethod, Product } from '@/types/database'
 
 const checkoutItemSchema = z.object({
@@ -224,6 +225,7 @@ export async function createCheckoutOrder(payload: unknown): Promise<CreateOrder
 
     revalidatePath('/admin/commandes')
     revalidatePath(`/commande/${order.order_number}`)
+    await sendOrderCreatedEmailsSafe(order.id)
 
     return {
       success: true,

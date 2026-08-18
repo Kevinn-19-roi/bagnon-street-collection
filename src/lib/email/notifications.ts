@@ -76,7 +76,7 @@ export async function sendOrderCreatedEmailsSafe(orderIdOrNumber: string) {
       to: adminRecipient(settings),
       subject: `Nouvelle commande - #${order.order_number} - ${Number(order.total).toLocaleString('fr-FR')} FCFA`,
       html: adminNewOrderEmail(order, settings),
-      replyTo: order.customer?.email || settings?.email || null,
+      replyTo: settings?.email || null,
       idempotencyKey: `order-created-admin-${order.id}`,
     }),
   ])

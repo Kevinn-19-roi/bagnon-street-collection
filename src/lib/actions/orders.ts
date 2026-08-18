@@ -2,6 +2,10 @@
 
 import { createAdminClient } from '@/lib/supabase/admin'
 import { requireAdmin } from '@/lib/actions/auth'
+import {
+  sendOrderStatusEmailSafe,
+  sendPaymentConfirmedEmailSafe,
+} from '@/lib/email/notifications'
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { OrderStatus, PaymentStatus } from '@/types/database'
@@ -81,6 +85,7 @@ export async function confirmManualWavePayment(orderId: string, formData: FormDa
     redirect(`/admin/commandes/${orderId}?error=wave-confirm-failed`)
   }
 
+  await sendPaymentConfirmedEmailSafe(orderId)
   revalidateOrderPaths(orderId)
   redirect(`/admin/commandes/${orderId}?success=payment-confirmed`)
 }
@@ -112,6 +117,7 @@ export async function markOrderAsShipped(orderId: string): Promise<void> {
 
   if (error) redirect(`/admin/commandes/${orderId}?error=status-update-failed`)
 
+  await sendOrderStatusEmailSafe(orderId, 'shipped')
   revalidateOrderPaths(orderId)
   redirect(`/admin/commandes/${orderId}?success=shipped`)
 }
@@ -139,6 +145,7 @@ export async function markOrderAsDelivered(orderId: string): Promise<void> {
 
   if (error) redirect(`/admin/commandes/${orderId}?error=status-update-failed`)
 
+  await sendOrderStatusEmailSafe(orderId, 'delivered')
   revalidateOrderPaths(orderId)
   redirect(`/admin/commandes/${orderId}?success=delivered`)
 }
@@ -146,6 +153,17 @@ export async function markOrderAsDelivered(orderId: string): Promise<void> {
 export async function cancelOrder(orderId: string): Promise<void> {
   const admin = await requireAdmin()
   const adminClient = createAdminClient()
+
+  const { data: currentOrder } = await adminClient
+    .from('orders')
+    .select('id, order_status')
+    .eq('id', orderId)
+    .single()
+
+  if (currentOrder?.order_status === 'cancelled') {
+    revalidateOrderPaths(orderId)
+    redirect(`/admin/commandes/${orderId}?success=cancelled`)
+  }
 
   const { error } = await adminClient.rpc('cancel_order_with_stock_restore', {
     p_order_id: orderId,
@@ -164,6 +182,7 @@ export async function cancelOrder(orderId: string): Promise<void> {
     redirect(`/admin/commandes/${orderId}?error=cancel-failed`)
   }
 
+  await sendOrderStatusEmailSafe(orderId, 'cancelled')
   revalidateOrderPaths(orderId)
   redirect(`/admin/commandes/${orderId}?success=cancelled`)
 }

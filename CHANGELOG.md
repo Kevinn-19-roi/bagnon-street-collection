@@ -32,6 +32,39 @@
   - `src/app/collection/[slug]/page.tsx`
   - `EMAILS.md`
 
+## 2026-08-18 - Sprint final 2 Emails Resend et securite
+
+- Developpements :
+  - Activation des emails transactionnels Resend apres validation explicite du transfert minimal de donnees.
+  - Envoi de bienvenue apres inscription client.
+  - Envoi de confirmation commande au client apres creation reelle de commande.
+  - Envoi d'une notification admin minimalisee pour les nouvelles commandes.
+  - Envoi client apres confirmation paiement Wave, expedition, livraison et annulation.
+  - Protection idempotente par cle Resend sur les principaux evenements email.
+- Bugs corriges :
+  - Les templates etaient prets mais non relies aux actions metier.
+  - L'email admin contenait trop de donnees client pour une simple notification.
+  - `npm audit --omit=dev` remontait `sharp <0.35.0` via Next ; correction par override `sharp@0.35.3` sans montee majeure Next.
+- Fichiers modifies :
+  - `src/lib/actions/auth.ts`
+  - `src/lib/actions/checkout.ts`
+  - `src/lib/actions/orders.ts`
+  - `src/lib/email/notifications.ts`
+  - `src/lib/email/templates.ts`
+  - `.gitignore`
+  - `package.json`
+  - `ROADMAP.md`
+  - `CHANGELOG.md`
+- Validations effectuees :
+  - TypeScript local : OK.
+  - ESLint local : OK.
+  - Build production local : OK.
+  - `npm audit --omit=dev` : OK, 0 vulnerabilite.
+- Points restant a traiter :
+  - Ajouter `RESEND_API_KEY` dans Vercel Production : la variable est absente au moment de cette verification.
+  - Configurer Supabase Auth SMTP avec Resend dans le dashboard Supabase si ce n'est pas deja fait.
+  - Tester les emails reels sans utiliser de vrais clients comme cobayes.
+
 ## 2026-07-18 - Sprint performance frontend/admin reel
 
 - Developpements :

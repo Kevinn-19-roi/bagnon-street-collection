@@ -5,6 +5,7 @@ import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { sendWelcomeEmailSafe } from '@/lib/email/notifications'
 import { z } from 'zod'
 
 const LoginSchema = z.object({
@@ -214,6 +215,8 @@ export async function registerClient(formData: FormData): Promise<void> {
   } else {
     await adminClient.from('customers').insert(customerData)
   }
+
+  await sendWelcomeEmailSafe(data.user.id, parsed.data.email, parsed.data.fullname)
 
   if (!data.session) {
     redirect('/connexion?message=Compte créé. Vérifie ton email si une confirmation est demandée.')

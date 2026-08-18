@@ -290,8 +290,10 @@ Ce document sert de point de reprise entre les sprints. Il doit rester synchroni
 ## Sprint final - Emails Resend, Auth et cloture production
 
 - Objectif : professionnaliser les emails, completer le parcours mot de passe oublie, corriger la suppression produit et auditer la readiness production.
-- Etat : en cours.
+- Etat : termine cote code, en attente de la variable `RESEND_API_KEY` en Production et de la verification SMTP Supabase.
 - Date : 2026-08-18.
-- Fichiers principaux concernes : `src/lib/email`, `src/lib/actions/auth.ts`, `src/lib/actions/products.ts`, `src/app/mot-de-passe-oublie/page.tsx`, `src/app/reinitialiser-mot-de-passe/page.tsx`, `src/app/auth/callback/route.ts`.
-- Problemes rencontres : l'activation automatique Resend avec donnees client detaillees necessite une validation explicite du transfert de donnees vers Resend ; `npm audit --omit=dev` remonte une vulnerabilite transitive `sharp` corrigeable uniquement via montee majeure Next.
-- Prochaines etapes : activer les declencheurs email apres validation explicite et presence de `RESEND_API_KEY`, puis planifier la montee Next 16 separement.
+- Fichiers principaux concernes : `src/lib/email`, `src/lib/actions/auth.ts`, `src/lib/actions/checkout.ts`, `src/lib/actions/orders.ts`, `src/lib/actions/products.ts`, `src/app/mot-de-passe-oublie/page.tsx`, `src/app/reinitialiser-mot-de-passe/page.tsx`, `src/app/auth/callback/route.ts`, `package.json`.
+- Emails transactionnels : bienvenue apres inscription, confirmation commande client, alerte admin minimalisee, confirmation paiement Wave, expedition, livraison et annulation.
+- Securite email : les echecs Resend sont non bloquants, les envois utilisent des cles d'idempotence et l'email admin ne contient plus d'adresse client ni de detail produit.
+- Securite dependances : `sharp` est force en `0.35.3` via `overrides` pour corriger l'avis libvips sans montee majeure Next.
+- Prochaines etapes : ajouter `RESEND_API_KEY` dans Vercel Production, configurer Supabase Auth SMTP avec Resend si ce n'est pas encore fait, puis tester un email reel de recuperation de mot de passe.

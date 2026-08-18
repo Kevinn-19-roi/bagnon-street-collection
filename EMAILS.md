@@ -2,21 +2,21 @@
 
 ## Statut
 
-L'architecture email centralisée est préparée dans `src/lib/email`.
+L'architecture email centralisée est active dans `src/lib/email`.
 
-Les déclencheurs Resend contenant des données client détaillées ne sont pas activés automatiquement dans ce sprint, car ils transmettent à un prestataire tiers des informations de commande comme nom, téléphone, adresse, articles et montant.
+Les déclencheurs Resend sont branchés uniquement après réussite des opérations métier : inscription, création de commande, confirmation Wave, expédition, livraison et annulation.
 
-Activation requise avant envoi réel :
+Activation requise avant envoi réel en production :
 
-1. Vérifier que `RESEND_API_KEY` est configurée dans Vercel en production.
-2. Confirmer que l'envoi à Resend des données nécessaires aux emails transactionnels est validé côté métier/confidentialité.
-3. Brancher les helpers de `src/lib/email/notifications.ts` après réussite des opérations métier.
+1. Ajouter `RESEND_API_KEY` dans Vercel Production.
+2. Configurer Supabase Auth SMTP avec Resend si les emails Supabase Auth doivent partir via le domaine Bagnon Street.
+3. Tester un compte client test et une commande test.
 
 ## Expéditeur prévu
 
 `Bagnon Street <no-reply@bagnon-street.com>`
 
-Le `replyTo` doit utiliser l'email configuré dans `site_settings.email` lorsqu'il existe.
+Le `replyTo` utilise l'email configuré dans `site_settings.email` lorsqu'il existe.
 
 ## Templates préparés
 
@@ -28,6 +28,28 @@ Le `replyTo` doit utiliser l'email configuré dans `site_settings.email` lorsqu'
 - commande livrée ;
 - commande annulée ;
 - template HTML Supabase Auth pour mot de passe oublié.
+
+## Données minimisées
+
+Email client commande :
+
+- nom client ;
+- référence ;
+- produits ;
+- taille/couleur lorsqu'elles existent ;
+- quantités ;
+- total ;
+- statut ;
+- lien de suivi.
+
+Email admin nouvelle commande :
+
+- référence ;
+- nom client ;
+- téléphone ;
+- montant ;
+- moyen de paiement ;
+- lien admin.
 
 ## Mot de passe oublié
 

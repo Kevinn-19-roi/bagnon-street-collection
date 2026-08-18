@@ -105,7 +105,7 @@ export function orderConfirmationEmail(order: Order, settings?: Partial<SiteSett
       <p style="font-size:15px;line-height:1.7;margin:0 0 10px">Bonjour ${escapeHtml(order.customer?.fullname || '')},</p>
       <p style="font-size:15px;line-height:1.7;margin:0 0 16px">Nous avons bien reçu ta commande du ${escapeHtml(formatDate(order.created_at))}.</p>
       ${orderSummary(order)}
-      <p style="font-size:13px;color:#6f6a66;line-height:1.7">Téléphone : ${escapeHtml(order.customer?.phone || '-')}<br>Adresse : ${escapeHtml([order.customer?.address, order.customer?.city].filter(Boolean).join(', ') || '-')}<br>Paiement : ${escapeHtml(paymentLabel(order.payment_status))}</p>
+      <p style="font-size:13px;color:#6f6a66;line-height:1.7">Référence : ${escapeHtml(order.order_number)}<br>Statut : ${escapeHtml(orderTrackingLabel(order.order_status))}<br>Paiement : ${escapeHtml(paymentLabel(order.payment_status))}</p>
       ${button('Voir ma commande', `${SITE_URL}/commande/${order.order_number}`)}
     `,
   })
@@ -117,9 +117,8 @@ export function adminNewOrderEmail(order: Order, settings?: Partial<SiteSettings
     preview: `${formatPrice(order.total)} - ${order.customer?.fullname || 'Client'}`,
     settings,
     children: `
-      <p style="font-size:15px;line-height:1.7;margin:0 0 16px">Une nouvelle commande valide vient d'être créée. Cet email ne confirme pas le paiement.</p>
-      <p style="font-size:13px;color:#6f6a66;line-height:1.7">Client : ${escapeHtml(order.customer?.fullname || '-')}<br>Téléphone : ${escapeHtml(order.customer?.phone || '-')}<br>Email : ${escapeHtml(order.customer?.email || '-')}<br>Adresse : ${escapeHtml([order.customer?.address, order.customer?.city].filter(Boolean).join(', ') || '-')}<br>Statut : ${escapeHtml(orderTrackingLabel(order.order_status))} / ${escapeHtml(paymentLabel(order.payment_status))}</p>
-      ${orderSummary(order)}
+      <p style="font-size:15px;line-height:1.7;margin:0 0 16px">Une nouvelle commande vient d'être créée. Cet email ne confirme pas le paiement.</p>
+      <p style="font-size:13px;color:#6f6a66;line-height:1.7">Référence : ${escapeHtml(order.order_number)}<br>Client : ${escapeHtml(order.customer?.fullname || '-')}<br>Téléphone : ${escapeHtml(order.customer?.phone || '-')}<br>Montant : ${escapeHtml(formatPrice(order.total))}<br>Paiement : ${escapeHtml(paymentLabel(order.payment_status))}<br>Suivi : ${escapeHtml(orderTrackingLabel(order.order_status))}</p>
       ${button("Ouvrir dans l'admin", `${SITE_URL}/admin/commandes/${order.id}`)}
     `,
   })
