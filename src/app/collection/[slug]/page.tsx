@@ -5,7 +5,7 @@ import { getProducts } from '@/lib/database/products'
 import PublicProductListing from '@/components/product/PublicProductListing'
 import type { Collection } from '@/types/database'
 
-const SITE_URL = 'https://bagnon-street-collection-ci.vercel.app'
+const SITE_URL = 'https://bagnon-street.com'
 
 type CollectionPageProps = {
   params: Promise<{ slug: string }>

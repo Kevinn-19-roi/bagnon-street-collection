@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 import { getProducts } from '@/lib/database/products'
 import SearchClient from '@/components/search/SearchClient'
 
-const SITE_URL = 'https://bagnon-street-collection-ci.vercel.app'
+const SITE_URL = 'https://bagnon-street.com'
 
 type SearchPageProps = {
   searchParams?: Promise<{ q?: string; page?: string }>

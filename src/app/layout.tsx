@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 import '@/styles/globals.css'
 
-const siteUrl = 'https://bagnon-street-collection-ci.vercel.app'
+const siteUrl = 'https://bagnon-street.com'
 const defaultDescription = 'Streetwear ne a Abidjan. Identite, mouvement et pieces Bagnon Street Collection disponibles en Cote d Ivoire.'
 
 export const metadata: Metadata = {

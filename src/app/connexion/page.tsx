@@ -71,6 +71,9 @@ export default async function ConnexionPage({
         <p style={{ textAlign: 'center', marginTop: 18, color: 'var(--text2)', fontSize: 13 }}>
           Pas encore de compte ? <Link href="/inscription" style={{ color: 'var(--text)', fontWeight: 700 }}>Créer un compte</Link>
         </p>
+        <p style={{ textAlign: 'center', marginTop: 12, color: 'var(--text2)', fontSize: 13 }}>
+          <Link href="/mot-de-passe-oublie" style={{ color: 'var(--text2)', fontWeight: 700 }}>Mot de passe oublié ?</Link>
+        </p>
         <p style={{ textAlign: 'center', marginTop: 12, color: 'var(--text3)', fontSize: 12 }}>
           <Link href="/admin/login" style={{ color: 'var(--text3)' }}>Administration</Link>
         </p>

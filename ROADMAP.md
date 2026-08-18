@@ -286,3 +286,12 @@ Ce document sert de point de reprise entre les sprints. Il doit rester synchroni
 - Optimisations realisees : accueil sans tailles/couleurs inutiles, rails produits prepares cote serveur, galerie limitee aux 8 images rendues, liste admin produits avec requete minimale, capture canvas video chargee uniquement au moment de l'import.
 - Mesures : HTML accueil production de 158 743 a 140 522 caracteres ; `/admin/videos` passe de 69.5 kB a 69.0 kB route size ; `/` passe de 10.7 kB a 10.6 kB route size. Timings HTTP production : accueil 1417 ms -> 1402 ms, fiche produit 922 ms -> 653 ms, recherche 771 ms -> 1034 ms, favoris 637 ms -> 886 ms, panier 304 ms -> 317 ms, admin videos 712 ms -> 1074 ms, admin produits 670 ms -> 767 ms.
 - Prochaines etapes : completer par un Lighthouse depuis Chrome authentifie pour mesurer l'interaction reelle admin et mobile.
+
+## Sprint final - Emails Resend, Auth et cloture production
+
+- Objectif : professionnaliser les emails, completer le parcours mot de passe oublie, corriger la suppression produit et auditer la readiness production.
+- Etat : en cours.
+- Date : 2026-08-18.
+- Fichiers principaux concernes : `src/lib/email`, `src/lib/actions/auth.ts`, `src/lib/actions/products.ts`, `src/app/mot-de-passe-oublie/page.tsx`, `src/app/reinitialiser-mot-de-passe/page.tsx`, `src/app/auth/callback/route.ts`.
+- Problemes rencontres : l'activation automatique Resend avec donnees client detaillees necessite une validation explicite du transfert de donnees vers Resend ; `npm audit --omit=dev` remonte une vulnerabilite transitive `sharp` corrigeable uniquement via montee majeure Next.
+- Prochaines etapes : activer les declencheurs email apres validation explicite et presence de `RESEND_API_KEY`, puis planifier la montee Next 16 separement.

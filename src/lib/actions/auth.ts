@@ -21,6 +21,18 @@ const RegisterClientSchema = z.object({
   city: z.string().trim().optional(),
 })
 
+const ForgotPasswordSchema = z.object({
+  email: z.string().email('Email invalide'),
+})
+
+const ResetPasswordSchema = z.object({
+  password: z.string().min(8, 'Le mot de passe doit contenir au moins 8 caractères.'),
+  confirmPassword: z.string().min(8, 'Confirme le mot de passe.'),
+}).refine(data => data.password === data.confirmPassword, {
+  message: 'Les mots de passe ne correspondent pas.',
+  path: ['confirmPassword'],
+})
+
 function safeInternalRedirect(value: FormDataEntryValue | null, fallback: string) {
   const path = typeof value === 'string' ? value.trim() : ''
   if (!path.startsWith('/') || path.startsWith('//')) return fallback
@@ -208,6 +220,45 @@ export async function registerClient(formData: FormData): Promise<void> {
   }
 
   redirect('/profil')
+}
+
+export async function requestPasswordReset(formData: FormData): Promise<void> {
+  const raw = { email: formData.get('email') as string }
+  const parsed = ForgotPasswordSchema.safeParse(raw)
+  if (!parsed.success) {
+    redirect(`/mot-de-passe-oublie?error=${encodeURIComponent(parsed.error.errors[0].message)}`)
+  }
+
+  const supabase = await createClient()
+  const redirectTo = 'https://bagnon-street.com/auth/callback?next=/reinitialiser-mot-de-passe'
+  const { error } = await supabase.auth.resetPasswordForEmail(parsed.data.email, { redirectTo })
+
+  if (error) {
+    redirect(`/mot-de-passe-oublie?error=${encodeURIComponent(translateAuthError(error.message))}`)
+  }
+
+  redirect('/mot-de-passe-oublie?message=Si un compte existe avec cet email, un lien de réinitialisation vient d être envoyé.')
+}
+
+export async function updateClientPassword(formData: FormData): Promise<void> {
+  const raw = {
+    password: formData.get('password') as string,
+    confirmPassword: formData.get('confirmPassword') as string,
+  }
+  const parsed = ResetPasswordSchema.safeParse(raw)
+  if (!parsed.success) {
+    redirect(`/reinitialiser-mot-de-passe?error=${encodeURIComponent(parsed.error.errors[0].message)}`)
+  }
+
+  const supabase = await createClient()
+  const { error } = await supabase.auth.updateUser({ password: parsed.data.password })
+
+  if (error) {
+    redirect(`/reinitialiser-mot-de-passe?error=${encodeURIComponent(translateAuthError(error.message))}`)
+  }
+
+  await performSignOut()
+  redirect('/connexion?message=Mot de passe modifié. Connecte-toi avec ton nouveau mot de passe.')
 }
 
 export async function signOutUser(): Promise<{ success: true }> {

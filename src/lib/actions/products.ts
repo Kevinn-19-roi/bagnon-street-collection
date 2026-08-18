@@ -396,6 +396,45 @@ export async function deleteProduct(id: string): Promise<void> {
 
   const adminClient = createAdminClient()
 
+  const { data: product, error: productError } = await adminClient
+    .from('products')
+    .select('id, name, slug')
+    .eq('id', id)
+    .single()
+
+  if (productError || !product) {
+    redirect('/admin/produits?error=not-found')
+  }
+
+  const { count: orderItemCount, error: orderItemsError } = await adminClient
+    .from('order_items')
+    .select('id', { count: 'exact', head: true })
+    .eq('product_id', id)
+
+  if (orderItemsError) {
+    redirect('/admin/produits?error=delete-check-failed')
+  }
+
+  if ((orderItemCount || 0) > 0) {
+    const { error: archiveError } = await adminClient
+      .from('products')
+      .update({
+        active: false,
+        featured: false,
+        new_arrival: false,
+        on_sale: false,
+        stock: 0,
+      })
+      .eq('id', id)
+
+    if (archiveError) {
+      redirect('/admin/produits?error=archive')
+    }
+
+    refreshProductCaches(`/produit/${product.slug}`)
+    redirect('/admin/produits?success=archived')
+  }
+
   const { error } = await adminClient
     .from('products')
     .delete()

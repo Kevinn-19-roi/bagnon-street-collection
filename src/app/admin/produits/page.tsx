@@ -26,9 +26,17 @@ export default async function ProduitsPage({
       ? 'Produit modifié avec succès.'
       : params.success === 'deleted'
         ? 'Produit supprimé avec succès.'
+        : params.success === 'archived'
+          ? 'Produit archivé avec succès. Il reste conservé pour l historique des commandes, mais il n apparaît plus sur le frontend.'
       : null
   const errorMessage = params.error === 'delete'
     ? 'Impossible de supprimer le produit. Réessayez ou vérifiez les éléments liés.'
+    : params.error === 'not-found'
+      ? 'Produit introuvable.'
+      : params.error === 'delete-check-failed'
+        ? 'Impossible de vérifier les commandes liées à ce produit.'
+        : params.error === 'archive'
+          ? 'Le produit est lié à des commandes et n a pas pu être archivé.'
     : params.error === 'duplicate'
       ? 'Impossible de dupliquer le produit. Réessayez depuis la liste produits.'
       : null

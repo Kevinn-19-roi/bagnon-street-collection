@@ -1,5 +1,37 @@
 # Changelog Bagnon Street Collection
 
+## 2026-08-18 - Sprint final emails/auth/production
+
+- Developpements :
+  - Installation du SDK officiel `resend`.
+  - Ajout d'une architecture email centralisee dans `src/lib/email`.
+  - Preparation des templates Bagnon Street pour bienvenue, commande, paiement et statuts de commande.
+  - Ajout du parcours mot de passe oublie via Supabase Auth.
+  - Ajout du callback serveur `/auth/callback` pour echanger les liens securises Supabase.
+  - Correction de la suppression produit : archivage automatique lorsqu'un produit est deja reference par `order_items`.
+  - Correction SEO : remplacement des anciens domaines Vercel dans les metadonnees publiques par `https://bagnon-street.com`.
+- Note securite :
+  - Les declencheurs Resend avec donnees client detaillees restent a activer apres validation explicite du transfert de donnees vers Resend.
+  - `npm audit --omit=dev` signale une vulnerabilite transitive `sharp` via `next`; la correction automatique force Next 16.3.1 et doit etre traitee comme sprint technique separe.
+- Fichiers modifies :
+  - `package.json`
+  - `src/lib/email/resend.ts`
+  - `src/lib/email/templates.ts`
+  - `src/lib/email/notifications.ts`
+  - `src/lib/actions/auth.ts`
+  - `src/lib/actions/products.ts`
+  - `src/app/auth/callback/route.ts`
+  - `src/app/mot-de-passe-oublie/page.tsx`
+  - `src/app/reinitialiser-mot-de-passe/page.tsx`
+  - `src/app/connexion/page.tsx`
+  - `src/app/admin/produits/page.tsx`
+  - `src/app/layout.tsx`
+  - `src/app/robots.ts`
+  - `src/app/recherche/page.tsx`
+  - `src/app/categorie/[slug]/page.tsx`
+  - `src/app/collection/[slug]/page.tsx`
+  - `EMAILS.md`
+
 ## 2026-07-18 - Sprint performance frontend/admin reel
 
 - Developpements :
