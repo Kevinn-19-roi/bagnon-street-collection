@@ -307,3 +307,12 @@ Ce document sert de point de reprise entre les sprints. Il doit rester synchroni
 - Correction : `/auth/callback` gere maintenant `code` via `exchangeCodeForSession` et `token_hash` via `verifyOtp` pour `recovery`, `signup`, `invite`, `magiclink` et `email_change`.
 - Securite : `/reinitialiser-mot-de-passe` refuse l'affichage du formulaire sans session Supabase valide.
 - Prochaines etapes : coller les templates Reset Password et Confirm Signup dans Supabase, puis tester une reinitialisation reelle.
+
+## Sprint UX inscription - Confirmation email
+
+- Objectif : clarifier l'experience apres inscription quand Supabase exige une confirmation email.
+- Etat : termine.
+- Date : 2026-08-19.
+- Fichiers principaux concernes : `src/app/inscription/page.tsx`, `src/lib/actions/auth.ts`.
+- Correction : apres inscription sans session immediate, l'utilisateur voit un ecran dedie `Inscription reussie !` avec l'email cible, un retour connexion et un renvoi officiel de l'email de confirmation.
+- Prochaines etapes : tester un compte neuf en production avec reception email et clic confirmation.

@@ -1,5 +1,18 @@
 # Changelog Bagnon Street Collection
 
+## 2026-08-19 - Sprint UX inscription confirmation email
+
+- Developpements :
+  - Ajout d'un etat de succes dedie apres inscription lorsque Supabase demande une confirmation email.
+  - Affichage de l'adresse email saisie sans autre information sensible.
+  - Ajout d'un bouton Retour a la connexion.
+  - Ajout d'un bouton de renvoi de l'email de confirmation via Supabase Auth officiel.
+- Bugs corriges :
+  - L'utilisateur etait redirige vers la connexion avec un message trop ambigu apres creation d'un compte non confirme.
+- Fichiers modifies :
+  - `src/app/inscription/page.tsx`
+  - `src/lib/actions/auth.ts`
+
 ## 2026-08-19 - Sprint Auth Reset Password fiable
 
 - Developpements :

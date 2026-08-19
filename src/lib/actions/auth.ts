@@ -219,10 +219,32 @@ export async function registerClient(formData: FormData): Promise<void> {
   await sendWelcomeEmailSafe(data.user.id, parsed.data.email, parsed.data.fullname)
 
   if (!data.session) {
-    redirect('/connexion?message=Compte créé. Vérifie ton email si une confirmation est demandée.')
+    redirect(`/inscription?confirmation=email&email=${encodeURIComponent(parsed.data.email)}`)
   }
 
   redirect('/profil')
+}
+
+export async function resendSignupConfirmation(formData: FormData): Promise<void> {
+  const email = String(formData.get('email') || '').trim()
+  const parsed = ForgotPasswordSchema.safeParse({ email })
+  const confirmationUrl = `/inscription?confirmation=email&email=${encodeURIComponent(email)}`
+
+  if (!parsed.success) {
+    redirect('/inscription?error=Email invalide')
+  }
+
+  const supabase = await createClient()
+  const { error } = await supabase.auth.resend({
+    type: 'signup',
+    email: parsed.data.email,
+  })
+
+  if (error) {
+    redirect(`${confirmationUrl}&resendError=${encodeURIComponent(translateAuthError(error.message))}`)
+  }
+
+  redirect(`${confirmationUrl}&resend=sent`)
 }
 
 export async function requestPasswordReset(formData: FormData): Promise<void> {
