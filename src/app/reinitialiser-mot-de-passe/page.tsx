@@ -1,8 +1,10 @@
 import Image from 'next/image'
 import Link from 'next/link'
+import { redirect } from 'next/navigation'
 import { updateClientPassword } from '@/lib/actions/auth'
 import AuthSubmitButton from '@/components/auth/AuthSubmitButton'
 import PasswordInput from '@/components/auth/PasswordInput'
+import { createClient } from '@/lib/supabase/server'
 
 export const dynamic = 'force-dynamic'
 export const metadata = {
@@ -16,6 +18,12 @@ export default async function ResetPasswordPage({
   searchParams: Promise<{ error?: string }>
 }) {
   const params = await searchParams
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+
+  if (!user) {
+    redirect('/connexion?error=Ouvre le lien sécurisé reçu par email pour créer un nouveau mot de passe.')
+  }
 
   return (
     <main style={{ minHeight: '100vh', background: 'var(--bg)', color: 'var(--text)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '32px var(--px)' }}>

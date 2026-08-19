@@ -168,11 +168,49 @@ export function resetPasswordSupabaseTemplate() {
   return `<!doctype html>
 <html lang="fr">
   <body style="margin:0;background:#f4f1ec;font-family:Arial,Helvetica,sans-serif;color:#111217">
-    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="padding:24px 12px">
+    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background:#f4f1ec;padding:28px 12px">
       <tr><td align="center">
-        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width:620px;background:#fff;border-radius:10px;overflow:hidden">
-          <tr><td style="background:#111217;color:#fff;padding:22px 24px"><p style="margin:0;font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:#d6c4b2">Bagnon Street Collection</p><h1 style="margin:8px 0 0;font-size:24px">Réinitialisation du mot de passe</h1></td></tr>
-          <tr><td style="padding:24px"><p>Tu as demandé à réinitialiser ton mot de passe.</p><p><a href="{{ .ConfirmationURL }}" style="display:inline-block;background:#7A1620;color:#fff;text-decoration:none;padding:13px 18px;border-radius:4px;font-weight:700">Créer un nouveau mot de passe</a></p><p style="color:#6f6a66;font-size:13px">Si tu n'es pas à l'origine de cette demande, ignore cet email.</p></td></tr>
+        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width:600px;background:#ffffff;border:1px solid #e7ded7;border-radius:12px;overflow:hidden">
+          <tr><td align="center" style="background:#111217;padding:26px 24px 20px"><img src="https://bagnon-street.com/brand/logo-round.jpg" width="72" height="72" alt="Bagnon Street Collection" style="display:block;border-radius:999px;border:1px solid #4b3a34"><p style="margin:14px 0 0;font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:#d6c4b2">Bagnon Street Collection</p></td></tr>
+          <tr><td style="padding:30px 24px 26px">
+            <h1 style="margin:0 0 14px;font-size:24px;line-height:1.2;color:#111217">Réinitialisation du mot de passe</h1>
+            <p style="margin:0 0 14px;font-size:15px;line-height:1.7;color:#333333">Nous avons reçu une demande de réinitialisation du mot de passe associé à votre compte Bagnon Street.</p>
+            <p style="margin:0 0 24px;font-size:15px;line-height:1.7;color:#333333">Cliquez sur le bouton ci-dessous pour choisir un nouveau mot de passe.</p>
+            <p style="margin:0 0 24px"><a href="{{ .SiteURL }}/auth/callback?token_hash={{ .TokenHash }}&type=recovery&next=/reinitialiser-mot-de-passe" style="display:inline-block;background:#111217;color:#ffffff;text-decoration:none;padding:14px 20px;border-radius:4px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;font-size:12px">Réinitialiser mon mot de passe</a></p>
+            <p style="margin:0 0 10px;font-size:13px;line-height:1.7;color:#6f6a66">Ce lien est personnel et sécurisé.</p>
+            <p style="margin:0;font-size:13px;line-height:1.7;color:#6f6a66">Si vous n'êtes pas à l'origine de cette demande, vous pouvez simplement ignorer cet email.</p>
+          </td></tr>
+          <tr><td style="border-top:1px solid #eee6df;padding:18px 24px;color:#6f6a66;font-size:12px;line-height:1.6">
+            <p style="margin:0 0 4px;color:#111217;font-weight:700">Bagnon Street Collection</p>
+            <p style="margin:0 0 4px">bagnon-street.com</p>
+            <p style="margin:0">Cet email a été envoyé automatiquement. Merci de ne pas y répondre.</p>
+          </td></tr>
+        </table>
+      </td></tr>
+    </table>
+  </body>
+</html>`
+}
+
+export function confirmSignupSupabaseTemplate() {
+  return `<!doctype html>
+<html lang="fr">
+  <body style="margin:0;background:#f4f1ec;font-family:Arial,Helvetica,sans-serif;color:#111217">
+    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background:#f4f1ec;padding:28px 12px">
+      <tr><td align="center">
+        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width:600px;background:#ffffff;border:1px solid #e7ded7;border-radius:12px;overflow:hidden">
+          <tr><td align="center" style="background:#111217;padding:26px 24px 20px"><img src="https://bagnon-street.com/brand/logo-round.jpg" width="72" height="72" alt="Bagnon Street Collection" style="display:block;border-radius:999px;border:1px solid #4b3a34"><p style="margin:14px 0 0;font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:#d6c4b2">Bagnon Street Collection</p></td></tr>
+          <tr><td style="padding:30px 24px 26px">
+            <h1 style="margin:0 0 14px;font-size:24px;line-height:1.2;color:#111217">Bienvenue chez Bagnon Street</h1>
+            <p style="margin:0 0 24px;font-size:15px;line-height:1.7;color:#333333">Il ne vous reste qu'une étape pour finaliser la création de votre compte.</p>
+            <p style="margin:0 0 24px"><a href="{{ .SiteURL }}/auth/callback?token_hash={{ .TokenHash }}&type=signup&next=/profil" style="display:inline-block;background:#111217;color:#ffffff;text-decoration:none;padding:14px 20px;border-radius:4px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;font-size:12px">Confirmer mon adresse email</a></p>
+            <p style="margin:0;font-size:13px;line-height:1.7;color:#6f6a66">Si vous n'êtes pas à l'origine de cette inscription, ignorez simplement cet email.</p>
+          </td></tr>
+          <tr><td style="border-top:1px solid #eee6df;padding:18px 24px;color:#6f6a66;font-size:12px;line-height:1.6">
+            <p style="margin:0 0 4px;color:#111217;font-weight:700">Bagnon Street Collection</p>
+            <p style="margin:0 0 4px">bagnon-street.com</p>
+            <p style="margin:0">Cet email a été envoyé automatiquement. Merci de ne pas y répondre.</p>
+          </td></tr>
         </table>
       </td></tr>
     </table>

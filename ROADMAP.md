@@ -297,3 +297,13 @@ Ce document sert de point de reprise entre les sprints. Il doit rester synchroni
 - Securite email : les echecs Resend sont non bloquants, les envois utilisent des cles d'idempotence et l'email admin ne contient plus d'adresse client ni de detail produit.
 - Securite dependances : `sharp` est force en `0.35.3` via `overrides` pour corriger l'avis libvips sans montee majeure Next.
 - Prochaines etapes : ajouter `RESEND_API_KEY` dans Vercel Production, configurer Supabase Auth SMTP avec Resend si ce n'est pas encore fait, puis tester un email reel de recuperation de mot de passe.
+
+## Sprint Auth - Reset password fiable et emails Supabase designes
+
+- Objectif : rendre le lien Supabase Reset Password compatible avec le flux `token_hash`, conserver le flux `code` existant et preparer les templates Supabase Auth en francais.
+- Etat : termine cote code, templates a coller manuellement dans Supabase Dashboard.
+- Date : 2026-08-19.
+- Fichiers principaux concernes : `src/app/auth/callback/route.ts`, `src/app/reinitialiser-mot-de-passe/page.tsx`, `src/lib/email/templates.ts`, `EMAILS.md`.
+- Correction : `/auth/callback` gere maintenant `code` via `exchangeCodeForSession` et `token_hash` via `verifyOtp` pour `recovery`, `signup`, `invite`, `magiclink` et `email_change`.
+- Securite : `/reinitialiser-mot-de-passe` refuse l'affichage du formulaire sans session Supabase valide.
+- Prochaines etapes : coller les templates Reset Password et Confirm Signup dans Supabase, puis tester une reinitialisation reelle.

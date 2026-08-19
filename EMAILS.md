@@ -57,11 +57,19 @@ Le parcours applicatif utilise le flux Supabase Auth officiel :
 
 1. `/mot-de-passe-oublie`
 2. email Supabase Auth avec lien sécurisé
-3. `/auth/callback?next=/reinitialiser-mot-de-passe`
+3. `/auth/callback?token_hash=...&type=recovery&next=/reinitialiser-mot-de-passe`
 4. `/reinitialiser-mot-de-passe`
 5. retour vers `/connexion`
 
-Pour personnaliser l'email Supabase avec Resend, configurer Supabase Auth SMTP avec Resend dans le Dashboard Supabase, puis appliquer le template HTML fourni par `resetPasswordSupabaseTemplate()` dans `src/lib/email/templates.ts`.
+Pour personnaliser l'email Supabase avec Resend, configurer Supabase Auth SMTP avec Resend dans le Dashboard Supabase, puis appliquer les templates HTML fournis par `resetPasswordSupabaseTemplate()` et `confirmSignupSupabaseTemplate()` dans `src/lib/email/templates.ts`.
+
+Le template Reset Password doit utiliser le lien :
+
+`{{ .SiteURL }}/auth/callback?token_hash={{ .TokenHash }}&type=recovery&next=/reinitialiser-mot-de-passe`
+
+Le template Confirm Signup doit utiliser le lien :
+
+`{{ .SiteURL }}/auth/callback?token_hash={{ .TokenHash }}&type=signup&next=/profil`
 
 ## Règle de fiabilité
 

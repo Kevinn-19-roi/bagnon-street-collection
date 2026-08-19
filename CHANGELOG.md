@@ -1,5 +1,26 @@
 # Changelog Bagnon Street Collection
 
+## 2026-08-19 - Sprint Auth Reset Password fiable
+
+- Developpements :
+  - Ajout du support `token_hash` + `type=recovery` dans `/auth/callback`.
+  - Conservation du flux `code` existant avec `exchangeCodeForSession`.
+  - Protection serveur de `/reinitialiser-mot-de-passe` : formulaire inaccessible sans session Supabase valide.
+  - Preparation des templates Supabase Auth Reset Password et Confirm Signup en francais, avec design Bagnon Street.
+- Bugs corriges :
+  - Le lien Reset Password base sur `{{ .TokenHash }}` etait traite comme invalide car le callback ignorait `token_hash`.
+  - Le template reset interne utilisait encore `{{ .ConfirmationURL }}`.
+- Fichiers modifies :
+  - `src/app/auth/callback/route.ts`
+  - `src/app/reinitialiser-mot-de-passe/page.tsx`
+  - `src/lib/email/templates.ts`
+  - `EMAILS.md`
+  - `ROADMAP.md`
+  - `CHANGELOG.md`
+- Points restant a traiter :
+  - Coller les templates dans Supabase Dashboard.
+  - Tester un reset password reel depuis l'email recu.
+
 ## 2026-08-18 - Sprint final emails/auth/production
 
 - Developpements :
