@@ -1,5 +1,23 @@
 # Changelog Bagnon Street Collection
 
+## 2026-08-19 - Fix final inscription confirmation fiable
+
+- Developpements :
+  - Deplacement de l'email Bienvenue chez Bagnon Street apres confirmation reelle de l'adresse email.
+  - Ajout d'une protection idempotente via `app_metadata.welcome_email_sent_at`.
+  - Ajout de `emailRedirectTo` sur l'inscription et le renvoi de confirmation Supabase.
+  - Ajout d'un cooldown visuel de 60 secondes sur le bouton de renvoi.
+  - Message clair et renvoi possible lorsqu'un utilisateur non confirme tente de se connecter.
+- Bugs corriges :
+  - Le mail de bienvenue pouvait partir juste apres `signUp()` alors que l'email Supabase de confirmation n'etait pas forcement recu ou valide.
+- Fichiers modifies :
+  - `src/lib/actions/auth.ts`
+  - `src/app/auth/callback/route.ts`
+  - `src/lib/email/notifications.ts`
+  - `src/app/inscription/page.tsx`
+  - `src/app/connexion/page.tsx`
+  - `src/components/auth/ResendConfirmationForm.tsx`
+
 ## 2026-08-19 - Sprint UX inscription confirmation email
 
 - Developpements :

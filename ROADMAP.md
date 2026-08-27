@@ -28,6 +28,7 @@ Ce document sert de point de reprise entre les sprints. Il doit rester synchroni
 - En validation - Correctif videos - generation automatique des miniatures
 - En validation - Sprint performance & correctifs produits
 - En validation - Sprint performance frontend/admin reel
+- Termine - Fix final inscription confirmation fiable
 - En attente - Sprint 11 - Mise en production finale
 
 ## Sprint 1 - Stabilisation

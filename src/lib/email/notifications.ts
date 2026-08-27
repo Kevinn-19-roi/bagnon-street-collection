@@ -57,6 +57,44 @@ export async function sendWelcomeEmailSafe(userId: string, to: string | null | u
   })
 }
 
+export async function sendWelcomeEmailOnceAfterConfirmation(userId: string) {
+  try {
+    const adminClient = createAdminClient()
+    const { data, error } = await adminClient.auth.admin.getUserById(userId)
+
+    if (error || !data.user) {
+      console.error('[auth] welcome email lookup failed:', error?.message || 'user not found')
+      return
+    }
+
+    const user = data.user
+    if (!user.email_confirmed_at) return
+
+    const appMetadata = user.app_metadata || {}
+    if (appMetadata.welcome_email_sent_at) return
+
+    const { error: updateError } = await adminClient.auth.admin.updateUserById(user.id, {
+      app_metadata: {
+        ...appMetadata,
+        welcome_email_sent_at: new Date().toISOString(),
+      },
+    })
+
+    if (updateError) {
+      console.error('[auth] welcome email marker failed:', updateError.message)
+      return
+    }
+
+    await sendWelcomeEmailSafe(
+      user.id,
+      user.email,
+      typeof user.user_metadata?.fullname === 'string' ? user.user_metadata.fullname : null
+    )
+  } catch (error) {
+    console.error('[auth] welcome email confirmation hook failed:', error instanceof Error ? error.message : 'unknown')
+  }
+}
+
 export async function sendOrderCreatedEmailsSafe(orderIdOrNumber: string) {
   const [order, settings] = await Promise.all([
     getOrderForEmail(orderIdOrNumber),

@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import type { EmailOtpType } from '@supabase/supabase-js'
 import { createClient } from '@/lib/supabase/server'
+import { sendWelcomeEmailOnceAfterConfirmation } from '@/lib/email/notifications'
 
 function safeNext(value: string | null) {
   if (!value || !value.startsWith('/') || value.startsWith('//') || value.startsWith('/admin')) {
@@ -40,6 +41,14 @@ export async function GET(request: Request) {
     })
 
     if (!error) {
+      if (type === 'signup') {
+        const { data: { user } } = await supabase.auth.getUser()
+        if (!user) return authErrorUrl(requestUrl, 'Session de confirmation introuvable. Connecte-toi pour continuer.')
+        if (!user.email_confirmed_at) return authErrorUrl(requestUrl, 'Ton adresse email n’est pas encore confirmée.')
+
+        await sendWelcomeEmailOnceAfterConfirmation(user.id)
+      }
+
       const target = type === 'recovery' ? '/reinitialiser-mot-de-passe' : next
       return NextResponse.redirect(new URL(target, requestUrl.origin))
     }

@@ -5,8 +5,9 @@ import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
-import { sendWelcomeEmailSafe } from '@/lib/email/notifications'
 import { z } from 'zod'
+
+const AUTH_CALLBACK_URL = 'https://bagnon-street.com/auth/callback?next=/profil'
 
 const LoginSchema = z.object({
   email: z.string().email('Email invalide'),
@@ -57,6 +58,10 @@ function translateAuthError(message?: string) {
 
   if (/invalid login credentials/i.test(message)) {
     return 'Email ou mot de passe incorrect'
+  }
+
+  if (/email not confirmed|not confirmed/i.test(message)) {
+    return 'Ton adresse email n’est pas encore confirmée. Vérifie ta boîte mail ou demande un nouvel email de confirmation.'
   }
 
   return message
@@ -155,7 +160,9 @@ export async function loginClient(formData: FormData): Promise<void> {
   })
 
   if (error || !data.user) {
-    redirect(`/connexion?error=${encodeURIComponent('Email ou mot de passe incorrect')}`)
+    const message = translateAuthError(error?.message || 'Email ou mot de passe incorrect')
+    const unconfirmed = /email not confirmed|not confirmed/i.test(error?.message || '')
+    redirect(`/connexion?error=${encodeURIComponent(message)}${unconfirmed ? `&unconfirmed=1&email=${encodeURIComponent(parsed.data.email)}` : ''}`)
   }
 
   const admin = await getAdminByUserId(data.user.id)
@@ -182,6 +189,7 @@ export async function registerClient(formData: FormData): Promise<void> {
     email: parsed.data.email,
     password: parsed.data.password,
     options: {
+      emailRedirectTo: AUTH_CALLBACK_URL,
       data: {
         fullname: parsed.data.fullname,
         phone: parsed.data.phone,
@@ -216,8 +224,6 @@ export async function registerClient(formData: FormData): Promise<void> {
     await adminClient.from('customers').insert(customerData)
   }
 
-  await sendWelcomeEmailSafe(data.user.id, parsed.data.email, parsed.data.fullname)
-
   if (!data.session) {
     redirect(`/inscription?confirmation=email&email=${encodeURIComponent(parsed.data.email)}`)
   }
@@ -238,6 +244,9 @@ export async function resendSignupConfirmation(formData: FormData): Promise<void
   const { error } = await supabase.auth.resend({
     type: 'signup',
     email: parsed.data.email,
+    options: {
+      emailRedirectTo: AUTH_CALLBACK_URL,
+    },
   })
 
   if (error) {

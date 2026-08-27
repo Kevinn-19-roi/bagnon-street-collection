@@ -3,6 +3,7 @@ import Link from 'next/link'
 import { loginClient } from '@/lib/actions/auth'
 import AuthSubmitButton from '@/components/auth/AuthSubmitButton'
 import PasswordInput from '@/components/auth/PasswordInput'
+import ResendConfirmationForm from '@/components/auth/ResendConfirmationForm'
 
 export const dynamic = 'force-dynamic'
 export const metadata = {
@@ -13,7 +14,7 @@ export const metadata = {
 export default async function ConnexionPage({
   searchParams,
 }: {
-  searchParams: Promise<{ error?: string; message?: string; redirect?: string }>
+  searchParams: Promise<{ error?: string; message?: string; redirect?: string; unconfirmed?: string; email?: string }>
 }) {
   const params = await searchParams
   const redirectTo = params.redirect?.startsWith('/') && !params.redirect.startsWith('//') && !params.redirect.startsWith('/admin')
@@ -46,6 +47,15 @@ export default async function ConnexionPage({
           {params.error && (
             <div style={{ background: 'rgba(122,22,32,0.14)', border: '1px solid rgba(122,22,32,0.35)', borderRadius: 4, padding: '12px 14px', color: 'var(--red)', fontSize: 13 }}>
               {params.error}
+            </div>
+          )}
+
+          {params.unconfirmed === '1' && params.email && (
+            <div style={{ background: 'var(--bg)', border: '1px solid var(--border2)', borderRadius: 4, padding: 14, display: 'flex', flexDirection: 'column', gap: 10 }}>
+              <p style={{ margin: 0, color: 'var(--text2)', fontSize: 13, lineHeight: 1.6 }}>
+                Tu peux demander un nouvel email de confirmation pour <strong style={{ color: 'var(--text)' }}>{params.email}</strong>.
+              </p>
+              <ResendConfirmationForm email={params.email} style={{ width: '100%', background: 'transparent', color: 'var(--text)', border: '1px solid var(--border2)', borderRadius: 4, padding: '12px 14px', fontFamily: 'var(--font-display)', fontSize: 12, fontWeight: 700, letterSpacing: '.08em', textTransform: 'uppercase' }} />
             </div>
           )}
 

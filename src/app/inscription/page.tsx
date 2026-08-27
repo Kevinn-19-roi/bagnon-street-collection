@@ -1,8 +1,9 @@
 import Image from 'next/image'
 import Link from 'next/link'
-import { registerClient, resendSignupConfirmation } from '@/lib/actions/auth'
+import { registerClient } from '@/lib/actions/auth'
 import AuthSubmitButton from '@/components/auth/AuthSubmitButton'
 import PasswordInput from '@/components/auth/PasswordInput'
+import ResendConfirmationForm from '@/components/auth/ResendConfirmationForm'
 
 export const dynamic = 'force-dynamic'
 export const metadata = {
@@ -47,7 +48,7 @@ export default async function InscriptionPage({
             <div style={{ color: 'var(--text2)', fontSize: 14, lineHeight: 1.8 }}>
               <p style={{ margin: '0 0 12px' }}>Nous venons de t’envoyer un email de confirmation.</p>
               <p style={{ margin: '0 0 12px' }}>Ouvre ta boîte mail et clique sur le lien reçu pour activer ton compte Bagnon Street.</p>
-              <p style={{ margin: 0 }}>Si tu ne vois pas l’email, pense à vérifier tes courriers indésirables.</p>
+              <p style={{ margin: 0 }}>Pense à vérifier tes courriers indésirables si tu ne vois rien.</p>
             </div>
 
             <div style={{ background: 'var(--bg)', border: '1px solid var(--border2)', borderRadius: 4, padding: '12px 14px', color: 'var(--text2)', fontSize: 13 }}>
@@ -56,7 +57,7 @@ export default async function InscriptionPage({
 
             {params.resend === 'sent' && (
               <div role="status" style={{ background: 'rgba(37,99,235,0.12)', border: '1px solid rgba(37,99,235,0.28)', borderRadius: 4, padding: '12px 14px', color: 'var(--blue)', fontSize: 13 }}>
-                Email de confirmation renvoyé. Vérifie aussi tes courriers indésirables.
+                Un nouvel email de confirmation vient d’être envoyé.
               </div>
             )}
 
@@ -71,10 +72,7 @@ export default async function InscriptionPage({
                 Retour à la connexion
               </Link>
 
-              <form action={resendSignupConfirmation}>
-                <input type="hidden" name="email" value={confirmationEmail} />
-                <AuthSubmitButton idleLabel="Renvoyer l’email de confirmation" pendingLabel="Renvoi..." style={{ width: '100%', background: 'transparent', color: 'var(--text)', border: '1px solid var(--border2)', borderRadius: 4, padding: '13px 16px', fontFamily: 'var(--font-display)', fontSize: 12, fontWeight: 700, letterSpacing: '.08em', textTransform: 'uppercase' }} />
-              </form>
+              <ResendConfirmationForm email={confirmationEmail} startCooldown={params.resend === 'sent'} style={{ width: '100%', background: 'transparent', color: 'var(--text)', border: '1px solid var(--border2)', borderRadius: 4, padding: '13px 16px', fontFamily: 'var(--font-display)', fontSize: 12, fontWeight: 700, letterSpacing: '.08em', textTransform: 'uppercase' }} />
             </div>
           </section>
         ) : (
