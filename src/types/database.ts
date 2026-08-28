@@ -117,6 +117,17 @@ export interface Customer {
   created_at: string
 }
 
+export interface DeliveryZone {
+  id: string
+  name: string
+  slug: string
+  price: number
+  active: boolean
+  display_order: number
+  created_at: string
+  updated_at: string
+}
+
 export interface Order {
   id: string
   customer_id: string
@@ -135,6 +146,10 @@ export interface Order {
   stock_restored_at?: string | null
   cancelled_at?: string | null
   cancelled_by?: string | null
+  delivery_type?: 'legacy' | 'local' | 'outside' | string
+  delivery_zone_id?: string | null
+  delivery_label?: string | null
+  delivery_destination?: string | null
   notes: string | null
   created_at: string
   updated_at: string
@@ -166,6 +181,7 @@ export interface SiteSettings {
   phone: string | null
   shipping_cost: number
   free_shipping_from: number
+  outside_abidjan_shipping_cost?: number | null
   logo_url: string | null
   favicon_url: string | null
   hero_image_url: string | null

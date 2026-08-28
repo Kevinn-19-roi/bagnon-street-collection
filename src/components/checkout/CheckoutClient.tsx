@@ -6,7 +6,14 @@ import { useRouter } from 'next/navigation'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { createCheckoutOrder } from '@/lib/actions/checkout'
 import { useCart } from '@/hooks/useCart'
+import {
+  OUTSIDE_ABIDJAN_DELIVERY_VALUE,
+  findDeliveryZone,
+  resolveDeliverySelection,
+  resolveShippingCost,
+} from '@/lib/shipping'
 import type { PaymentMethod } from '@/types/database'
+import type { DeliveryZone } from '@/lib/shipping'
 
 type CheckoutPrefill = {
   firstName: string
@@ -19,7 +26,8 @@ type CheckoutPrefill = {
 
 type CheckoutClientProps = {
   prefill: CheckoutPrefill
-  shippingCost: number
+  deliveryZones: DeliveryZone[]
+  outsideAbidjanShippingCost: number
   freeShippingFrom: number
 }
 
@@ -31,17 +39,29 @@ function splitVariant(size?: string, color?: string) {
   return [size ? `Taille ${size}` : null, color || null].filter(Boolean).join(' · ')
 }
 
-export default function CheckoutClient({ prefill, shippingCost, freeShippingFrom }: CheckoutClientProps) {
+export default function CheckoutClient({ prefill, deliveryZones, outsideAbidjanShippingCost, freeShippingFrom }: CheckoutClientProps) {
   const router = useRouter()
   const { items, total, clearCart, updateOptions } = useCart()
+  const initialLocalZone = findDeliveryZone(deliveryZones, prefill.city)
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState('')
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('wave')
+  const [deliveryArea, setDeliveryArea] = useState(initialLocalZone?.id || (prefill.city ? OUTSIDE_ABIDJAN_DELIVERY_VALUE : ''))
+  const [outsideCity, setOutsideCity] = useState(initialLocalZone ? '' : prefill.city)
   const formRef = useRef<HTMLFormElement>(null)
   const errorRef = useRef<HTMLParagraphElement>(null)
   const subtotal = total()
-  const effectiveShipping = freeShippingFrom > 0 && subtotal >= freeShippingFrom ? 0 : shippingCost
+  const deliverySelection = resolveDeliverySelection({
+    zones: deliveryZones,
+    deliveryArea,
+    outsideCity,
+    outsideShippingCost: outsideAbidjanShippingCost,
+  })
+  const effectiveShipping = deliveryArea
+    ? resolveShippingCost({ subtotal, freeShippingFrom, zones: deliveryZones, deliveryArea, outsideCity, outsideShippingCost: outsideAbidjanShippingCost })
+    : (freeShippingFrom > 0 && subtotal >= freeShippingFrom ? 0 : outsideAbidjanShippingCost)
   const grandTotal = subtotal + effectiveShipping
+  const deliveryCity = deliverySelection.destination
 
   const checkoutItems = useMemo(() => items.map(item => ({
     productId: item.product.id,
@@ -92,6 +112,8 @@ export default function CheckoutClient({ prefill, shippingCost, freeShippingFrom
       phone: String(formData.get('phone') || ''),
       email: String(formData.get('email') || ''),
       city: String(formData.get('city') || ''),
+      deliveryArea: String(formData.get('deliveryArea') || ''),
+      outsideCity: String(formData.get('outsideCity') || ''),
       address: String(formData.get('address') || ''),
       deliveryLandmark: String(formData.get('deliveryLandmark') || ''),
       notes: String(formData.get('notes') || ''),
@@ -141,7 +163,6 @@ export default function CheckoutClient({ prefill, shippingCost, freeShippingFrom
               ['lastName', 'Nom', prefill.lastName, 'text', true],
               ['phone', 'Telephone', prefill.phone, 'tel', true],
               ['email', 'Email', prefill.email, 'email', false],
-              ['city', 'Commune / Ville', prefill.city, 'text', true],
               ['address', 'Adresse', prefill.address, 'text', true],
             ].map(([name, label, value, type, required]) => (
               <label key={String(name)} style={{ display: 'grid', gap: 7, fontSize: 12, color: 'var(--text2)' }}>
@@ -150,6 +171,57 @@ export default function CheckoutClient({ prefill, shippingCost, freeShippingFrom
               </label>
             ))}
           </div>
+
+          <section style={{ background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: 6, padding: 16, display: 'grid', gap: 12 }}>
+            <div>
+              <p style={{ fontFamily: 'var(--font-display)', fontSize: 11, fontWeight: 700, letterSpacing: '.16em', textTransform: 'uppercase', marginBottom: 6 }}>Zone de livraison</p>
+              <p style={{ color: 'var(--text3)', fontSize: 12, lineHeight: 1.6, margin: 0 }}>Les zones locales ont un tarif specifique. Le reste passe en expedition hors Abidjan et alentours.</p>
+            </div>
+
+            <label style={{ display: 'grid', gap: 7, fontSize: 12, color: 'var(--text2)' }}>
+              <span style={{ fontFamily: 'var(--font-display)', fontSize: 10, fontWeight: 700, letterSpacing: '.16em', textTransform: 'uppercase' }}>Commune / destination</span>
+              <select
+                name="deliveryArea"
+                required
+                value={deliveryArea}
+                onChange={event => {
+                  setDeliveryArea(event.target.value)
+                  setError('')
+                }}
+                style={{ width: '100%', background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: 4, padding: '12px 13px', color: 'var(--text)', outline: 'none', fontSize: 14 }}
+              >
+                <option value="">Choisir une zone</option>
+                {deliveryZones.map(zone => (
+                  <option key={zone.id} value={zone.id}>{zone.name} - {formatPrice(zone.price)}</option>
+                ))}
+                <option value={OUTSIDE_ABIDJAN_DELIVERY_VALUE}>Hors Abidjan et alentours / Expédition - {formatPrice(outsideAbidjanShippingCost)}</option>
+              </select>
+            </label>
+
+            {deliveryArea === OUTSIDE_ABIDJAN_DELIVERY_VALUE && (
+              <label style={{ display: 'grid', gap: 7, fontSize: 12, color: 'var(--text2)' }}>
+                <span style={{ fontFamily: 'var(--font-display)', fontSize: 10, fontWeight: 700, letterSpacing: '.16em', textTransform: 'uppercase' }}>Ville de destination</span>
+                <input
+                  name="outsideCity"
+                  type="text"
+                  required
+                  value={outsideCity}
+                  onChange={event => setOutsideCity(event.target.value)}
+                  placeholder="Ex : Bouake, Yamoussoukro, San-Pedro..."
+                  style={{ width: '100%', background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: 4, padding: '12px 13px', color: 'var(--text)', outline: 'none', fontSize: 14 }}
+                />
+              </label>
+            )}
+
+            <input type="hidden" name="city" value={deliveryCity} />
+
+            {deliveryArea && (
+              <p style={{ margin: 0, color: 'var(--text2)', fontSize: 12, lineHeight: 1.6 }}>
+                Livraison : <strong style={{ color: 'var(--text)' }}>{effectiveShipping === 0 ? 'Offerte' : formatPrice(effectiveShipping)}</strong>
+                {deliverySelection.type === 'outside' ? ' - Expedition hors Abidjan et alentours' : ` - ${deliverySelection.label}`}
+              </p>
+            )}
+          </section>
 
           <label style={{ display: 'grid', gap: 7, fontSize: 12, color: 'var(--text2)' }}>
             <span style={{ fontFamily: 'var(--font-display)', fontSize: 10, fontWeight: 700, letterSpacing: '.16em', textTransform: 'uppercase' }}>Repere de livraison</span>

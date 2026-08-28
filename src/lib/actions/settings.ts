@@ -4,6 +4,8 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
 import { requireAdmin } from '@/lib/actions/auth'
 import { revalidatePath, revalidateTag } from 'next/cache'
+import { redirect } from 'next/navigation'
+import { normalizeDeliverySlug } from '@/lib/shipping'
 
 export async function updateSettings(formData: FormData): Promise<void> {
   await requireAdmin()
@@ -20,6 +22,7 @@ export async function updateSettings(formData: FormData): Promise<void> {
   const phone = formData.get('phone') as string
   const shipping_cost = parseFloat(formData.get('shipping_cost') as string) || 2000
   const free_shipping_from = parseFloat(formData.get('free_shipping_from') as string) || 25000
+  const outside_abidjan_shipping_cost = Math.max(0, Math.round(Number(formData.get('outside_abidjan_shipping_cost') || 3500)))
 
   const { data: existing } = await adminClient.from('site_settings').select('*').limit(1).single()
   const supportsHeroSettings = Boolean(existing && 'hero_image_url' in existing)
@@ -94,6 +97,10 @@ export async function updateSettings(formData: FormData): Promise<void> {
     updated_at: new Date().toISOString(),
   }
 
+  if (existing && 'outside_abidjan_shipping_cost' in existing) {
+    updateData.outside_abidjan_shipping_cost = outside_abidjan_shipping_cost
+  }
+
   if (supportsHeroSettings) {
     updateData.hero_eyebrow = hero_eyebrow
     updateData.hero_title = hero_title
@@ -131,4 +138,140 @@ export async function getSettings() {
   const adminClient = createAdminClient()
   const { data } = await adminClient.from('site_settings').select('*').single()
   return data
+}
+
+export async function getDeliverySettings() {
+  await requireAdmin()
+
+  const adminClient = createAdminClient()
+  const [settingsResult, zonesResult] = await Promise.all([
+    adminClient
+      .from('site_settings')
+      .select('outside_abidjan_shipping_cost, free_shipping_from')
+      .limit(1)
+      .maybeSingle(),
+    adminClient
+      .from('delivery_zones')
+      .select('*')
+      .order('display_order', { ascending: true })
+      .order('name', { ascending: true }),
+  ])
+
+  if (zonesResult.error) {
+    return {
+      ready: false,
+      zones: [],
+      outsideAbidjanShippingCost: 3500,
+      freeShippingFrom: Number(settingsResult.data?.free_shipping_from || 0),
+      error: zonesResult.error.message,
+    }
+  }
+
+  return {
+    ready: true,
+    zones: zonesResult.data || [],
+    outsideAbidjanShippingCost: Number(settingsResult.data?.outside_abidjan_shipping_cost || 3500),
+    freeShippingFrom: Number(settingsResult.data?.free_shipping_from || 0),
+    error: null,
+  }
+}
+
+function adminSettingsRedirect(params: string): never {
+  redirect(`/admin/parametres?${params}`)
+}
+
+export async function updateDeliveryBaseSettings(formData: FormData): Promise<void> {
+  await requireAdmin()
+
+  const adminClient = createAdminClient()
+  const outside_abidjan_shipping_cost = Math.max(0, Math.round(Number(formData.get('outside_abidjan_shipping_cost') || 3500)))
+  const free_shipping_from = Math.max(0, Math.round(Number(formData.get('free_shipping_from') || 0)))
+
+  const { data: existing } = await adminClient.from('site_settings').select('id').limit(1).single()
+  if (!existing) adminSettingsRedirect('deliveryError=Parametres introuvables')
+
+  const { error } = await adminClient
+    .from('site_settings')
+    .update({
+      outside_abidjan_shipping_cost,
+      free_shipping_from,
+      updated_at: new Date().toISOString(),
+    })
+    .eq('id', existing.id)
+
+  if (error) adminSettingsRedirect(`deliveryError=${encodeURIComponent(error.message)}`)
+
+  revalidatePath('/admin/parametres')
+  revalidatePath('/checkout')
+  revalidateTag('site-settings')
+  adminSettingsRedirect('deliverySuccess=Tarifs livraison mis a jour')
+}
+
+export async function saveDeliveryZone(formData: FormData): Promise<void> {
+  await requireAdmin()
+
+  const adminClient = createAdminClient()
+  const id = String(formData.get('id') || '').trim()
+  const name = String(formData.get('name') || '').trim()
+  const price = Math.max(0, Math.round(Number(formData.get('price') || 0)))
+  const display_order = Math.round(Number(formData.get('display_order') || 0))
+  const active = formData.get('active') === 'on'
+  const slug = normalizeDeliverySlug(name)
+
+  if (!name || !slug) adminSettingsRedirect('deliveryError=Nom de zone obligatoire')
+  if (!Number.isFinite(price) || price <= 0) adminSettingsRedirect('deliveryError=Tarif de zone invalide')
+
+  const payload = {
+    name,
+    slug,
+    price,
+    display_order,
+    active,
+    updated_at: new Date().toISOString(),
+  }
+
+  const query = id
+    ? adminClient.from('delivery_zones').update(payload).eq('id', id)
+    : adminClient.from('delivery_zones').insert(payload)
+
+  const { error } = await query
+  if (error) adminSettingsRedirect(`deliveryError=${encodeURIComponent(error.message)}`)
+
+  revalidatePath('/admin/parametres')
+  revalidatePath('/checkout')
+  adminSettingsRedirect('deliverySuccess=Zone livraison enregistree')
+}
+
+export async function deleteDeliveryZone(formData: FormData): Promise<void> {
+  await requireAdmin()
+
+  const adminClient = createAdminClient()
+  const id = String(formData.get('id') || '').trim()
+  if (!id) adminSettingsRedirect('deliveryError=Zone introuvable')
+
+  const { count, error: countError } = await adminClient
+    .from('orders')
+    .select('id', { count: 'exact', head: true })
+    .eq('delivery_zone_id', id)
+
+  if (countError) adminSettingsRedirect(`deliveryError=${encodeURIComponent(countError.message)}`)
+
+  if ((count || 0) > 0) {
+    const { error } = await adminClient
+      .from('delivery_zones')
+      .update({ active: false, updated_at: new Date().toISOString() })
+      .eq('id', id)
+
+    if (error) adminSettingsRedirect(`deliveryError=${encodeURIComponent(error.message)}`)
+    revalidatePath('/admin/parametres')
+    revalidatePath('/checkout')
+    adminSettingsRedirect('deliverySuccess=Zone utilisee par des commandes : elle a ete desactivee')
+  }
+
+  const { error } = await adminClient.from('delivery_zones').delete().eq('id', id)
+  if (error) adminSettingsRedirect(`deliveryError=${encodeURIComponent(error.message)}`)
+
+  revalidatePath('/admin/parametres')
+  revalidatePath('/checkout')
+  adminSettingsRedirect('deliverySuccess=Zone livraison supprimee')
 }

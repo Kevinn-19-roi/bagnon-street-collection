@@ -23,6 +23,13 @@ function trackingStepIndex(status: string) {
   return 0
 }
 
+function deliveryPlace(order: Awaited<ReturnType<typeof getOrderByNumber>>) {
+  if (!order) return null
+  if (order.delivery_type === 'outside') return order.delivery_destination ? `Expédition : ${order.delivery_destination}` : 'Expédition hors Abidjan'
+  if (order.delivery_label || order.delivery_destination) return `Livraison : ${order.delivery_label || order.delivery_destination}`
+  return order.customer?.city || null
+}
+
 async function getSiteWhatsapp() {
   const adminClient = createAdminClient()
   const { data } = await adminClient
@@ -125,7 +132,7 @@ export default async function OrderConfirmationPage({ params }: ConfirmationPage
                   ['Nom', order.customer?.fullname],
                   ['T\u00e9l\u00e9phone', order.customer?.phone],
                   ['Email', order.customer?.email || 'Non renseign\u00e9'],
-                  ['Ville', order.customer?.city],
+                  ['Destination', deliveryPlace(order)],
                   ['Adresse', order.customer?.address],
                 ].map(([label, value]) => (
                   <div key={label || ''}>

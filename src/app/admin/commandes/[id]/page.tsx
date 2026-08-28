@@ -44,6 +44,13 @@ function trackingStepIndex(status: string) {
   return 0
 }
 
+function deliveryPlace(order: Awaited<ReturnType<typeof getOrderById>>) {
+  if (!order) return '-'
+  if (order.delivery_type === 'outside') return order.delivery_destination ? `Expédition : ${order.delivery_destination}` : 'Expédition hors Abidjan'
+  if (order.delivery_label || order.delivery_destination) return `Livraison : ${order.delivery_label || order.delivery_destination}`
+  return order.customer?.city || '-'
+}
+
 export default async function OrderDetailPage({
   params,
   searchParams,
@@ -188,7 +195,7 @@ export default async function OrderDetailPage({
                 { label: 'Nom complet', value: order.customer?.fullname },
                 { label: 'T\u00e9l\u00e9phone', value: order.customer?.phone },
                 { label: 'Email', value: order.customer?.email || '-' },
-                { label: 'Ville', value: order.customer?.city || '-' },
+                { label: 'Destination', value: deliveryPlace(order) },
                 { label: 'Adresse', value: order.customer?.address || '-' },
                 { label: 'Pays', value: order.customer?.country },
               ].map(f => (

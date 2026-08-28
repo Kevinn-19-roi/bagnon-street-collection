@@ -24,9 +24,16 @@ async function getCheckoutContext() {
 
   const settingsPromise = adminClient
     .from('site_settings')
-    .select('shipping_cost, free_shipping_from')
+    .select('shipping_cost, free_shipping_from, outside_abidjan_shipping_cost')
     .limit(1)
     .maybeSingle()
+
+  const deliveryZonesPromise = adminClient
+    .from('delivery_zones')
+    .select('id, name, slug, price, active, display_order')
+    .eq('active', true)
+    .order('display_order', { ascending: true })
+    .order('name', { ascending: true })
 
   let currentEmail: string | null = null
   let metadataName: string | null = null
@@ -50,7 +57,7 @@ async function getCheckoutContext() {
       .maybeSingle()
     : Promise.resolve({ data: null })
 
-  const [settingsResult, profileResult] = await Promise.all([settingsPromise, profilePromise])
+  const [settingsResult, profileResult, deliveryZonesResult] = await Promise.all([settingsPromise, profilePromise, deliveryZonesPromise])
   const profile = profileResult.data
   const names = splitName(profile?.fullname || metadataName, currentEmail)
 
@@ -63,7 +70,8 @@ async function getCheckoutContext() {
       city: profile?.city || '',
       address: profile?.address || '',
     },
-    shippingCost: Number(settingsResult.data?.shipping_cost || 0),
+    deliveryZones: deliveryZonesResult.data || [],
+    outsideAbidjanShippingCost: Number(settingsResult.data?.outside_abidjan_shipping_cost || settingsResult.data?.shipping_cost || 3500),
     freeShippingFrom: Number(settingsResult.data?.free_shipping_from || 0),
   }
 }

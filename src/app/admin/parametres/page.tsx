@@ -1,12 +1,27 @@
 import AdminShell from '@/components/admin/layout/AdminShell'
 import PageHeader from '@/components/admin/ui/PageHeader'
-import { getSettings, updateSettings } from '@/lib/actions/settings'
+import {
+  deleteDeliveryZone,
+  getDeliverySettings,
+  getSettings,
+  saveDeliveryZone,
+  updateDeliveryBaseSettings,
+  updateSettings,
+} from '@/lib/actions/settings'
 
 export const metadata = { title: 'Paramètres — Admin BSC' }
 export const dynamic = 'force-dynamic'
 
-export default async function ParametresPage() {
-  const settings = await getSettings()
+export default async function ParametresPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ deliverySuccess?: string; deliveryError?: string }>
+}) {
+  const params = await searchParams
+  const [settings, deliverySettings] = await Promise.all([
+    getSettings(),
+    getDeliverySettings(),
+  ])
   const heroSettingsReady = Boolean(settings && 'hero_image_url' in settings)
   const heroMediaReady = Boolean(settings && 'hero_video_url' in settings)
 
@@ -98,16 +113,22 @@ export default async function ParametresPage() {
             <p style={sectionTitle}>Livraison</p>
             <div className="settings-subgrid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
               <div>
-                <label style={labelStyle}>Frais de livraison (FCFA)</label>
+                <label style={labelStyle}>Ancien tarif global (compatibilite)</label>
                 <input name="shipping_cost" type="number" defaultValue={settings?.shipping_cost || 2000} style={inputStyle} />
               </div>
               <div>
                 <label style={labelStyle}>Livraison gratuite à partir de (FCFA)</label>
                 <input name="free_shipping_from" type="number" defaultValue={settings?.free_shipping_from || 25000} style={inputStyle} />
               </div>
+              {'outside_abidjan_shipping_cost' in (settings || {}) && (
+                <div>
+                  <label style={labelStyle}>Expedition hors Abidjan (FCFA)</label>
+                  <input name="outside_abidjan_shipping_cost" type="number" defaultValue={settings?.outside_abidjan_shipping_cost || 3500} style={inputStyle} />
+                </div>
+              )}
             </div>
             <p style={{ fontSize: 11, color: '#4D4D52', marginTop: 10, fontFamily: 'var(--font-display)' }}>
-              * Si le panier dépasse le seuil, la livraison sera automatiquement gratuite
+              * Le nouveau checkout utilise la grille administrable ci-dessous. L'ancien tarif global reste conserve pour compatibilite.
             </p>
           </div>
 
@@ -252,6 +273,98 @@ export default async function ParametresPage() {
           </button>
         </div>
       </form>
+
+      <section style={{ ...sectionStyle, marginTop: 20 }}>
+        <p style={sectionTitle}>Livraison - zones administrables</p>
+        {!deliverySettings.ready ? (
+          <p style={{ fontSize: 12, color: '#94938E', lineHeight: 1.7, fontFamily: 'var(--font-display)' }}>
+            La migration `013_delivery_zones.sql` doit etre appliquee dans Supabase pour activer la grille de livraison.
+          </p>
+        ) : (
+          <div style={{ display: 'grid', gap: 18 }}>
+            {params.deliverySuccess && (
+              <div style={{ background: 'rgba(37,99,235,.12)', border: '1px solid rgba(37,99,235,.28)', color: '#8DB5FF', borderRadius: 4, padding: 12, fontSize: 13 }}>
+                {params.deliverySuccess}
+              </div>
+            )}
+            {params.deliveryError && (
+              <div style={{ background: 'rgba(122,22,32,.16)', border: '1px solid rgba(122,22,32,.35)', color: '#ffb4b4', borderRadius: 4, padding: 12, fontSize: 13 }}>
+                {params.deliveryError}
+              </div>
+            )}
+
+            <form action={updateDeliveryBaseSettings} className="settings-subgrid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr auto', gap: 14, alignItems: 'end' }}>
+              <div>
+                <label style={labelStyle}>Expedition hors Abidjan et alentours</label>
+                <input name="outside_abidjan_shipping_cost" type="number" defaultValue={deliverySettings.outsideAbidjanShippingCost} style={inputStyle} />
+              </div>
+              <div>
+                <label style={labelStyle}>Livraison gratuite a partir de</label>
+                <input name="free_shipping_from" type="number" defaultValue={deliverySettings.freeShippingFrom} style={inputStyle} />
+              </div>
+              <button type="submit" style={{ background: '#7A1620', color: '#fff', border: 0, borderRadius: 3, padding: '11px 16px', fontFamily: 'var(--font-display)', fontSize: 11, fontWeight: 700, letterSpacing: '.08em', textTransform: 'uppercase', cursor: 'pointer' }}>
+                Enregistrer
+              </button>
+            </form>
+
+            <div style={{ overflowX: 'auto' }}>
+              <div style={{ minWidth: 760, display: 'grid', gap: 8 }}>
+                {deliverySettings.zones.map(zone => (
+                  <form key={zone.id} action={saveDeliveryZone} style={{ display: 'grid', gridTemplateColumns: '2fr 120px 110px 110px 110px', gap: 8, alignItems: 'center', padding: 10, background: '#0A0A0C', border: '1px solid rgba(255,255,255,.07)', borderRadius: 4 }}>
+                    <input type="hidden" name="id" value={zone.id} />
+                    <div>
+                      <label style={{ ...labelStyle, marginBottom: 4 }}>Zone</label>
+                      <input name="name" defaultValue={zone.name} style={inputStyle} />
+                    </div>
+                    <div>
+                      <label style={{ ...labelStyle, marginBottom: 4 }}>Tarif</label>
+                      <input name="price" type="number" defaultValue={zone.price} style={inputStyle} />
+                    </div>
+                    <div>
+                      <label style={{ ...labelStyle, marginBottom: 4 }}>Ordre</label>
+                      <input name="display_order" type="number" defaultValue={zone.display_order} style={inputStyle} />
+                    </div>
+                    <label style={{ display: 'flex', alignItems: 'center', gap: 8, color: '#94938E', fontFamily: 'var(--font-display)', fontSize: 11 }}>
+                      <input name="active" type="checkbox" defaultChecked={zone.active} />
+                      Actif
+                    </label>
+                    <div style={{ display: 'grid', gap: 6 }}>
+                      <button type="submit" style={{ background: '#F2F1ED', color: '#0A0A0C', border: 0, borderRadius: 3, padding: '9px 10px', fontFamily: 'var(--font-display)', fontSize: 10, fontWeight: 700, letterSpacing: '.08em', textTransform: 'uppercase', cursor: 'pointer' }}>
+                        Modifier
+                      </button>
+                      <button formAction={deleteDeliveryZone} type="submit" style={{ background: 'transparent', color: '#ffb4b4', border: '1px solid rgba(122,22,32,.55)', borderRadius: 3, padding: '9px 10px', fontFamily: 'var(--font-display)', fontSize: 10, fontWeight: 700, letterSpacing: '.08em', textTransform: 'uppercase', cursor: 'pointer' }}>
+                        Supprimer
+                      </button>
+                    </div>
+                  </form>
+                ))}
+              </div>
+            </div>
+
+            <form action={saveDeliveryZone} className="settings-subgrid" style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr auto', gap: 12, alignItems: 'end', borderTop: '1px solid rgba(255,255,255,.07)', paddingTop: 16 }}>
+              <div>
+                <label style={labelStyle}>Nouvelle zone</label>
+                <input name="name" placeholder="Ex : Riviera" style={inputStyle} />
+              </div>
+              <div>
+                <label style={labelStyle}>Tarif</label>
+                <input name="price" type="number" placeholder="2500" style={inputStyle} />
+              </div>
+              <div>
+                <label style={labelStyle}>Ordre</label>
+                <input name="display_order" type="number" defaultValue={(deliverySettings.zones.at(-1)?.display_order || 0) + 10} style={inputStyle} />
+              </div>
+              <label style={{ display: 'flex', alignItems: 'center', gap: 8, color: '#94938E', fontFamily: 'var(--font-display)', fontSize: 11, paddingBottom: 12 }}>
+                <input name="active" type="checkbox" defaultChecked />
+                Actif
+              </label>
+              <button type="submit" style={{ gridColumn: '1 / -1', width: 'fit-content', background: '#7A1620', color: '#fff', border: 0, borderRadius: 3, padding: '11px 18px', fontFamily: 'var(--font-display)', fontSize: 11, fontWeight: 700, letterSpacing: '.08em', textTransform: 'uppercase', cursor: 'pointer' }}>
+                Ajouter la zone
+              </button>
+            </form>
+          </div>
+        )}
+      </section>
     </AdminShell>
   )
 }

@@ -1,5 +1,34 @@
 # Changelog Bagnon Street Collection
 
+## 2026-08-27 - Correctif logique livraison
+
+- Developpements :
+  - Ajout d'une grille livraison administrable depuis `Admin > Parametres > Livraison`.
+  - Creation de la migration non destructive `013_delivery_zones.sql` pour `delivery_zones`, le tarif `outside_abidjan_shipping_cost` et les snapshots livraison dans `orders`.
+  - Initialisation des zones locales Abidjan et alentours avec tarifs specifiques : 2 000, 3 000 et 4 000 FCFA.
+  - Ajout de l'option administrable `Hors Abidjan et alentours / Expedition` avec ville de destination obligatoire.
+  - Recalcul serveur du tarif de livraison depuis Supabase pour empecher toute manipulation du prix cote navigateur.
+  - Enregistrement d'un snapshot livraison par commande afin que les anciennes commandes conservent le tarif applique.
+- Bugs corriges :
+  - Le checkout utilisait un tarif global unique au lieu de prioriser les zones commerciales definies.
+  - Anyama et Grand-Bassam pouvaient etre traites comme expedition generique alors qu'ils doivent rester des zones locales a 4 000 FCFA.
+- Fichiers modifies :
+  - `supabase/migrations/013_delivery_zones.sql`
+  - `src/lib/shipping.ts`
+  - `src/components/checkout/CheckoutClient.tsx`
+  - `src/lib/actions/checkout.ts`
+  - `src/lib/actions/settings.ts`
+  - `src/app/admin/parametres/page.tsx`
+  - `src/app/checkout/page.tsx`
+  - `src/app/commande/[reference]/page.tsx`
+  - `src/app/commandes/[reference]/page.tsx`
+  - `src/app/admin/commandes/[id]/page.tsx`
+  - `src/lib/email/templates.ts`
+  - `src/lib/whatsapp.ts`
+  - `src/types/database.ts`
+- Actions manuelles :
+  - Appliquer `supabase/migrations/013_delivery_zones.sql` dans Supabase Production avant de publier ce code en production.
+
 ## 2026-08-19 - Fix final inscription confirmation fiable
 
 - Developpements :

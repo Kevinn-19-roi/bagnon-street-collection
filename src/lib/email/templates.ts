@@ -74,10 +74,22 @@ function orderItems(items?: OrderItem[]) {
   }).join('')
 }
 
+function deliverySummary(order: Order) {
+  if (order.delivery_type === 'outside') {
+    return `Expédition : ${escapeHtml(order.delivery_destination || 'Hors Abidjan')}`
+  }
+
+  if (order.delivery_label || order.delivery_destination) {
+    return `Livraison : ${escapeHtml(order.delivery_label || order.delivery_destination)}`
+  }
+
+  return 'Livraison'
+}
+
 function orderSummary(order: Order) {
   return `<table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="border-collapse:collapse;margin:16px 0">
     ${orderItems(order.items)}
-    <tr><td style="padding:12px 0;color:#6f6a66">Livraison</td><td align="right" style="padding:12px 0">${Number(order.shipping_cost) === 0 ? 'Offerte' : formatPrice(order.shipping_cost)}</td></tr>
+    <tr><td style="padding:12px 0;color:#6f6a66">${deliverySummary(order)}</td><td align="right" style="padding:12px 0">${Number(order.shipping_cost) === 0 ? 'Offerte' : formatPrice(order.shipping_cost)}</td></tr>
     <tr><td style="padding:14px 0;border-top:2px solid #111217"><strong>Total</strong></td><td align="right" style="padding:14px 0;border-top:2px solid #111217"><strong>${formatPrice(order.total)}</strong></td></tr>
   </table>`
 }

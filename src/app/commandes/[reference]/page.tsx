@@ -23,6 +23,13 @@ function trackingStepIndex(status: string) {
   return 0
 }
 
+function deliveryPlace(order: Awaited<ReturnType<typeof getCustomerOrderByNumberAndEmail>>) {
+  if (!order) return null
+  if (order.delivery_type === 'outside') return order.delivery_destination ? `Expédition : ${order.delivery_destination}` : 'Expédition hors Abidjan'
+  if (order.delivery_label || order.delivery_destination) return `Livraison : ${order.delivery_label || order.delivery_destination}`
+  return order.customer?.city || null
+}
+
 export default async function CustomerOrderDetailPage({ params }: CustomerOrderDetailProps) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
@@ -111,7 +118,7 @@ export default async function CustomerOrderDetailPage({ params }: CustomerOrderD
                 {[
                   ['Nom', order.customer?.fullname],
                   ['Telephone', order.customer?.phone],
-                  ['Ville', order.customer?.city],
+                  ['Destination', deliveryPlace(order)],
                   ['Adresse', order.customer?.address],
                 ].map(([label, value]) => (
                   <div key={label || ''}>

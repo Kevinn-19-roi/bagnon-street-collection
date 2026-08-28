@@ -55,6 +55,27 @@ function adminStatusMessage(order: Order) {
   return 'Votre paiement est confirm\u00e9. Votre commande est bien re\u00e7ue et sera pr\u00e9par\u00e9e.'
 }
 
+function deliveryLines(order: Order) {
+  if (order.delivery_type === 'outside') {
+    return [
+      order.delivery_destination ? `Destination : ${order.delivery_destination}` : null,
+      `Exp\u00e9dition : ${Number(order.shipping_cost).toLocaleString('fr-FR')} FCFA`,
+    ]
+  }
+
+  if (order.delivery_label || order.delivery_destination) {
+    return [
+      `Lieu : ${order.delivery_label || order.delivery_destination}`,
+      `Livraison : ${Number(order.shipping_cost).toLocaleString('fr-FR')} FCFA`,
+    ]
+  }
+
+  return [
+    order.customer?.city ? `Commune / Ville : ${order.customer.city}` : null,
+    `Livraison : ${Number(order.shipping_cost).toLocaleString('fr-FR')} FCFA`,
+  ]
+}
+
 export function buildClientOrderWhatsappMessage(order: Order) {
   const lines = [
     'Bonjour Bagnon Street Collection,',
@@ -65,7 +86,7 @@ export function buildClientOrderWhatsappMessage(order: Order) {
     order.customer?.fullname ? `Nom : ${order.customer.fullname}` : null,
     order.customer?.phone ? `T\u00e9l\u00e9phone : ${order.customer.phone}` : null,
     order.customer?.address ? `Adresse : ${order.customer.address}` : null,
-    order.customer?.city ? `Commune / Ville : ${order.customer.city}` : null,
+    ...deliveryLines(order),
     '',
     'Produits :',
     ...(order.items || []).flatMap(item => [

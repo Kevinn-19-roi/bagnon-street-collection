@@ -29,6 +29,7 @@ Ce document sert de point de reprise entre les sprints. Il doit rester synchroni
 - En validation - Sprint performance & correctifs produits
 - En validation - Sprint performance frontend/admin reel
 - Termine - Fix final inscription confirmation fiable
+- Pret code - Correctif logique livraison administrable, en attente migration 013 Production
 - En attente - Sprint 11 - Mise en production finale
 
 ## Sprint 1 - Stabilisation
@@ -317,3 +318,14 @@ Ce document sert de point de reprise entre les sprints. Il doit rester synchroni
 - Fichiers principaux concernes : `src/app/inscription/page.tsx`, `src/lib/actions/auth.ts`.
 - Correction : apres inscription sans session immediate, l'utilisateur voit un ecran dedie `Inscription reussie !` avec l'email cible, un retour connexion et un renvoi officiel de l'email de confirmation.
 - Prochaines etapes : tester un compte neuf en production avec reception email et clic confirmation.
+
+## Correctif logique livraison administrable
+
+- Objectif : remplacer le tarif livraison global par une grille commerciale administrable sans casser les commandes existantes.
+- Etat : code pret, en attente d'application de `supabase/migrations/013_delivery_zones.sql` en Production avant publication.
+- Date : 2026-08-27.
+- Fichiers principaux concernes : `supabase/migrations/013_delivery_zones.sql`, `src/lib/shipping.ts`, `src/app/checkout/page.tsx`, `src/components/checkout/CheckoutClient.tsx`, `src/lib/actions/checkout.ts`, `src/lib/actions/settings.ts`, `src/app/admin/parametres/page.tsx`, pages commande, emails et WhatsApp.
+- Developpement realise : zones locales administrables, tarif expedition hors Abidjan administrable, ville de destination obligatoire pour l'expedition, calcul serveur depuis Supabase, snapshot livraison dans `orders`.
+- Grille initiale : Cocody/Treichville/Marcory/Koumassi/Plateau/Adjame/Yopougon 1er pont/Yopougon 2e pont/Bingerville a 2 000 FCFA ; Abobo/Yopougon 3e pont/Yopougon Extension/Bingerville Extension a 3 000 FCFA ; Anyama/Grand-Bassam a 4 000 FCFA ; expedition hors Abidjan par defaut a 3 500 FCFA.
+- Probleme rencontre : la nouvelle source de verite necessite une migration non destructive avant de publier le code, car la creation de commande enregistre des champs snapshot livraison absents de l'ancien schema.
+- Prochaines etapes : appliquer la migration 013 dans Supabase Production, tester Cocody/Abobo/Anyama/Grand-Bassam/Bouake/Yamoussoukro, modifier temporairement un tarif depuis l'admin, puis publier sur `main` et verifier Vercel.

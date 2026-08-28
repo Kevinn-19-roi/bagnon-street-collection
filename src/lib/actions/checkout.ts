@@ -5,7 +5,9 @@ import { revalidatePath } from 'next/cache'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
 import { sendOrderCreatedEmailsSafe } from '@/lib/email/notifications'
+import { OUTSIDE_ABIDJAN_DELIVERY_VALUE, resolveDeliverySelection, resolveShippingCost } from '@/lib/shipping'
 import type { PaymentMethod, Product } from '@/types/database'
+import type { DeliveryZone } from '@/lib/shipping'
 
 const checkoutItemSchema = z.object({
   productId: z.string().uuid(),
@@ -19,7 +21,9 @@ const checkoutSchema = z.object({
   lastName: z.string().trim().min(2, 'Le nom est obligatoire.').max(80),
   phone: z.string().trim().min(8, 'Le telephone est obligatoire.').max(30),
   email: z.string().trim().email('Email invalide.').optional().or(z.literal('')),
-  city: z.string().trim().min(2, 'La commune ou ville est obligatoire.').max(120),
+  city: z.string().trim().max(120).optional().or(z.literal('')),
+  deliveryArea: z.string().trim().min(2, 'La zone de livraison est obligatoire.').max(120).optional().or(z.literal('')),
+  outsideCity: z.string().trim().max(120).optional().or(z.literal('')),
   address: z.string().trim().min(3, 'L adresse est obligatoire.').max(220),
   deliveryLandmark: z.string().trim().max(220).optional().or(z.literal('')),
   notes: z.string().trim().max(600).optional().or(z.literal('')),
@@ -161,13 +165,40 @@ export async function createCheckoutOrder(payload: unknown): Promise<CreateOrder
 
     const { data: settings } = await adminClient
       .from('site_settings')
-      .select('shipping_cost, free_shipping_from')
+      .select('shipping_cost, free_shipping_from, outside_abidjan_shipping_cost')
       .limit(1)
       .maybeSingle()
 
-    const shippingCost = settings && Number(settings.free_shipping_from) > 0 && subtotal >= Number(settings.free_shipping_from)
-      ? 0
-      : Number(settings?.shipping_cost || 0)
+    const { data: deliveryZones } = await adminClient
+      .from('delivery_zones')
+      .select('id, name, slug, price, active, display_order')
+      .eq('active', true)
+
+    const zones = (deliveryZones || []) as DeliveryZone[]
+    const outsideShippingCost = Number(settings?.outside_abidjan_shipping_cost || settings?.shipping_cost || 3500)
+    const deliverySelection = resolveDeliverySelection({
+      zones,
+      deliveryArea: input.deliveryArea,
+      outsideCity: input.outsideCity || input.city,
+      outsideShippingCost,
+    })
+
+    if (deliverySelection.type === 'outside' && !deliverySelection.destination) {
+      return { success: false, message: 'La ville de destination est obligatoire pour une expedition hors Abidjan et alentours.' }
+    }
+
+    if ((input.deliveryArea || '').trim() === OUTSIDE_ABIDJAN_DELIVERY_VALUE && !normalizeOptional(input.outsideCity)) {
+      return { success: false, message: 'La ville de destination est obligatoire pour une expedition hors Abidjan et alentours.' }
+    }
+
+    const shippingCost = resolveShippingCost({
+      subtotal,
+      freeShippingFrom: Number(settings?.free_shipping_from || 0),
+      zones,
+      deliveryArea: input.deliveryArea,
+      outsideCity: input.outsideCity || input.city,
+      outsideShippingCost,
+    })
     const total = subtotal + shippingCost
     const connectedEmail = await getCheckoutUserEmail()
     const email = normalizeOptional(input.email) || connectedEmail
@@ -182,7 +213,7 @@ export async function createCheckoutOrder(payload: unknown): Promise<CreateOrder
         fullname: `${input.firstName} ${input.lastName}`.trim(),
         phone: input.phone,
         email,
-        city: input.city,
+        city: deliverySelection.destination,
         address: input.address,
         country: "Cote d'Ivoire",
       })
@@ -199,6 +230,10 @@ export async function createCheckoutOrder(payload: unknown): Promise<CreateOrder
         subtotal,
         shipping_cost: shippingCost,
         total,
+        delivery_type: deliverySelection.type,
+        delivery_zone_id: deliverySelection.zoneId,
+        delivery_label: deliverySelection.label,
+        delivery_destination: deliverySelection.destination,
         payment_method: input.paymentMethod as PaymentMethod,
         payment_status: 'unpaid',
         order_status: 'pending',
