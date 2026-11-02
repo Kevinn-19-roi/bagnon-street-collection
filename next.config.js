@@ -47,7 +47,8 @@ const nextConfig = {
   async headers() {
     return [
       {
-        source: '/:path*',
+        // Only the exact read-only demo document owns its framing policy.
+        source: '/((?!embed/portfolio$).*)',
         headers: securityHeaders,
       },
     ]
